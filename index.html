@@ -2,8 +2,6 @@
 <html lang="en">
   <head>
     <title>Fshcord</title>
-    <head>
-    <title>Fsh</title>
     <!-- Boiler plate------ -->
     <link rel="icon" href="https://fsh.plus/fsh.png" type="image/png">
     <meta name="description" content="Fshcord, alternative discord client">
@@ -23,10 +21,14 @@
       <label>Token: <input type="password" id="token"></label>
       <button id="btn-login">Log in</button>
     </dialog>
-    <div id="server">server</div>
-    <div id="channel">channel</div>
-    <div id="main">main</div>
-    <div id="users">users</div>
+    <div id="server">
+      <img id="main" src="/media/fshcord.png" alt="Main">
+      <div id="server-list"></div>
+      <div id="account"></div>
+    </div>
+    <div id="channel"></div>
+    <div id="messages"></div>
+    <div id="users"></div>
     <script src="./media/script.js"></script>
   </body>
 </html>

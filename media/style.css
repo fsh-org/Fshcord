@@ -6,7 +6,56 @@ body {
   height: 100dvh;
 }
 
-#server,
-#channel,
-#main,
-#users {}
+#server {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 5vw;
+  background: var(--bg-2);
+}
+#server-list {
+  display: flex;
+  gap: 1vw;
+  flex-direction: column;
+  align-items: center;
+  width: 5vw;
+  flex: 1;
+  overflow-y: auto;
+}
+.server-clicky {
+  cursor: pointer;
+  width: 4vw;
+  height: 4vw;
+  border-radius: 2rem;
+  transition: 500ms;
+}
+.server-clicky:hover {
+  border-radius: 1rem;
+}
+#server-list button {
+  padding: 0;
+  margin: 0;
+  border: none;
+  aspect-ratio: 1 / 1;
+  color: var(--text-1);
+  background-color: var(--bg-1);
+}
+#main, #account {
+  width: 4vw;
+  height: 4vw;
+  margin: 0.5vw;
+  border-radius: 0.5rem;
+  background-color: var(--bg-1);
+}
+
+#channel {
+  width: 15vw;
+  background-color: var(--bg-0);
+}
+#messages {
+  width: 65vw;
+}
+#users {
+  width: 15vw;
+  border-left: 2px var(--bg-2) solid;
+}
