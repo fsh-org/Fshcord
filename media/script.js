@@ -17,9 +17,9 @@ function proxyFetch(url, o) {
       "user-agent": navigator.userAgent
     }
   };
-  if (o.method) opts.method=o.method;
-  if (o.body) opts.body=o.body;
-  if (o.headers) {
+  if (o?.method) opts.method=o.method;
+  if (o?.body) opts.body=o.body;
+  if (o?.headers) {
     Object.keys(o.headers).forEach(h=>{
       opts.headers[h] = o.headers[h]
     })
