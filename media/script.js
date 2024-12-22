@@ -37,6 +37,15 @@ document.getElementById('btn-login').onclick = function(){
   localStorage.setItem('token', document.getElementById('token').value);
   location.reload();
 }
+function switchChannel(id) {
+  if (id==0) {
+    proxyFetch('https://discord.com/api/v10/users/@me/channels')
+      .then(res=>res.json())
+      .then(res=>{
+        document.getElementById('channel').innerHTML = res.reverse.join('');
+      })
+  }
+}
 if (!localStorage.getItem('token')) {
   document.getElementById('login').showModal();
 } else {
@@ -44,10 +53,11 @@ if (!localStorage.getItem('token')) {
     .then(res=>res.json())
     .then(res=>{
       document.getElementById('server-list').innerHTML = JSON.parse(res.content).reverse().map(s=>{
-        if (s.icon == null) {
-          return `<button aria-label="${s.name}" class="server-clicky">${s.name.trim().split(/\s+/).map(word=>word[0]??'').join('')}</button>`
-        }
-        return `<img src="https://cdn.discordapp.com/icons/${s.id}/${s.icon}.png?size=64" alt="${s.name}" class="server-clicky">`
+        return `<button aria-label="${s.name}" data-id="${s.id}" class="server-clicky">${s.icon == null ? s.name.trim().split(/\s+/).map(word=>word[0]??'').join('') : `<img src="https://cdn.discordapp.com/icons/${s.id}/${s.icon}.png?size=64" alt="${s.name}">`}</button>`
       }).join('');
+      Array.from(document.querySelectorAll('#server button'))
+        .forEach(b=>{
+          b.onclick = function(){switchChannel(b.getAttribute('data-id'))}
+        })
     })
 }
