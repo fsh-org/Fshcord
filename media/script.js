@@ -36,13 +36,35 @@ function proxyFetch(url, o) {
 document.getElementById('btn-login').onclick = function(){
   localStorage.setItem('token', document.getElementById('token').value);
   location.reload();
+};
+function showMessages(list) {
+}
+function switchMessage(id) {
+  proxyFetch('https://discord.com/api/v9/channels/'+id+'/messages?limit=20')
+    .then(res=>res.json())
+    .then(res=>{
+      showMessages(JSON.parse(res.content));
+    })
+}
+function showChannels(list) {
+  document.getElementById('channel').innerHTML = list.map(c=>{
+    return `<button data-id="${c.id}">${c.type===1?(c.recipients[0].global_name??c.recipients[0].username):(c.type===3?(c.name??(c.recipients.map(r=>r.global_name??r.username).join(', '))):c.id)}</button>`
+  }).join('');
 }
 function switchChannel(id) {
-  if (id==0) {
+  if (id == 0) {
     proxyFetch('https://discord.com/api/v10/users/@me/channels')
       .then(res=>res.json())
       .then(res=>{
-        document.getElementById('channel').innerHTML = res.reverse.join('');
+        showChannels(JSON.parse(res.content).reverse());
+      })
+  } else if (id == 1) {
+    // User
+  } else {
+    proxyFetch('https://discord.com/api/v9/guilds/'+id+'/channels')
+      .then(res=>res.json())
+      .then(res=>{
+        showChannels(JSON.parse(res.content).reverse());
       })
   }
 }

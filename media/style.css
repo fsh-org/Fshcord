@@ -59,9 +59,21 @@ body {
 }
 
 #channel {
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
   width: 15vw;
   background-color: var(--bg-0);
 }
+#channel::-webkit-scrollbar-track {
+  background-color: var(--bg-0);
+}
+#channel button {
+  border: none;
+  text-align: left;
+  border-radius: 0.2rem;
+}
+
 #messages {
   width: 65vw;
 }
