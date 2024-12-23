@@ -39,17 +39,49 @@ document.getElementById('btn-login').onclick = function(){
 };
 function showMessages(list) {
 }
-function switchMessage(id) {
+function switchMessage(id, type) {
   proxyFetch('https://discord.com/api/v9/channels/'+id+'/messages?limit=20')
     .then(res=>res.json())
     .then(res=>{
       showMessages(JSON.parse(res.content));
     })
 }
+
+/*
+Channel types
+0: Text
+1: DM
+2: Voice
+3: Group DM
+4: Category
+5: Announcement
+10: Thread in announcement
+11: Public thread
+12: Private thread
+13: Stage
+14: student thing
+15: Forum
+16: Media
+*/
 function showChannels(list) {
   document.getElementById('channel').innerHTML = list.map(c=>{
-    return `<button data-id="${c.id}">${c.type===1?(c.recipients[0].global_name??c.recipients[0].username):(c.type===3?(c.name??(c.recipients.map(r=>r.global_name??r.username).join(', '))):c.id)}</button>`
+    let name = c.id;
+    if (c.type===1) {
+      name = c.recipients[0].global_name ?? c.recipients[0].username;
+    } else if (c.type===3) {
+      name = c.name ?? (c.recipients.map(r=>r.global_name??r.username).join(', '));
+    } else {
+      name = c.name ?? c.id;
+    }
+    return `<button data-id="${c.id}" data-type="${c.type}">
+  <img src="${c.type===1?`https://cdn.discordapp.com/avatars/${c.recipients[0].id}/${c.recipients[0].avatar}.webp?size=64`:`/media/channel/${c.type}.svg`}" alt="${name}">
+  ${name}
+</button>`;
   }).join('');
+  Array.from(document.querySelectorAll('#channel button'))
+    .forEach(b=>{
+      b.onclick = function(){switchMessage(b.getAttribute('data-id'), b.getAttribute('data-type'))}
+    });
 }
 function switchChannel(id) {
   if (id == 0) {
@@ -68,6 +100,7 @@ function switchChannel(id) {
       })
   }
 }
+
 if (!localStorage.getItem('token')) {
   document.getElementById('login').showModal();
 } else {
@@ -80,6 +113,7 @@ if (!localStorage.getItem('token')) {
       Array.from(document.querySelectorAll('#server button'))
         .forEach(b=>{
           b.onclick = function(){switchChannel(b.getAttribute('data-id'))}
-        })
+        });
+      switchChannel(0);
     })
 }
