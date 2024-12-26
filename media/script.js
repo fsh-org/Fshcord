@@ -110,7 +110,7 @@ function switchChannel(id) {
   }
 }
 
-showServers(list) {
+function showServers(list) {
   document.getElementById('server-list').innerHTML = list.reverse().map(s=>{
     return `<button aria-label="${s.name}" data-id="${s.id}" class="server-clicky">${s.icon == null ? s.name.trim().split(/\s+/).map(word=>word[0]??'').join('') : `<img src="https://cdn.discordapp.com/icons/${s.id}/${s.icon}.png?size=64" alt="${s.name}">`}</button>`
   }).join('');
