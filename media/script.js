@@ -102,7 +102,7 @@ function switchChannel(id) {
         Object.values(channels.filter(c=>c.type===4).map(c=>c.id)).forEach(id=>cat[id]=[]);
         channels.filter(c=>c.type!==4).forEach(c=>cat[c.parent_id].push(c));
         Object.keys(cat).forEach(k=>{
-          if (k!='null') sorted.push(sorted.find(cc=>cc.id===k));
+          if (k!='null') sorted.push(channels.find(cc=>cc.id===k));
           sorted.push(...cat[k]);
         })
         showChannels(sorted);
