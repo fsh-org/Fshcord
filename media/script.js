@@ -74,8 +74,8 @@ function showChannels(list) {
       name = c.name ?? c.id;
     }
     return `<button data-id="${c.id}" data-type="${c.type}">
-  <img src="${c.type===1?(c.recipients[0].avatar?`https://cdn.discordapp.com/avatars/${c.recipients[0].id}/${c.recipients[0].avatar}.webp?size=64`:'./media/user.svg'):`/media/channel/${c.type}.svg`}" alt="${name}">
-  ${name}
+  ${c.type===4?'':`<img src="${c.type===1?(c.recipients[0].avatar?`https://cdn.discordapp.com/avatars/${c.recipients[0].id}/${c.recipients[0].avatar}.webp?size=64`:'./media/channel/1.svg'):`./media/channel/${c.type}.svg`}" alt="${name}">`}
+  <span${c.type===4?' style="color:var(--text-2);font-size:90%;"':''}>${c.type===4?name.toLowerCase():name}</span>
 </button>`;
   }).join('');
   Array.from(document.querySelectorAll('#channel button'))
@@ -93,10 +93,19 @@ function switchChannel(id) {
   } else if (id == 1) {
     // User
   } else {
-    proxyFetch('https://discord.com/api/v9/guilds/'+id+'/channels')
+    proxyFetch(`https://discord.com/api/v10/guilds/${id}/channels`)
       .then(res=>res.json())
       .then(res=>{
-        showChannels(JSON.parse(res.content).reverse());
+        let channels = JSON.parse(res.content).sort((a,b)=>a.position-b.position);
+        let sorted = [];
+        let cat = {'null':[]};
+        Object.values(channels.filter(c=>c.type===4).map(c=>c.id)).forEach(id=>cat[id]=[]);
+        channels.filter(c=>c.type!==4).forEach(c=>cat[c.parent_id].push(c));
+        Object.keys(cat).forEach(k=>{
+          if (k!='null') sorted.push(cha.find(cc=>cc.id===k));
+          sorted.push(...cat[k]);
+        })
+        showChannels(sorted);
       })
   }
 }
