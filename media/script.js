@@ -74,7 +74,7 @@ function showChannels(list) {
       name = c.name ?? c.id;
     }
     return `<button data-id="${c.id}" data-type="${c.type}">
-  <img src="${c.type===1?`https://cdn.discordapp.com/avatars/${c.recipients[0].id}/${c.recipients[0].avatar}.webp?size=64`:`/media/channel/${c.type}.svg`}" alt="${name}">
+  <img src="${c.type===1?(c.recipients[0].avatar?`https://cdn.discordapp.com/avatars/${c.recipients[0].id}/${c.recipients[0].avatar}.webp?size=64`:'./media/user.svg'):`/media/channel/${c.type}.svg`}" alt="${name}">
   ${name}
 </button>`;
   }).join('');

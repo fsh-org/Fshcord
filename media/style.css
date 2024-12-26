@@ -69,9 +69,19 @@ body {
   background-color: var(--bg-0);
 }
 #channel button {
+  display: flex;
+  gap: 5px;
+  align-items: center;
   border: none;
   text-align: left;
   border-radius: 0.2rem;
+}
+#channel img {
+  width: 20px;
+  height: 20px;
+}
+#channel button[data-type="1"] img {
+  border-radius: 2rem;
 }
 
 #messages {
