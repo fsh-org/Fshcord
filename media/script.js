@@ -75,7 +75,7 @@ function showChannels(list) {
     }
     return `<button data-id="${c.id}" data-type="${c.type}">
   ${c.type===4?'':`<img src="${c.type===1?(c.recipients[0].avatar?`https://cdn.discordapp.com/avatars/${c.recipients[0].id}/${c.recipients[0].avatar}.webp?size=64`:'./media/channel/1.svg'):`./media/channel/${c.type}.svg`}" alt="${name}">`}
-  <span${c.type===4?' style="color:var(--text-2);font-size:90%;"':''}>${c.type===4?name.toLowerCase():name}</span>
+  <span${c.type===4?' style="color:var(--text-2);font-size:90%;"':''}>${c.type===4?name.toUpperCase():name}</span>
 </button>`;
   }).join('');
   Array.from(document.querySelectorAll('#channel button'))
@@ -110,19 +110,38 @@ function switchChannel(id) {
   }
 }
 
+showServers(list) {
+  document.getElementById('server-list').innerHTML = list.reverse().map(s=>{
+    return `<button aria-label="${s.name}" data-id="${s.id}" class="server-clicky">${s.icon == null ? s.name.trim().split(/\s+/).map(word=>word[0]??'').join('') : `<img src="https://cdn.discordapp.com/icons/${s.id}/${s.icon}.png?size=64" alt="${s.name}">`}</button>`
+  }).join('');
+  Array.from(document.querySelectorAll('#server button'))
+    .forEach(b=>{
+      b.onclick = function(){
+        let sid = b.getAttribute('data-id');
+        // Set selected
+        document.querySelector('#server button[selected]').removeAttribute('selected');
+        b.setAttribute('selected', true);
+        // Switch the server and show channels
+        window.currentServer = sid;
+        switchChannel(sid);
+      }
+    });
+}
+
 if (!localStorage.getItem('token')) {
   document.getElementById('login').showModal();
 } else {
-  proxyFetch('https://discord.com/api/v9/users/@me/guilds')
+  // TODO: Switch to new settings system
+  proxyFetch('https://discord.com/api/v10/users/@me/settings')
     .then(res=>res.json())
     .then(res=>{
-      document.getElementById('server-list').innerHTML = JSON.parse(res.content).reverse().map(s=>{
-        return `<button aria-label="${s.name}" data-id="${s.id}" class="server-clicky">${s.icon == null ? s.name.trim().split(/\s+/).map(word=>word[0]??'').join('') : `<img src="https://cdn.discordapp.com/icons/${s.id}/${s.icon}.png?size=64" alt="${s.name}">`}</button>`
-      }).join('');
-      Array.from(document.querySelectorAll('#server button'))
-        .forEach(b=>{
-          b.onclick = function(){switchChannel(b.getAttribute('data-id'))}
-        });
-      switchChannel(0);
+      window.userSettings = JSON.parse(res.content);
+      proxyFetch('https://discord.com/api/v10/users/@me/guilds')
+        .then(res=>res.json())
+        .then(res=>{
+          showServers(JSON.parse(res.content));
+          window.currentServer = 0;
+          switchChannel(0);
+        })
     })
 }
