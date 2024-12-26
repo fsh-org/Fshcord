@@ -119,7 +119,12 @@ function showServers(list) {
       b.onclick = function(){
         let sid = b.getAttribute('data-id');
         // Set selected
-        document.querySelector('#server button[selected]')?.removeAttribute('selected');
+        let previous = document.querySelector('#server button[selected]');
+        previous.classList.add('leaving');
+        setTimeout(() => {
+          previous.classList.remove('leaving');
+          previous?.removeAttribute('selected');
+        }, 250);
         b.setAttribute('selected', true);
         // Switch the server and show channels
         window.currentServer = sid;

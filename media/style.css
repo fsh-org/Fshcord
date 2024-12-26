@@ -6,6 +6,14 @@ body {
   height: 100dvh;
 }
 
+@keyframes select-enter {
+  from {left:-15px}
+  to {left:-10px}
+}
+@keyframes select-leave {
+  from {left:-10px}
+  to {left:-15px}
+}
 #server {
   display: flex;
   flex-direction: column;
@@ -44,11 +52,15 @@ body {
   display: block;
   position: absolute;
   top: 25%;
-  left: -10px;
+  left: -15px;
   width: 5px;
   height: 25px;
-  border-radius: 1rem;
+  border-radius: 0px 1rem 1rem 0px;
   background-color: var(--blue-1);
+  animation: select-enter forwards 250ms;
+}
+.server-clicky[selected].leaving::before {
+  animation: select-leave forwards 250ms;
 }
 .server-clicky img {
   width: 50px;
