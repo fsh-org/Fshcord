@@ -211,7 +211,7 @@ function showServers(list) {
         }, 250);
         b.setAttribute('selected', true);
         // Switch the server and show channels
-        loading(b.querySelector('span').innerText);
+        loading(b.getAttribute('aria-label'));
         window.currentServer = sid;
         switchChannel(sid);
       }
