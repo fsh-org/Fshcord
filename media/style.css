@@ -43,6 +43,7 @@ body {
   color: var(--text-1) !important;
   background-color: var(--bg-1) !important;
   transition: border-radius 500ms;
+  outline: none !important;
 }
 .server-clicky:hover, .server-clicky[selected] {
   border-radius: 1rem;
@@ -99,6 +100,11 @@ body {
   border: none;
   text-align: left;
   border-radius: 0.2rem;
+}
+#channel button span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 #channel img {
   width: 20px;

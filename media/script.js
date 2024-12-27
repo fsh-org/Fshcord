@@ -32,18 +32,99 @@ function proxyFetch(url, o) {
     body: JSON.stringify(opts)
   })
 }
+function loading(text) {
+  Toastify({
+    text: 'Loading '+text,
+    duration: 2000,
+    close: true,
+    gravity: 'bottom',
+    position: 'right',
+    stopOnFocus: true,
+    style: {
+      background: 'var(--black-1)'
+    }
+  }).showToast();
+}
 
 document.getElementById('btn-login').onclick = function(){
   localStorage.setItem('token', document.getElementById('token').value);
   location.reload();
 };
+
+/*
+Message types
+0: DEFAULT
+1: RECIPIENT_ADD
+2: RECIPIENT_REMOVE
+3: CALL
+4: CHANNEL_NAME_CHANGE
+5: CHANNEL_ICON_CHANGE
+6: CHANNEL_PINNED_MESSAGE
+7: USER_JOIN
+8: GUILD_BOOST
+9: GUILD_BOOST_TIER_1
+10: GUILD_BOOST_TIER_2
+11: GUILD_BOOST_TIER_3
+12: CHANNEL_FOLLOW_ADD
+13: GUILD_STREAM
+14: GUILD_DISCOVERY_DISQUALIFIED
+15: GUILD_DISCOVERY_REQUALIFIED
+16: GUILD_DISCOVERY_GRACE_PERIOD_INITIAL_WARNING
+17: GUILD_DISCOVERY_GRACE_PERIOD_FINAL_WARNING
+18: THREAD_CREATED
+19: REPLY
+20: CHAT_INPUT_COMMAND
+21: THREAD_STARTER_MESSAGE
+22: GUILD_INVITE_REMINDER
+23: CONTEXT_MENU_COMMAND
+24: AUTO_MODERATION_ACTION
+25: ROLE_SUBSCRIPTION_PURCHASE
+26: INTERACTION_PREMIUM_UPSELL
+27: STAGE_START
+28: STAGE_END
+29: STAGE_SPEAKER
+30: STAGE_RAISE_HAND
+31: STAGE_TOPIC
+32: GUILD_APPLICATION_PREMIUM_SUBSCRIPTION
+33: PRIVATE_CHANNEL_INTEGRATION_ADDED
+34: PRIVATE_CHANNEL_INTEGRATION_REMOVED
+35: PREMIUM_REFERRAL
+36: GUILD_INCIDENT_ALERT_MODE_ENABLED
+37: GUILD_INCIDENT_ALERT_MODE_DISABLED
+38: GUILD_INCIDENT_REPORT_RAID
+39: GUILD_INCIDENT_REPORT_FALSE_ALARM
+40: GUILD_DEADCHAT_REVIVE_PROMPT
+41: CUSTOM_GIFT
+42: GUILD_GAMING_STATS_PROMPT
+43: POLL
+44: PURCHASE_NOTIFICATION
+45: VOICE_HANGOUT_INVITE
+46: POLL_RESULT
+47: CHANGELOG
+48: NITRO_NOTIFICATION
+49: CHANNEL_LINKED_TO_LOBBY
+50: GIFTING_PROMPT
+51: IN_GAME_MESSAGE_NUX
+52: GUILD_JOIN_REQUEST_ACCEPT_NOTIFICATION
+53: GUILD_JOIN_REQUEST_REJECT_NOTIFICATION
+54: GUILD_JOIN_REQUEST_WITHDRAWN_NOTIFICATION
+55: HD_STREAMING_UPGRADED
+*/
 function showMessages(list) {
+  document.getElementById('messages').innerHTML = list.map(m=>{
+    if (m.type !== 0) {
+      return '<div>unhandled type: '+m.type+'</div>'
+    }
+    return `<div class="message">
+  ${m.content}
+</div>`;
+  }).join('');
 }
 function switchMessage(id, type) {
-  proxyFetch('https://discord.com/api/v9/channels/'+id+'/messages?limit=20')
+  proxyFetch(`https://discord.com/api/v10/channels/${id}/messages?limit=20`)
     .then(res=>res.json())
     .then(res=>{
-      showMessages(JSON.parse(res.content));
+      showMessages(JSON.parse(res.content).reverse());
     })
 }
 
@@ -73,9 +154,12 @@ function showChannels(list) {
     } else {
       name = c.name ?? c.id;
     }
+    if (c.type===4) {
+      return `<span style="color:var(--text-2);font-size:80%;">${name.toUpperCase()}</span>`
+    }
     return `<button data-id="${c.id}" data-type="${c.type}">
-  ${c.type===4?'':`<img src="${c.type===1?(c.recipients[0].avatar?`https://cdn.discordapp.com/avatars/${c.recipients[0].id}/${c.recipients[0].avatar}.webp?size=64`:'./media/channel/1.svg'):`./media/channel/${c.type}.svg`}" alt="${name}">`}
-  <span${c.type===4?' style="color:var(--text-2);font-size:90%;"':''}>${c.type===4?name.toUpperCase():name}</span>
+  <img src="${c.type===1?(c.recipients[0].avatar?`https://cdn.discordapp.com/avatars/${c.recipients[0].id}/${c.recipients[0].avatar}.webp?size=64`:'./media/channel/1.svg'):`./media/channel/${c.type}.svg`}" alt="${name}">
+  <span>${name}</span>
 </button>`;
   }).join('');
   Array.from(document.querySelectorAll('#channel button'))
@@ -127,6 +211,7 @@ function showServers(list) {
         }, 250);
         b.setAttribute('selected', true);
         // Switch the server and show channels
+        loading(b.querySelector('span').innerText);
         window.currentServer = sid;
         switchChannel(sid);
       }
@@ -136,16 +221,21 @@ function showServers(list) {
 if (!localStorage.getItem('token')) {
   document.getElementById('login').showModal();
 } else {
+  window.data = {};
+  loading('settings');
   // TODO: Switch to new settings system
   proxyFetch('https://discord.com/api/v10/users/@me/settings')
     .then(res=>res.json())
     .then(res=>{
-      window.userSettings = JSON.parse(res.content);
+      window.data.settings = JSON.parse(res.content);
+      loading('servers');
       proxyFetch('https://discord.com/api/v10/users/@me/guilds')
         .then(res=>res.json())
         .then(res=>{
-          showServers(JSON.parse(res.content));
-          window.currentServer = 0;
+          let servers = JSON.parse(res.content);
+          window.data.servers = servers;
+          window.data.currentServer = 0;
+          showServers(servers);
           switchChannel(0);
         })
     })
