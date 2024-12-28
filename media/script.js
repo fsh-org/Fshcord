@@ -182,8 +182,10 @@ function showChannels(list) {
   }).join('');
   Array.from(document.querySelectorAll('#channel button'))
     .forEach(b=>{
-      loading(b.getAttribute('data-name'));
-      b.onclick = function(){switchMessage(b.getAttribute('data-id'), b.getAttribute('data-type'))}
+      b.onclick = function(){
+        loading(b.getAttribute('data-name'));
+        switchMessage(b.getAttribute('data-id'), b.getAttribute('data-type'));
+      }
     });
 }
 function switchChannel(id) {
