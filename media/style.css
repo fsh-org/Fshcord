@@ -88,6 +88,7 @@ body {
   flex-direction: column;
   overflow-y: auto;
   width: 15vw;
+  border-right: 2px var(--bg-2) solid;
   background-color: var(--bg-0);
 }
 #channel::-webkit-scrollbar-track {
@@ -119,15 +120,28 @@ main {
   flex-direction: column;
   flex: 1;
 }
+.top {
+  height: 4vh;
+  background-color: var(--bg-0);
+}
+#top-name {
+  font-size: 125%;
+}
 #messages {
   display: flex;
-  gap: 5px;
   flex-direction: column-reverse;
   flex: 1;
+  padding: 10px;
+  overflow-y: auto;
+  box-sizing: border-box;
 }
 .message {
   display: flex;
   gap: 10px;
+  padding: 2px 5px;
+  border-radius: 1rem;
+  word-break: break-word;
+  white-space: break-spaces;
   transition: 250ms;
 }
 .message:hover {
@@ -140,6 +154,13 @@ main {
 .message > span {
   display: flex;
   flex-direction: column;
+}
+
+blockquote {
+  display: unset;
+  margin: 0;
+  padding-left: 10px;
+  border-left: 4px var(--text-2) solid;
 }
 
 #users {

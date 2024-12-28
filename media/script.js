@@ -32,6 +32,22 @@ function proxyFetch(url, o) {
     body: JSON.stringify(opts)
   })
 }
+function parseMD(text) {
+  return text
+    .replaceAll('<', '~lt;')
+    .replaceAll('"', '~quot;')
+    .replaceAll(/https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/g, function(match){return `<a href="${match}">${match}</a>`})
+    .replaceAll('&', '&amp;')
+    .replaceAll('~lt;', '&lt;')
+    .replaceAll('~quot;', '&quot;')
+    .replaceAll("'", '&apos;')
+    .replaceAll(/\*\*.+?\*\*/g, function(match){return '<b>'+match.slice(2,-2)+'</b>'})
+    .replaceAll(/\*.+?\*/g, function(match){return '<i>'+match.slice(1,-1)+'</i>'})
+    .replaceAll(/\_\_.+?\_\_/g, function(match){return '<u>'+match.slice(2,-2)+'</u>'})
+    .replaceAll(/\_.+?\_/g, function(match){return '<i>'+match.slice(1,-1)+'</i>'})
+    .replaceAll(/\~\~.+?\~\~/g, function(match){return '<s>'+match.slice(2,-2)+'</s>'})
+    .replaceAll(/^\> .+?$/gm, function(match){return '<blockquote>'+match.slice(2)+'</blockquote>'});
+}
 function loading(text) {
   Toastify({
     text: 'Loading '+text,
@@ -116,10 +132,25 @@ function showMessages(list) {
       return '<div>unhandled type: '+m.type+'</div>'
     }
     return `<div class="message">
-  <img src="${m.author.avatar?`https://cdn.discordapp.com/avatars/${m.author.id}/${m.author.avatar}.webp?size=80`:'./media/user.svg'}" aria-hidden="true">
+  <img src="${m.author.avatar?`https://cdn.discordapp.com/avatars/${m.author.id}/${m.author.avatar}.webp?size=80`:'./media/user.svg'}" width="40" height="40" aria-hidden="true">
   <span>
     <span>${m.author.global_name ?? m.author.username}</span>
-    <span>${m.content}</span>
+    <span>${parseMD(m.content)}</span>
+    ${m.attachments.length?m.attachments.map(attach=>{
+      return `<${attach.content_type.startsWith('image/')?'img':attach.content_type.startsWith('audio/')?'audio':attach.content_type.startsWith('video/')?'video':'div style="padding:15px;border-radius:2rem;background-color:var(--bg-2);"'} src="${attach.url}"  width="${Math.floor(attach.width/2)}" height="${Math.floor(attach.height/2)}" controls>${attach.content_type.startsWith('image/')?'':attach.content_type.startsWith('audio/')?'</audio>':attach.content_type.startsWith('video/')?'</video>':`<a download="${attach.filename}">${attach.filename}</a></div>`}`;
+    }).join(''):''}
+    ${m.embeds.length?m.embeds.map(embed=>{
+      // Images
+      if (embed.type==='image') {
+        return `<img src="${embed.thumbnail.proxy_url}"  width="${Math.floor(embed.thumbnail.width/2)}" height="${Math.floor(embed.thumbnail.height/2)}">`;
+      }
+      // Gifs
+      if (embed.type==='gifv') {
+        return `<video src="${embed.video.proxy_url}" width="${Math.floor(embed.video.width/2)}" height="${Math.floor(embed.video.height/2)}" muted autoplay loop></video>`;
+      }
+      // Unknown
+      return `<span>Unknown embed type: ${embed.type}</span>`;
+    }).join(''):''}
   </span>
 </div>`;
   }).join('');
@@ -130,7 +161,7 @@ function switchMessage(id, type) {
   if (type==4) return;
   // Text
   if ([0,1,3,5,10,11,12].includes(type)) {
-    proxyFetch(`https://discord.com/api/v10/channels/${id}/messages?limit=25`)
+    proxyFetch(`https://discord.com/api/v10/channels/${id}/messages?limit=50`)
       .then(res=>res.json())
       .then(res=>{
         showMessages(JSON.parse(res.content));
@@ -149,19 +180,25 @@ function switchMessage(id, type) {
 
 /*
 Channel types
-0: Text
+0: GUILD_TEXT
 1: DM
-2: Voice
-3: Group DM
-4: Category
-5: Announcement
-10: Thread in announcement
-11: Public thread
-12: Private thread
-13: Stage
-14: student thing
-15: Forum
-16: Media
+2: GUILD_VOICE
+3: GROUP_DM
+4: GUILD_CATEGORY
+5: GUILD_NEWS
+6: GUILD_STORE
+7: GUILD_LFG
+8: LFG_GROUP_DM
+9: THREAD_ALPHA
+10: NEWS_THREAD
+11: PUBLIC_THREAD
+12: PRIVATE_THREAD
+13: GUILD_STAGE_VOICE
+14: GUILD_DIRECTORY
+15: GUILD_FORUM
+16: GUILD_MEDIA
+17: LOBBY
+18: DM_SDK
 */
 function showChannels(list) {
   document.getElementById('channel').innerHTML = list.map(c=>{
@@ -185,6 +222,7 @@ function showChannels(list) {
     .forEach(b=>{
       b.onclick = function(){
         loading(b.getAttribute('data-name'));
+        document.getElementById('top-name').innerText = b.getAttribute('data-name');
         switchMessage(b.getAttribute('data-id'), b.getAttribute('data-type'));
       }
     });
@@ -226,12 +264,14 @@ function showServers(list) {
         let sid = b.getAttribute('data-id');
         // Set selected
         let previous = document.querySelector('#server button[selected]');
-        previous.classList.add('leaving');
-        setTimeout(() => {
-          previous.classList.remove('leaving');
-          previous?.removeAttribute('selected');
-        }, 250);
-        b.setAttribute('selected', true);
+        if (!b.isSameNode(previous)) {
+          previous.classList.add('leaving');
+          setTimeout(() => {
+            previous.classList.remove('leaving');
+            previous?.removeAttribute('selected');
+          }, 250);
+          b.setAttribute('selected', true);
+        }
         // Switch the server and show channels
         loading(b.getAttribute('aria-label'));
         window.currentServer = sid;
