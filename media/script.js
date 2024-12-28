@@ -125,6 +125,7 @@ function showMessages(list) {
   }).join('');
 }
 function switchMessage(id, type) {
+  type = Number(type);
   // Category??
   if (type==4) return;
   // Text
