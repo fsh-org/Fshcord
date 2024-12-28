@@ -111,10 +111,7 @@ Message types
 55: HD_STREAMING_UPGRADED
 */
 function showMessages(list) {
-  document.getElementById('messages').innerHTML = `<div class="input-bar">
-  <input>
-  <button></button>
-</div>`+list.map(m=>{
+  document.getElementById('messages').innerHTML = list.map(m=>{
     if (m.type !== 0) {
       return '<div>unhandled type: '+m.type+'</div>'
     }
@@ -128,11 +125,25 @@ function showMessages(list) {
   }).join('');
 }
 function switchMessage(id, type) {
-  proxyFetch(`https://discord.com/api/v10/channels/${id}/messages?limit=20`)
-    .then(res=>res.json())
-    .then(res=>{
-      showMessages(JSON.parse(res.content));
-    })
+  // Category??
+  if (type==4) return;
+  // Text
+  if ([0,1,3,5,10,11,12].includes(type)) {
+    proxyFetch(`https://discord.com/api/v10/channels/${id}/messages?limit=25`)
+      .then(res=>res.json())
+      .then(res=>{
+        showMessages(JSON.parse(res.content));
+      })
+    return;
+  }
+  // Forum
+  if ([15,16].includes(type)) {
+    return;
+  }
+  // Voice
+  if ([2,13].includes(type)) {
+    return;
+  }
 }
 
 /*
@@ -164,13 +175,14 @@ function showChannels(list) {
     if (c.type===4) {
       return `<span style="color:var(--text-2);font-size:80%;">${name.toUpperCase()}</span>`
     }
-    return `<button data-id="${c.id}" data-type="${c.type}">
+    return `<button data-id="${c.id}" data-type="${c.type}" data-name="${name}">
   <img src="${c.type===1?(c.recipients[0].avatar?`https://cdn.discordapp.com/avatars/${c.recipients[0].id}/${c.recipients[0].avatar}.webp?size=64`:'./media/channel/1.svg'):`./media/channel/${c.type}.svg`}" alt="${name}">
   <span>${name}</span>
 </button>`;
   }).join('');
   Array.from(document.querySelectorAll('#channel button'))
     .forEach(b=>{
+      loading(b.getAttribute('data-name'));
       b.onclick = function(){switchMessage(b.getAttribute('data-id'), b.getAttribute('data-type'))}
     });
 }
@@ -243,6 +255,7 @@ if (!localStorage.getItem('token')) {
           window.data.servers = servers;
           window.data.currentServer = 0;
           showServers(servers);
+          loading('DMs');
           switchChannel(0);
         })
     })

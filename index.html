@@ -26,12 +26,19 @@
       <button id="btn-login">Log in</button>
     </dialog>
     <div id="server">
-      <button id="main" class="server-clicky" data-id="0" aria-label="Main" selected><img src="./media/fshcord.png" alt="Main"></button>
+      <button id="main" class="server-clicky" data-id="0" aria-label="DMs" selected><img src="./media/fshcord.png" width="50" height="50" alt="DMs" aria-hidden="true"></button>
       <div id="server-list"></div>
-      <button id="account" class="server-clicky" data-id="1" aria-label="Account"><img src="./media/user.svg" width="50" height="50"></button>
+      <button id="account" class="server-clicky" data-id="1" aria-label="Account"><img src="./media/user.svg" width="50" height="50" alt="Account" aria-hidden="true"></button>
     </div>
     <div id="channel"></div>
-    <div id="messages"></div>
+    <main>
+      <div id="top"></div>
+      <div id="messages"></div>
+      <div class="input-bar">
+        <input>
+        <button></button>
+      </div>
+    </main>
     <div id="users"></div>
     <script src="./media/script.js"></script>
   </body>

@@ -114,13 +114,28 @@ body {
   border-radius: 2rem;
 }
 
+main {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
 #messages {
   display: flex;
+  gap: 5px;
   flex-direction: column-reverse;
   flex: 1;
 }
 .message {
   display: flex;
+  gap: 10px;
+  transition: 250ms;
+}
+.message:hover {
+  background-color: var(--bg-2);
+}
+.message > img {
+  height: 40px;
+  border-radius: 2rem;
 }
 .message > span {
   display: flex;
