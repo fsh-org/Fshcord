@@ -115,8 +115,18 @@ body {
 }
 
 #messages {
-  width: 65vw;
+  display: flex;
+  flex-direction: column-reverse;
+  flex: 1;
 }
+.message {
+  display: flex;
+}
+.message > span {
+  display: flex;
+  flex-direction: column;
+}
+
 #users {
   width: 15vw;
   border-left: 2px var(--bg-2) solid;

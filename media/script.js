@@ -111,12 +111,19 @@ Message types
 55: HD_STREAMING_UPGRADED
 */
 function showMessages(list) {
-  document.getElementById('messages').innerHTML = list.map(m=>{
+  document.getElementById('messages').innerHTML = `<div class="input-bar">
+  <input>
+  <button></button>
+</div>`+list.map(m=>{
     if (m.type !== 0) {
       return '<div>unhandled type: '+m.type+'</div>'
     }
     return `<div class="message">
-  ${m.content}
+  <img src="${m.author.avatar?`https://cdn.discordapp.com/avatars/${m.author.id}/${m.author.avatar}.webp?size=80`:'./media/user.svg'}" aria-hidden="true">
+  <span>
+    <span>${m.author.global_name ?? m.author.username}</span>
+    <span>${m.content}</span>
+  </span>
 </div>`;
   }).join('');
 }
@@ -124,7 +131,7 @@ function switchMessage(id, type) {
   proxyFetch(`https://discord.com/api/v10/channels/${id}/messages?limit=20`)
     .then(res=>res.json())
     .then(res=>{
-      showMessages(JSON.parse(res.content).reverse());
+      showMessages(JSON.parse(res.content));
     })
 }
 
