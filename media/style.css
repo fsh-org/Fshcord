@@ -121,8 +121,12 @@ main {
   flex: 1;
 }
 .top {
+  display: flex;
+  align-items: center;
   height: 4vh;
+  padding: 0px 5px;
   background-color: var(--bg-0);
+  box-sizing: border-box;
 }
 #top-name {
   font-size: 125%;
@@ -147,6 +151,9 @@ main {
 .message:hover {
   background-color: var(--bg-2);
 }
+.message .name {
+  color: var(--text-0);
+}
 .message > img {
   height: 40px;
   border-radius: 2rem;
@@ -154,6 +161,24 @@ main {
 .message > span {
   display: flex;
   flex-direction: column;
+}
+.message-attach {
+  margin: 2px;
+  border-radius: 0.25rem;
+  object-fit: contain;
+}
+audio.message-attach {
+  width: 100%;
+}
+div.message-attach {
+  padding: 15px;
+  border: 2px var(--bg-1) solid;
+  border-radius: 2rem;
+  background-color: var(--bg-2);
+}
+lottie-sticker.message-attach {
+  width: 160px;
+  height: 160px;
 }
 
 blockquote {

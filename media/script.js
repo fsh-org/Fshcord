@@ -46,7 +46,13 @@ function parseMD(text) {
     .replaceAll(/\_\_.+?\_\_/g, function(match){return '<u>'+match.slice(2,-2)+'</u>'})
     .replaceAll(/\_.+?\_/g, function(match){return '<i>'+match.slice(1,-1)+'</i>'})
     .replaceAll(/\~\~.+?\~\~/g, function(match){return '<s>'+match.slice(2,-2)+'</s>'})
-    .replaceAll(/^\> .+?$/gm, function(match){return '<blockquote>'+match.slice(2)+'</blockquote>'});
+    .replaceAll(/\|\|.+?\|\|/g, function(match){return `<span style="cursor:pointer;color:var(--bg-3);border-radius:0.25rem;background-color:var(--bg-3);transition:500ms;" onclick="this.style.color='var(--text-1)';this.style.backgroundColor='var(--bg-0)'">`+match.slice(2,-2)+'</span>'})
+    .replaceAll(/^\> .+?$/gm, function(match){return '<blockquote>'+match.slice(2)+'</blockquote>'})
+    .replaceAll(/^### .+?$/gm, function(match){return '<span style="font-size:110%">'+match.slice(4)+'</span>'})
+    .replaceAll(/^## .+?$/gm, function(match){return '<span style="font-size:125%">'+match.slice(3)+'</span>'})
+    .replaceAll(/^# .+?$/gm, function(match){return '<span style="font-size:150%">'+match.slice(2)+'</span>'})
+    .replaceAll(/^-# .+?$/gm, function(match){return '<span style="font-size:80%;color:var(--text-2);">'+match.slice(3)+'</span>'})
+    .replaceAll(/^(-|\*) .+?$/gm, function(match){return '<li>'+match.slice(2)+'</li>'});
 }
 function loading(text) {
   Toastify({
@@ -60,6 +66,9 @@ function loading(text) {
       background: 'var(--black-1)'
     }
   }).showToast();
+}
+function report(text, obj) {
+  fetch(`https://telemetry.fsh.plus?url=${encodeURIComponent(location.href)}&text=${text}&context=${encodeURIComponent(JSON.stringify(obj, null, 2))}`, { method: 'POST' })
 }
 
 document.getElementById('btn-login').onclick = function(){
@@ -128,32 +137,80 @@ Message types
 */
 function showMessages(list) {
   document.getElementById('messages').innerHTML = list.map(m=>{
-    if (m.type !== 0) {
-      return '<div>unhandled type: '+m.type+'</div>'
+    // System non changing
+    if ([14,15,16,17,22].includes(m.type)) {
+      const texts = {
+        '14': `This server has been removed from Server Discovery because it no longer passes all the requirements. Check Server Settings for more details.`,
+        '15': `This server is eligible for Server Discovery again and has been automatically relisted!`,
+        '16': `This server has failed Discovery activity requirements for 1 week. If this server fails for 4 weeks in a row, it will be automatically removed from Discovery.`,
+        '17': `This server has failed Discovery activity requirements for 3 weeks in a row. If this server fails for 1 more week, it will be removed from Discovery.`,
+        '22': `Wondering who to invite?\nStart by inviting anyone who can help you build the server!`
+      };
+      return `<div class="message">
+  <img src="./media/fshcord.png" width="40" height="40" aria-hidden="true">
+  <span>
+    <span><span class="name">System</span></span>
+    <span>${texts[m.type.toString()]}
+  </span>
+</div>`;
+    }
+    // Normal
+    if (![0,19].includes(m.type)) {
+      report(`<div>Unhandled message type: ${m.type}</div>`, m);
+      return `<div>Unhandled message type: ${m.type}</div>`;
     }
     return `<div class="message">
   <img src="${m.author.avatar?`https://cdn.discordapp.com/avatars/${m.author.id}/${m.author.avatar}.webp?size=80`:'./media/user.svg'}" width="40" height="40" aria-hidden="true">
   <span>
-    <span>${m.author.global_name ?? m.author.username}</span>
+    <span><span class="name">${m.author.global_name ?? m.author.username}</span>${m.edited_timestamp?' · Edited':''}</span>
     <span>${parseMD(m.content)}</span>
     ${m.attachments.length?m.attachments.map(attach=>{
-      return `<${attach.content_type.startsWith('image/')?'img':attach.content_type.startsWith('audio/')?'audio':attach.content_type.startsWith('video/')?'video':'div style="padding:15px;border-radius:2rem;background-color:var(--bg-2);"'} src="${attach.url}"  width="${Math.floor(attach.width/2)}" height="${Math.floor(attach.height/2)}" controls>${attach.content_type.startsWith('image/')?'':attach.content_type.startsWith('audio/')?'</audio>':attach.content_type.startsWith('video/')?'</video>':`<a download="${attach.filename}">${attach.filename}</a></div>`}`;
+      return `<${attach.content_type.startsWith('image/')?'img':attach.content_type.startsWith('audio/')?'audio':attach.content_type.startsWith('video/')?'video':'div'} src="${attach.url}"  width="${Math.floor(attach.width/2)}" height="${Math.floor(attach.height/2)}" class="message-attach" controls>${attach.content_type.startsWith('image/')?'':attach.content_type.startsWith('audio/')?'</audio>':attach.content_type.startsWith('video/')?'</video>':`<a download="${attach.filename}">${attach.filename}</a></div>`}`;
     }).join(''):''}
     ${m.embeds.length?m.embeds.map(embed=>{
-      // Images
-      if (embed.type==='image') {
-        return `<img src="${embed.thumbnail.proxy_url}"  width="${Math.floor(embed.thumbnail.width/2)}" height="${Math.floor(embed.thumbnail.height/2)}">`;
+      /*
+application_news
+article
+auto_moderation_message
+auto_moderation_notification
+gift
+gifv
+image
+link
+post_preview
+rich
+video
+*/
+      switch (embed.type) {
+        case 'gifv':
+          return `<video src="${embed.video.proxy_url}" width="${Math.floor(embed.video.width/2)}" height="${Math.floor(embed.video.height/2)}" muted autoplay loop class="message-attach"></video>`;
+        case 'image':
+          return `<img src="${embed.thumbnail.proxy_url}"  width="${Math.floor(embed.thumbnail.width/2)}" height="${Math.floor(embed.thumbnail.height/2)}" class="message-attach">`;
+        default:
+          report(`Unknown embed type: ${embed.type}`, embed);
+          return `<span>Unknown embed type: ${embed.type}</span>`;
       }
-      // Gifs
-      if (embed.type==='gifv') {
-        return `<video src="${embed.video.proxy_url}" width="${Math.floor(embed.video.width/2)}" height="${Math.floor(embed.video.height/2)}" muted autoplay loop></video>`;
+    }).join(''):''}
+    ${m.sticker_items?.length?m.sticker_items.map(sticker=>{
+      if (sticker.format_type===3) {
+        return `<lottie-sticker class="message-attach" data-id="${sticker.id}"></lottie-sticker>`;
       }
-      // Unknown
-      return `<span>Unknown embed type: ${embed.type}</span>`;
+      return `<img src="https://media.discordapp.net/stickers/${sticker.id}.${['webp','png','png','webp','gif'][sticker.format_type]}?size=160&quality=lossless" width="160" height="160" class="message-attach">`;
     }).join(''):''}
   </span>
 </div>`;
   }).join('');
+  Array.from(document.querySelectorAll('lottie-sticker.message-attach'))
+    .forEach(s=>{
+      lottie.loadAnimation({
+        container: s,
+        renderer: 'svg',
+        loop: true,
+        autoplay: true,
+        path: `https://api.fsh.plus/file?url=${encodeURIComponent(`https://discord.com/stickers/${s.getAttribute('data-id')}.json`)}`
+      });
+    });
+  document.getElementById('messages').scrollTop = 0;
 }
 function switchMessage(id, type) {
   type = Number(type);
@@ -176,6 +233,7 @@ function switchMessage(id, type) {
   if ([2,13].includes(type)) {
     return;
   }
+  report(`Unknown channel type: ${type}`, [id, type]);
 }
 
 /*
@@ -200,18 +258,25 @@ Channel types
 17: LOBBY
 18: DM_SDK
 */
+function channelName(c) {
+  let name = c.id;
+  if (c.type === 1) {
+    name = c.recipients[0].global_name ?? c.recipients[0].username;
+  } else if (c.type === 3) {
+    name = c.name ?? (c.recipients.map(r=>r.global_name??r.username).join(', '));
+  } else {
+    name = c.name ?? c.id;
+  }
+  if (c.type === 4) {
+    name = name.toUpperCase();
+  }
+  return name;
+}
 function showChannels(list) {
   document.getElementById('channel').innerHTML = list.map(c=>{
-    let name = c.id;
-    if (c.type===1) {
-      name = c.recipients[0].global_name ?? c.recipients[0].username;
-    } else if (c.type===3) {
-      name = c.name ?? (c.recipients.map(r=>r.global_name??r.username).join(', '));
-    } else {
-      name = c.name ?? c.id;
-    }
+    let name = channelName(c);
     if (c.type===4) {
-      return `<span style="color:var(--text-2);font-size:80%;">${name.toUpperCase()}</span>`
+      return `<span style="color:var(--text-2);font-size:80%;">${name}</span>`
     }
     return `<button data-id="${c.id}" data-type="${c.type}" data-name="${name}">
   <img src="${c.type===1?(c.recipients[0].avatar?`https://cdn.discordapp.com/avatars/${c.recipients[0].id}/${c.recipients[0].avatar}.webp?size=64`:'./media/channel/1.svg'):`./media/channel/${c.type}.svg`}" alt="${name}">
@@ -232,7 +297,12 @@ function switchChannel(id) {
     proxyFetch('https://discord.com/api/v10/users/@me/channels')
       .then(res=>res.json())
       .then(res=>{
-        showChannels(JSON.parse(res.content).reverse());
+        // Show channels
+        let list = JSON.parse(res.content).reverse();
+        showChannels(list);
+        // Select first
+        loading(channelName(list[0]));
+        switchMessage(list[0].id, list[0].type);
       })
   } else if (id == 1) {
     // User
@@ -240,6 +310,7 @@ function switchChannel(id) {
     proxyFetch(`https://discord.com/api/v10/guilds/${id}/channels`)
       .then(res=>res.json())
       .then(res=>{
+        // Get and sort the channels
         let channels = JSON.parse(res.content).sort((a,b)=>a.position-b.position);
         let sorted = [];
         let cat = {'null':[]};
@@ -250,6 +321,10 @@ function switchChannel(id) {
           sorted.push(...cat[k]);
         })
         showChannels(sorted);
+        // Load first
+        let first = sorted.filter(c=>c.type!==4)[0];
+        loading(channelName(first));
+        switchMessage(first.id, first.type);
       })
   }
 }
