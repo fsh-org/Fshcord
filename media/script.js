@@ -54,6 +54,29 @@ function parseMD(text) {
     .replaceAll(/^-# .+?$/gm, function(match){return '<span style="font-size:80%;color:var(--text-2);">'+match.slice(3)+'</span>'})
     .replaceAll(/^(-|\*) .+?$/gm, function(match){return '<li>'+match.slice(2)+'</li>'});
 }
+const channelIcons = {};
+function fetchChannelIcon(type) {
+  return new Promise((resolve, reject) => {
+    fetch('/media/channel/'+type+'.svg')
+      .then(res=>res.text())
+      .then(res=>{
+        channelIcons[type] = res;
+        resolve();
+      })
+      .catch(err=>{
+        reject()
+      });
+  })
+}
+function getChannelIcon(type, size) {
+  if (channelIcons[type]) {
+    return channelIcons[type]
+      .replace(/width="[0-9]+?"/, `width="${size}"`)
+      .replace(/height="[0-9]+?"/, `height="${size}"`);
+  } else {
+    return '<img>';
+  }
+}
 function loading(text) {
   Toastify({
     text: 'Loading '+text,
@@ -279,7 +302,7 @@ function showChannels(list) {
       return `<span style="color:var(--text-2);font-size:80%;">${name}</span>`
     }
     return `<button data-id="${c.id}" data-type="${c.type}" data-name="${name}">
-  <img src="${c.type===1?(c.recipients[0].avatar?`https://cdn.discordapp.com/avatars/${c.recipients[0].id}/${c.recipients[0].avatar}.webp?size=64`:'./media/channel/1.svg'):`./media/channel/${c.type}.svg`}" alt="${name}">
+  ${c.type===1&&c.recipients[0].avatar?`<img src="https://cdn.discordapp.com/avatars/${c.recipients[0].id}/${c.recipients[0].avatar}.webp?size=64" width="20" height="20" aria-hidden="true">`:getChannelIcon(c.type, 20)}
   <span>${name}</span>
 </button>`;
   }).join('');
@@ -373,8 +396,27 @@ if (!localStorage.getItem('token')) {
           window.data.servers = servers;
           window.data.currentServer = 0;
           showServers(servers);
-          loading('DMs');
-          switchChannel(0);
+          loading('icons')
+          fetchChannelIcon(0)
+            .then(()=>{
+              fetchChannelIcon(1)
+                .then(()=>{
+                  fetchChannelIcon(2)
+                    .then(()=>{
+                      fetchChannelIcon(3)
+                        .then(()=>{
+                          fetchChannelIcon(5)
+                            .then(()=>{
+                              fetchChannelIcon(15)
+                                .then(()=>{
+                                  loading('DMs');
+                                  switchChannel(0);
+                                })
+                            })
+                        })
+                    })
+                })
+            })
         })
     })
 }

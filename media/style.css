@@ -107,7 +107,7 @@ body {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-#channel img {
+#channel img, #channel svg {
   width: 20px;
   height: 20px;
 }
@@ -163,6 +163,7 @@ main {
   flex-direction: column;
 }
 .message-attach {
+  max-width: 100%;
   margin: 2px;
   border-radius: 0.25rem;
   object-fit: contain;
@@ -186,6 +187,28 @@ blockquote {
   margin: 0;
   padding-left: 10px;
   border-left: 4px var(--text-2) solid;
+}
+
+.input-bar {
+  display: flex;
+  height: 30px;
+  margin: 5px 10px;
+  padding-left: 5px;
+  border-radius: 2rem;
+  background-color: var(--bg-2);
+  box-sizing: border-box;
+}
+.input-bar input {
+  flex: 1;
+  margin: 0px;
+  border: none;
+  border-radius: 2rem;
+}
+.input-bar button {
+  height: 100%;
+  border: none;
+  border-radius: 1rem;
+  aspect-ratio: 1/1;
 }
 
 #users {
