@@ -36,7 +36,10 @@ function parseMD(text) {
   return text
     .replaceAll('<', '~lt;')
     .replaceAll('"', '~quot;')
-    .replaceAll(/https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/g, function(match){return `<a href="${match}">${match}</a>`})
+    .replaceAll(/(~lt;https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)>|https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*))/g, function(match){
+      if (match.match(/^~lt;.+?>$/m)) match=match.slice(4,-1);
+      return `<a href="${match}">${match}</a>`
+    })
     .replaceAll('&', '&amp;')
     .replaceAll('~lt;', '&lt;')
     .replaceAll('~quot;', '&quot;')
@@ -76,6 +79,12 @@ function getChannelIcon(type, size) {
   } else {
     return '<img>';
   }
+}
+function colorToRGB(color) {
+  const r = ((color >> 16) & 0xFF).toString(16).padStart(2, '0');
+  const g = ((color >> 8) & 0xFF).toString(16).padStart(2, '0');
+  const b = (color & 0xFF).toString(16).padStart(2, '0');
+  return `#${[r,g,b].join('')}`;
 }
 function loading(text) {
   Toastify({
@@ -220,6 +229,43 @@ video
       }
       return `<img src="https://media.discordapp.net/stickers/${sticker.id}.${['webp','png','png','webp','gif'][sticker.format_type]}?size=160&quality=lossless" width="160" height="160" class="message-attach">`;
     }).join(''):''}
+    ${m.reactions?.length?`<div class="reactions">${m.reactions.map(reaction=>{
+      /*[
+  {
+    "emoji": {
+      "id": null,
+      "name": "❌"
+    },
+    "count": 1,
+    "count_details": {
+      "burst": 0,
+      "normal": 1
+    },
+    "burst_colors": [],
+    "me_burst": false,
+    "burst_me": false,
+    "me": true,
+    "burst_count": 0
+  },
+  {
+    "emoji": {
+      "id": "1317019686067769405",
+      "name": "EeveePeek"
+    },
+    "count": 1,
+    "count_details": {
+      "burst": 0,
+      "normal": 1
+    },
+    "burst_colors": [],
+    "me_burst": false,
+    "burst_me": false,
+    "me": true,
+    "burst_count": 0
+  }
+]*/
+      return `<button>${reaction.emoji.name}${reaction.count}</button>`;
+    }).join('')}</div>`:''}
   </span>
 </div>`;
   }).join('');
