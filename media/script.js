@@ -80,11 +80,11 @@ function getChannelIcon(type, size) {
     return '<img>';
   }
 }
+function getUserAvatar(id, hash, size = 64) {
+  return `https://cdn.discordapp.com/avatars/${id}/${hash}.${hash.startsWith('a_')?'gif':'webp'}?size=${size}`;
+}
 function colorToRGB(color) {
-  const r = ((color >> 16) & 0xFF).toString(16).padStart(2, '0');
-  const g = ((color >> 8) & 0xFF).toString(16).padStart(2, '0');
-  const b = (color & 0xFF).toString(16).padStart(2, '0');
-  return `#${[r,g,b].join('')}`;
+  return `#${color.toString(16).padStart(6, '0')}`;
 }
 function loading(text) {
   Toastify({
@@ -182,17 +182,41 @@ function showMessages(list) {
   <img src="./media/fshcord.png" width="40" height="40" aria-hidden="true">
   <span>
     <span><span class="name">System</span></span>
-    <span>${texts[m.type.toString()]}
+    <span>${texts[m.type.toString()]}</span>
+  </span>
+</div>`;
+    }
+    // Group DM/Thread add/remove member
+    if ([1,2].includes(m.type)) {
+      return `<div class="message">
+  <img src="./media/fshcord.png" width="40" height="40" aria-hidden="true">
+  <span>
+    <span><span class="name">System</span></span>
+    <span>${m.author.global_name ?? m.author.username} ${m.type===1?'added':'removed'} ${m.mentions[0].global_name ?? m.mentions[0].username} ${m.type===1?'to':'from'} the ${window.data.currentChannelType===3?'group':'thread'}.</span>
+  </span>
+</div>`;
+    }
+    // Call
+    if (m.type===3) {
+      return `<div class="message">
+  <img src="./media/fshcord.png" width="40" height="40" aria-hidden="true">
+  <span>
+    <span><span class="name">System</span></span>
+    <span>${m.call.ended_timestamp ?
+      (m.call.participants.includes(window.data.user.id) ?
+        `${m.author.global_name ?? m.author.username} started a call that ended.` :
+        `You missed a call from ${m.author.global_name ?? m.author.username}.`) :
+      `${m.author.global_name ?? m.author.username} started a call.`}</span>
   </span>
 </div>`;
     }
     // Normal
     if (![0,19].includes(m.type)) {
-      report(`<div>Unhandled message type: ${m.type}</div>`, m);
+      report(`Unhandled message type: ${m.type}`, m);
       return `<div>Unhandled message type: ${m.type}</div>`;
     }
     return `<div class="message">
-  <img src="${m.author.avatar?`https://cdn.discordapp.com/avatars/${m.author.id}/${m.author.avatar}.webp?size=80`:'./media/user.svg'}" width="40" height="40" aria-hidden="true">
+  <img src="${m.author.avatar?getUserAvatar(m.author.id, m.author.avatar):'./media/user.svg'}" width="40" height="40" aria-hidden="true">
   <span>
     <span><span class="name">${m.author.global_name ?? m.author.username}</span>${m.edited_timestamp?' · Edited':''}</span>
     <span>${parseMD(m.content)}</span>
@@ -238,14 +262,9 @@ video
     },
     "count": 1,
     "count_details": {
-      "burst": 0,
       "normal": 1
     },
-    "burst_colors": [],
-    "me_burst": false,
-    "burst_me": false,
     "me": true,
-    "burst_count": 0
   },
   {
     "emoji": {
@@ -254,14 +273,9 @@ video
     },
     "count": 1,
     "count_details": {
-      "burst": 0,
       "normal": 1
     },
-    "burst_colors": [],
-    "me_burst": false,
-    "burst_me": false,
     "me": true,
-    "burst_count": 0
   }
 ]*/
       return `<button>${reaction.emoji.name}${reaction.count}</button>`;
@@ -285,6 +299,9 @@ function switchMessage(id, type) {
   type = Number(type);
   // Category??
   if (type==4) return;
+  // Set current
+  this.data.currentChannel = id;
+  this.data.currentChannelType = type;
   // Text
   if ([0,1,3,5,10,11,12].includes(type)) {
     proxyFetch(`https://discord.com/api/v10/channels/${id}/messages?limit=50`)
@@ -293,7 +310,7 @@ function switchMessage(id, type) {
         showMessages(JSON.parse(res.content));
       })
     return;
-  }
+  }/*
   // Forum
   if ([15,16].includes(type)) {
     return;
@@ -301,8 +318,8 @@ function switchMessage(id, type) {
   // Voice
   if ([2,13].includes(type)) {
     return;
-  }
-  report(`Unknown channel type: ${type}`, [id, type]);
+  }*/
+  report(`Unhandled channel type: ${type}`, [id, type]);
 }
 
 /*
@@ -348,7 +365,7 @@ function showChannels(list) {
       return `<span style="color:var(--text-2);font-size:80%;">${name}</span>`
     }
     return `<button data-id="${c.id}" data-type="${c.type}" data-name="${name}">
-  ${c.type===1&&c.recipients[0].avatar?`<img src="https://cdn.discordapp.com/avatars/${c.recipients[0].id}/${c.recipients[0].avatar}.webp?size=64" width="20" height="20" aria-hidden="true">`:getChannelIcon(c.type, 20)}
+  ${c.type===1&&c.recipients[0].avatar?`<img src="${getUserAvatar(c.recipients[0].id, c.recipients[0].avatar, 32)}" width="20" height="20" aria-hidden="true">`:getChannelIcon(c.type, 20)}
   <span>${name}</span>
 </button>`;
   }).join('');
@@ -428,41 +445,43 @@ if (!localStorage.getItem('token')) {
   document.getElementById('login').showModal();
 } else {
   window.data = {};
-  loading('settings');
+  loading('user');
+  window.data.servers = [];
+  window.data.currentServer = 0;
+  window.data.currentChannel = 0;
+  window.data.currentChannelType = 0;
   // TODO: Switch to new settings system
-  proxyFetch('https://discord.com/api/v10/users/@me/settings')
+  proxyFetch('https://discord.com/api/v10/users/@me')
     .then(res=>res.json())
-    .then(res=>{
-      window.data.settings = JSON.parse(res.content);
+    .then(async res=>{
+      let user = JSON.parse(res.content);
+      window.data.user = user;
+      if (user.avatar) {
+        document.querySelector('#account img').src = getUserAvatar(user.id, user.avatar, 80)
+      }
+
+      loading('settings');
+      let settings = await proxyFetch('https://discord.com/api/v10/users/@me/settings');
+      settings = await settings.json();
+      settings = JSON.parse(settings.content);
+      window.data.settings = settings;
+
       loading('servers');
-      proxyFetch('https://discord.com/api/v10/users/@me/guilds')
-        .then(res=>res.json())
-        .then(res=>{
-          let servers = JSON.parse(res.content);
-          window.data.servers = servers;
-          window.data.currentServer = 0;
-          showServers(servers);
-          loading('icons')
-          fetchChannelIcon(0)
-            .then(()=>{
-              fetchChannelIcon(1)
-                .then(()=>{
-                  fetchChannelIcon(2)
-                    .then(()=>{
-                      fetchChannelIcon(3)
-                        .then(()=>{
-                          fetchChannelIcon(5)
-                            .then(()=>{
-                              fetchChannelIcon(15)
-                                .then(()=>{
-                                  loading('DMs');
-                                  switchChannel(0);
-                                })
-                            })
-                        })
-                    })
-                })
-            })
-        })
+      let servers = await proxyFetch('https://discord.com/api/v10/users/@me/guilds');
+      servers = await servers.json();
+      servers = JSON.parse(servers.content);
+      window.data.servers = servers;
+      showServers(servers);
+
+      loading('icons')
+      await fetchChannelIcon(0)
+      await fetchChannelIcon(1)
+      await fetchChannelIcon(2)
+      await fetchChannelIcon(3)
+      await fetchChannelIcon(5)
+      await fetchChannelIcon(15)
+
+      loading('DMs');
+      switchChannel(0);
     })
 }
