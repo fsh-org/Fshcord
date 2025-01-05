@@ -210,6 +210,29 @@ function showMessages(list) {
   </span>
 </div>`;
     }
+    // User join
+    if (m.type===7) {
+      const messages = ["{author} joined the party.",
+"{author} is here.",
+"Welcome, {author}. We hope you brought pizza.",
+"A wild {author} appeared.",
+"{author} just landed.",
+"{author} just slid into the server.",
+"{author} just showed up!",
+"Welcome {author}. Say hi!",
+"{author} hopped into the server.",
+"Everyone welcome {author}!",
+"Glad you're here, {author}.",
+"Good to see you, {author}.",
+"Yay you made it, {author}!"];
+      return `<div class="message">
+  <img src="./media/fshcord.png" width="40" height="40" aria-hidden="true">
+  <span>
+    <span><span class="name">System</span></span>
+    <span>${messages[new Date(m.timestamp).getTime()%13].replace('{author}',(m.author.global_name ?? m.author.username))}</span>
+  </span>
+</div>`;
+    }
     // Normal
     if (![0,19].includes(m.type)) {
       report(`Unhandled message type: ${m.type}`, m);
@@ -262,9 +285,14 @@ video
     },
     "count": 1,
     "count_details": {
+      "burst": 0,
       "normal": 1
     },
+    "burst_colors": [],
+    "me_burst": false,
+    "burst_me": false,
     "me": true,
+    "burst_count": 0
   },
   {
     "emoji": {
@@ -273,9 +301,14 @@ video
     },
     "count": 1,
     "count_details": {
+      "burst": 0,
       "normal": 1
     },
+    "burst_colors": [],
+    "me_burst": false,
+    "burst_me": false,
     "me": true,
+    "burst_count": 0
   }
 ]*/
       return `<button>${reaction.emoji.name}${reaction.count}</button>`;
@@ -419,7 +452,7 @@ function showServers(list) {
   document.getElementById('server-list').innerHTML = list.map(s=>{
     if (s.type==='folder') {
       return `<div aria-label="${s.name??'Folder'}" aria-role="button" class="server-folder" style="--folder-color:${colorToRGB(s.color??0)}">
-  <img onclick="let op=(this.getAttribute('open')==='true');this.setAttribute('open', !op);this.parentElement.style.height=(!op?'${(s.guilds.length+1)*50+s.guilds.length*10}px':'50px')" open="false">
+  <svg onclick="let op=(this.getAttribute('open')==='true');this.setAttribute('open', !op);this.parentElement.style.height=(!op?'${(s.guilds.length+1)*50+s.guilds.length*10}px':'50px')" open="false"${getChannelIcon('folder', 50).replace('<svg','').replace('viewBox="0 0 256 256"','viewBox="-64 -64 384 384"')}
   ${s.guilds.map(g=>`<button aria-label="${g.name}" data-id="${g.id}" class="server-clicky">${g.icon == null ? g.name.trim().split(/\s+/).map(word=>word[0]??'').join('') : `<img src="https://cdn.discordapp.com/icons/${g.id}/${g.icon}.png?size=64" alt="${g.name}">`}</button>`).join('')}
 </div>`;
     }
@@ -497,12 +530,14 @@ if (!localStorage.getItem('token')) {
       switchServers(servers);
 
       loading('icons')
-      await fetchChannelIcon(0)
-      await fetchChannelIcon(1)
-      await fetchChannelIcon(2)
-      await fetchChannelIcon(3)
-      await fetchChannelIcon(5)
-      await fetchChannelIcon(15)
+      await fetchChannelIcon('folder');
+      await fetchChannelIcon(0);
+      await fetchChannelIcon(1);
+      await fetchChannelIcon(2);
+      await fetchChannelIcon(3);
+      await fetchChannelIcon(5);
+      await fetchChannelIcon(15);
+      await fetchChannelIcon(16);
 
       loading('DMs');
       switchChannel(0);
