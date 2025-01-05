@@ -384,7 +384,7 @@ function switchChannel(id) {
       .then(res=>res.json())
       .then(res=>{
         // Show channels
-        let list = JSON.parse(res.content).reverse();
+        let list = JSON.parse(res.content).sort((a,b)=>b.last_message_id-a.last_message_id);
         showChannels(list);
         // Select first
         loading(channelName(list[0]));
@@ -416,7 +416,13 @@ function switchChannel(id) {
 }
 
 function showServers(list) {
-  document.getElementById('server-list').innerHTML = list.reverse().map(s=>{
+  document.getElementById('server-list').innerHTML = list.map(s=>{
+    if (s.type==='folder') {
+      return `<div aria-label="${s.name??'Folder'}" aria-role="button" class="server-folder" style="--folder-color:${colorToRGB(s.color??0)}">
+  <img onclick="let op=(this.getAttribute('open')==='true');this.setAttribute('open', !op);this.parentElement.style.height=(!op?'${(s.guilds.length+1)*50+s.guilds.length*10}px':'50px')" open="false">
+  ${s.guilds.map(g=>`<button aria-label="${g.name}" data-id="${g.id}" class="server-clicky">${g.icon == null ? g.name.trim().split(/\s+/).map(word=>word[0]??'').join('') : `<img src="https://cdn.discordapp.com/icons/${g.id}/${g.icon}.png?size=64" alt="${g.name}">`}</button>`).join('')}
+</div>`;
+    }
     return `<button aria-label="${s.name}" data-id="${s.id}" class="server-clicky">${s.icon == null ? s.name.trim().split(/\s+/).map(word=>word[0]??'').join('') : `<img src="https://cdn.discordapp.com/icons/${s.id}/${s.icon}.png?size=64" alt="${s.name}">`}</button>`
   }).join('');
   Array.from(document.querySelectorAll('#server button'))
@@ -439,6 +445,23 @@ function showServers(list) {
         switchChannel(sid);
       }
     });
+}
+function switchServers(list) {
+  let ordered = [];
+  window.data.settings.guild_folders.forEach(f => {
+    if (f.guild_ids.length<2) {
+      ordered.push(list.find(s=>s.id===f.guild_ids[0]))
+    } else {
+      ordered.push({
+        type: 'folder',
+        id: f.id,
+        name: f.name,
+        color: f.color,
+        guilds: f.guild_ids.map(g=>list.find(s=>s.id===g))
+      })
+    }
+  });
+  showServers(ordered);
 }
 
 if (!localStorage.getItem('token')) {
@@ -471,7 +494,7 @@ if (!localStorage.getItem('token')) {
       servers = await servers.json();
       servers = JSON.parse(servers.content);
       window.data.servers = servers;
-      showServers(servers);
+      switchServers(servers);
 
       loading('icons')
       await fetchChannelIcon(0)
