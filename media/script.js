@@ -522,13 +522,6 @@ if (!localStorage.getItem('token')) {
       settings = JSON.parse(settings.content);
       window.data.settings = settings;
 
-      loading('servers');
-      let servers = await proxyFetch('https://discord.com/api/v10/users/@me/guilds');
-      servers = await servers.json();
-      servers = JSON.parse(servers.content);
-      window.data.servers = servers;
-      switchServers(servers);
-
       loading('icons')
       await fetchChannelIcon('folder');
       await fetchChannelIcon(0);
@@ -538,6 +531,13 @@ if (!localStorage.getItem('token')) {
       await fetchChannelIcon(5);
       await fetchChannelIcon(15);
       await fetchChannelIcon(16);
+
+      loading('servers');
+      let servers = await proxyFetch('https://discord.com/api/v10/users/@me/guilds');
+      servers = await servers.json();
+      servers = JSON.parse(servers.content);
+      window.data.servers = servers;
+      switchServers(servers);
 
       loading('DMs');
       switchChannel(0);
