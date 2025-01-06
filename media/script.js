@@ -81,6 +81,8 @@ function getChannelIcon(type, size) {
   }
 }
 function getUserAvatar(id, hash, size = 64) {
+  if (!hash) return '/media/user.svg';
+  if (hash==='system') return '/media/fshcord.png';
   return `https://cdn.discordapp.com/avatars/${id}/${hash}.${hash.startsWith('a_')?'gif':'webp'}?size=${size}`;
 }
 function colorToRGB(color) {
@@ -167,109 +169,63 @@ Message types
 54: GUILD_JOIN_REQUEST_WITHDRAWN_NOTIFICATION
 55: HD_STREAMING_UPGRADED
 */
-function showMessages(list) {
-  document.getElementById('messages').innerHTML = list.map(m=>{
-    // System non changing
-    if ([14,15,16,17,22].includes(m.type)) {
-      const texts = {
-        '14': `This server has been removed from Server Discovery because it no longer passes all the requirements. Check Server Settings for more details.`,
-        '15': `This server is eligible for Server Discovery again and has been automatically relisted!`,
-        '16': `This server has failed Discovery activity requirements for 1 week. If this server fails for 4 weeks in a row, it will be automatically removed from Discovery.`,
-        '17': `This server has failed Discovery activity requirements for 3 weeks in a row. If this server fails for 1 more week, it will be removed from Discovery.`,
-        '22': `Wondering who to invite?\nStart by inviting anyone who can help you build the server!`
-      };
-      return `<div class="message">
-  <img src="./media/fshcord.png" width="40" height="40" aria-hidden="true">
-  <span>
-    <span><span class="name">System</span></span>
-    <span>${texts[m.type.toString()]}</span>
-  </span>
-</div>`;
-    }
-    // Group DM/Thread add/remove member
-    if ([1,2].includes(m.type)) {
-      return `<div class="message">
-  <img src="./media/fshcord.png" width="40" height="40" aria-hidden="true">
-  <span>
-    <span><span class="name">System</span></span>
-    <span>${m.author.global_name ?? m.author.username} ${m.type===1?'added':'removed'} ${m.mentions[0].global_name ?? m.mentions[0].username} ${m.type===1?'to':'from'} the ${window.data.currentChannelType===3?'group':'thread'}.</span>
-  </span>
-</div>`;
-    }
-    // Call
-    if (m.type===3) {
-      return `<div class="message">
-  <img src="./media/fshcord.png" width="40" height="40" aria-hidden="true">
-  <span>
-    <span><span class="name">System</span></span>
-    <span>${m.call.ended_timestamp ?
-      (m.call.participants.includes(window.data.user.id) ?
-        `${m.author.global_name ?? m.author.username} started a call that ended.` :
-        `You missed a call from ${m.author.global_name ?? m.author.username}.`) :
-      `${m.author.global_name ?? m.author.username} started a call.`}</span>
-  </span>
-</div>`;
-    }
-    // User join
-    if (m.type===7) {
-      const messages = ["{author} joined the party.",
-"{author} is here.",
-"Welcome, {author}. We hope you brought pizza.",
-"A wild {author} appeared.",
-"{author} just landed.",
-"{author} just slid into the server.",
-"{author} just showed up!",
-"Welcome {author}. Say hi!",
-"{author} hopped into the server.",
-"Everyone welcome {author}!",
-"Glad you're here, {author}.",
-"Good to see you, {author}.",
-"Yay you made it, {author}!"];
-      return `<div class="message">
-  <img src="./media/fshcord.png" width="40" height="40" aria-hidden="true">
-  <span>
-    <span><span class="name">System</span></span>
-    <span>${messages[new Date(m.timestamp).getTime()%13].replace('{author}',(m.author.global_name ?? m.author.username))}</span>
-  </span>
-</div>`;
-    }
-    // Normal
-    if (![0,19].includes(m.type)) {
-      report(`Unhandled message type: ${m.type}`, m);
-      return `<div>Unhandled message type: ${m.type}</div>`;
-    }
-    return `<div class="message">
-  <img src="${m.author.avatar?getUserAvatar(m.author.id, m.author.avatar):'./media/user.svg'}" width="40" height="40" aria-hidden="true">
-  <span>
-    <span><span class="name">${m.author.global_name ?? m.author.username}</span>${m.edited_timestamp?' · Edited':''}</span>
-    <span>${parseMD(m.content)}</span>
-    ${m.attachments.length?m.attachments.map(attach=>{
-      return `<${attach.content_type.startsWith('image/')?'img':attach.content_type.startsWith('audio/')?'audio':attach.content_type.startsWith('video/')?'video':'div'} src="${attach.url}"  width="${Math.floor(attach.width/2)}" height="${Math.floor(attach.height/2)}" class="message-attach" controls>${attach.content_type.startsWith('image/')?'':attach.content_type.startsWith('audio/')?'</audio>':attach.content_type.startsWith('video/')?'</video>':`<a download="${attach.filename}">${attach.filename}</a></div>`}`;
-    }).join(''):''}
-    ${m.embeds.length?m.embeds.map(embed=>{
+function renderEmbed(embed) {
       /*
 application_news
-article
+article -
 auto_moderation_message
 auto_moderation_notification
+[
+  {
+    "type": "auto_moderation_notification",
+    "fields": [
+      {
+        "name": "notification_type",
+        "value": "activity_alerts_enabled",
+        "inline": false
+      },
+      {
+        "name": "action_by_user_id",
+        "value": "816691475844694047",
+        "inline": false
+      }
+    ],
+    "content_scan_version": 0
+  }
+]
 gift
-gifv
-image
-link
+gifv -
+image -
+link -
 post_preview
-rich
+rich -
 video
 */
-      switch (embed.type) {
-        case 'gifv':
-          return `<video src="${embed.video.proxy_url}" width="${Math.floor(embed.video.width/2)}" height="${Math.floor(embed.video.height/2)}" muted autoplay loop class="message-attach"></video>`;
-        case 'image':
-          return `<img src="${embed.thumbnail.proxy_url}"  width="${Math.floor(embed.thumbnail.width/2)}" height="${Math.floor(embed.thumbnail.height/2)}" class="message-attach">`;
-        default:
-          report(`Unknown embed type: ${embed.type}`, embed);
-          return `<span>Unknown embed type: ${embed.type}</span>`;
-      }
+  switch (embed.type) {
+    case 'gifv':
+      return `<video src="${embed.video.proxy_url}" width="${Math.floor(embed.video.width/2)}" height="${Math.floor(embed.video.height/2)}" muted autoplay loop class="message-attach"></video>`;
+    case 'image':
+      return `<img src="${embed.thumbnail.proxy_url}" width="${Math.floor(embed.thumbnail.width/2)}" height="${Math.floor(embed.thumbnail.height/2)}" class="message-attach">`;
+    /*case 'article':
+    case 'link':
+    case 'rich':
+      return `<div class="message-attach"></div>`*/
+    default:
+      report(`Unknown embed type: ${embed.type}`, embed);
+      return `<span>Unknown embed type: ${embed.type}</span>`;
+  }
+}
+function renderMessage(content, author, m) {
+  return `<div class="message">
+  <img src="${getUserAvatar(author.id, author.avatar)}" width="40" height="40" aria-hidden="true">
+  <span>
+    <span><span class="name">${author.global_name ?? author.username}</span>${m.edited_timestamp?' · Edited':''}</span>
+    <span>${parseMD(content)}</span>
+    ${m.attachments.length?m.attachments.map(attach=>{
+      if (!attach.content_type) attach.content_type='image/'+attach.url.split('?')[0].split('.').slice(-1)[0];
+      return `<${attach.content_type.startsWith('image/')?'img':attach.content_type.startsWith('audio/')?'audio':attach.content_type.startsWith('video/')?'video':'div'} src="${attach.url}"  width="${Math.floor(attach.width/2)}" height="${Math.floor(attach.height/2)}" class="message-attach" controls>${attach.content_type.startsWith('image/')?'':attach.content_type.startsWith('audio/')?'</audio>':attach.content_type.startsWith('video/')?'</video>':`<a download="${attach.filename}">${attach.filename}</a></div>`}`;
     }).join(''):''}
+    ${m.embeds.length?m.embeds.map(embed=>renderEmbed(embed)).join(''):''}
     ${m.sticker_items?.length?m.sticker_items.map(sticker=>{
       if (sticker.format_type===3) {
         return `<lottie-sticker class="message-attach" data-id="${sticker.id}"></lottie-sticker>`;
@@ -315,7 +271,63 @@ video
     }).join('')}</div>`:''}
   </span>
 </div>`;
+}
+const SystemAuthor = {
+  id: 0,
+  avatar: 'system',
+  global_name: 'System',
+  username: 'system'
+}
+function showMessages(list) {
+  document.getElementById('messages').innerHTML = list.map(m=>{
+    // System non changing
+    if ([14,15,16,17,22].includes(m.type)) {
+      const texts = {
+        '14': `This server has been removed from Server Discovery because it no longer passes all the requirements. Check Server Settings for more details.`,
+        '15': `This server is eligible for Server Discovery again and has been automatically relisted!`,
+        '16': `This server has failed Discovery activity requirements for 1 week. If this server fails for 4 weeks in a row, it will be automatically removed from Discovery.`,
+        '17': `This server has failed Discovery activity requirements for 3 weeks in a row. If this server fails for 1 more week, it will be removed from Discovery.`,
+        '22': `**Wondering who to invite?**\nStart by inviting anyone who can help you build the server!`
+      };
+      return renderMessage(texts[m.type.toString()], SystemAuthor, m);
+    }
+    // Group DM/Thread add/remove member
+    if ([1,2].includes(m.type)) {
+      return renderMessage(`${m.author.global_name ?? m.author.username} ${m.type===1?'added':'removed'} ${m.mentions[0].global_name ?? m.mentions[0].username} ${m.type===1?'to':'from'} the ${window.data.currentChannelType===3?'group':'thread'}.`, SystemAuthor, m);
+    }
+    // Call
+    if (m.type===3) {
+      return renderMessage(m.call.ended_timestamp ?
+(m.call.participants.includes(window.data.user.id) ?
+  `${m.author.global_name ?? m.author.username} started a call that ended.` :
+  `You missed a call from ${m.author.global_name ?? m.author.username}.`) :
+`${m.author.global_name ?? m.author.username} started a call.`, SystemAuthor, m);
+    }
+    // User join
+    if (m.type===7) {
+      const messages = ["{author} joined the party.",
+"{author} is here.",
+"Welcome, {author}. We hope you brought pizza.",
+"A wild {author} appeared.",
+"{author} just landed.",
+"{author} just slid into the server.",
+"{author} just showed up!",
+"Welcome {author}. Say hi!",
+"{author} hopped into the server.",
+"Everyone welcome {author}!",
+"Glad you're here, {author}.",
+"Good to see you, {author}.",
+"Yay you made it, {author}!"];
+      return renderMessage(messages[new Date(m.timestamp).getTime()%13].replace('{author}',(m.author.global_name ?? m.author.username)), SystemAuthor, m);
+    }
+    // Normal
+    if (![0,19].includes(m.type)) {
+      report(`Unhandled message type: ${m.type}`, m);
+      return `<div>Unhandled message type: ${m.type}</div>`;
+    }
+    return renderMessage(m.content, m.author, m)
   }).join('');
+  // Lottie stickers
   Array.from(document.querySelectorAll('lottie-sticker.message-attach'))
     .forEach(s=>{
       lottie.loadAnimation({
@@ -326,12 +338,16 @@ video
         path: `https://api.fsh.plus/file?url=${encodeURIComponent(`https://discord.com/stickers/${s.getAttribute('data-id')}.json`)}`
       });
     });
+  // Scroll to top
   document.getElementById('messages').scrollTop = 0;
 }
 function switchMessage(id, type) {
   type = Number(type);
-  // Category??
-  if (type==4) return;
+  // How??
+  if ([4,7,8].includes(type)) {
+    report('User either entered a category or a channel that has not existed for over 3 years?', [id, type])
+    return;
+  }
   // Set current
   this.data.currentChannel = id;
   this.data.currentChannelType = type;
@@ -391,6 +407,9 @@ function channelName(c) {
   }
   return name;
 }
+function setTop(text, type) {
+  document.getElementById('top-name').innerHTML = getChannelIcon(type, 20)+text;
+}
 function showChannels(list) {
   document.getElementById('channel').innerHTML = list.map(c=>{
     let name = channelName(c);
@@ -398,7 +417,7 @@ function showChannels(list) {
       return `<span style="color:var(--text-2);font-size:80%;">${name}</span>`
     }
     return `<button data-id="${c.id}" data-type="${c.type}" data-name="${name}">
-  ${c.type===1&&c.recipients[0].avatar?`<img src="${getUserAvatar(c.recipients[0].id, c.recipients[0].avatar, 32)}" width="20" height="20" aria-hidden="true">`:getChannelIcon(c.type, 20)}
+  ${c.type===1?`<img src="${getUserAvatar(c.recipients[0].id, c.recipients[0].avatar, 32)}" width="20" height="20" aria-hidden="true">`:getChannelIcon(c.type, 20)}
   <span>${name}</span>
 </button>`;
   }).join('');
@@ -406,7 +425,7 @@ function showChannels(list) {
     .forEach(b=>{
       b.onclick = function(){
         loading(b.getAttribute('data-name'));
-        document.getElementById('top-name').innerText = b.getAttribute('data-name');
+        setTop(b.getAttribute('data-name'), b.getAttribute('data-type'))
         switchMessage(b.getAttribute('data-id'), b.getAttribute('data-type'));
       }
     });
@@ -421,6 +440,7 @@ function switchChannel(id) {
         showChannels(list);
         // Select first
         loading(channelName(list[0]));
+        setTop(channelName(list[0]), list[0].type);
         switchMessage(list[0].id, list[0].type);
       })
   } else if (id == 1) {
@@ -430,7 +450,7 @@ function switchChannel(id) {
       .then(res=>res.json())
       .then(res=>{
         // Get and sort the channels
-        let channels = JSON.parse(res.content).sort((a,b)=>a.position-b.position);
+        let channels = JSON.parse(res.content).sort((a,b)=>(a.position+([2,13].includes(a.type)?999:0))-(b.position+([2,13].includes(b.type)?999:0)));
         let sorted = [];
         let cat = {'null':[]};
         Object.values(channels.filter(c=>c.type===4).map(c=>c.id)).forEach(id=>cat[id]=[]);
@@ -443,6 +463,7 @@ function switchChannel(id) {
         // Load first
         let first = sorted.filter(c=>c.type!==4)[0];
         loading(channelName(first));
+        setTop(channelName(first), first.type);
         switchMessage(first.id, first.type);
       })
   }
@@ -460,6 +481,13 @@ function showServers(list) {
   }).join('');
   Array.from(document.querySelectorAll('#server button'))
     .forEach(b=>{
+      // On hover
+      tippy(b, {
+        content: b.getAttribute('aria-label'),
+        placement: 'right',
+        maxWidth: 200
+      })
+      // On click
       b.onclick = function(){
         let sid = b.getAttribute('data-id');
         // Set selected
@@ -512,9 +540,7 @@ if (!localStorage.getItem('token')) {
     .then(async res=>{
       let user = JSON.parse(res.content);
       window.data.user = user;
-      if (user.avatar) {
-        document.querySelector('#account img').src = getUserAvatar(user.id, user.avatar, 80)
-      }
+      document.querySelector('#account img').src = getUserAvatar(user.id, user.avatar, 80)
 
       loading('settings');
       let settings = await proxyFetch('https://discord.com/api/v10/users/@me/settings');

@@ -152,6 +152,9 @@ main {
   box-sizing: border-box;
 }
 #top-name {
+  display: flex;
+  gap: 5px;
+  align-items: center;
   font-size: 125%;
 }
 #messages {
