@@ -1,4 +1,10 @@
 // Useful funcs
+const twemojiConfig = {
+  size: "svg",
+  ext: ".svg",
+  base: 'https://raw.githubusercontent.com/twitter/twemoji/refs/heads/master/assets/'
+};
+
 function proxyFetch(url, o) {
   let opts = {
     method: "GET",
@@ -260,6 +266,7 @@ video -
     case 'link':
     case 'rich':
     case 'video':
+      // TODO: Add very strange thing where if the embed has url it will allow other embeds with only imgase to join up to 4
       c=[embed.title, embed.description, embed?.author?.name, embed?.provider?.name].filter(e=>!!e).length;
       return `<div class="message-rich-embed" style="--embed-color:${colorToRGB(embed.color??0)}">
   ${embed.thumbnail&&embed.type!=='video'?`<img src="${embed.thumbnail.proxy_url}" class="message-attach thumbnail">`:''}
@@ -297,43 +304,7 @@ function renderMessage(content, author, m) {
       }
       return `<img src="https://media.discordapp.net/stickers/${sticker.id}.${['webp','png','png','webp','gif'][sticker.format_type]}?size=160&quality=lossless" width="160" height="160" class="message-attach">`;
     }).join(''):''}
-    ${m.reactions?.length?`<div class="reactions">${m.reactions.map(reaction=>{
-      /*[
-  {
-    "emoji": {
-      "id": null,
-      "name": "❌"
-    },
-    "count": 1,
-    "count_details": {
-      "burst": 0,
-      "normal": 1
-    },
-    "burst_colors": [],
-    "me_burst": false,
-    "burst_me": false,
-    "me": true,
-    "burst_count": 0
-  },
-  {
-    "emoji": {
-      "id": "1317019686067769405",
-      "name": "EeveePeek"
-    },
-    "count": 1,
-    "count_details": {
-      "burst": 0,
-      "normal": 1
-    },
-    "burst_colors": [],
-    "me_burst": false,
-    "burst_me": false,
-    "me": true,
-    "burst_count": 0
-  }
-]*/
-      return `<button>${reaction.emoji.name}${reaction.count}</button>`;
-    }).join('')}</div>`:''}
+    ${m.reactions?.length?`<div class="reactions">${m.reactions.map(reaction=>`<button${reaction.me?' class="me"':''}>${reaction.emoji.id?`<img src="https://cdn.discordapp.com/emojis/${reaction.emoji.id}.${reaction.emoji.animated?'gif':'webp'}?size=96">`:twemoji.parse(reaction.emoji.name, twemojiConfig)}${reaction.count}</button>`).join('')}</div>`:''}
   </span>
 </div>`;
 }
@@ -572,6 +543,14 @@ function showServers(list) {
         window.currentServer = sid;
         switchChannel(sid);
       }
+    });
+  Array.from(document.querySelectorAll('#server .server-folder'))
+    .forEach(b=>{
+      tippy(b.children[0], {
+        content: b.getAttribute('aria-label'),
+        placement: 'right',
+        maxWidth: 200
+      })
     });
 }
 function switchServers(list) {

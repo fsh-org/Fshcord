@@ -227,6 +227,35 @@ lottie-sticker.message-attach {
   object-fit: contain;
   margin-bottom: -4px;
 }
+.reactions {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+.reactions button {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+  color: var(--text-1);
+  padding: 4px;
+  border: 2px var(--bg-3) solid;
+}
+.reactions button.me {
+  border-color: var(--blue-1);
+  background-color: var(--blue-1);
+}
+.reactions button img {
+  width: 16px;
+  height: 16px;
+}
+.reactions button:hover {
+  color: var(--text-0);
+  background-color: var(--bg-3);
+}
+.reactions button.me:hover {
+  filter: brightness(1.1);
+  background-color: var(--blue-1);
+}
 .message-rich-embed {
   display: flex;
   align-items: flex-start;
