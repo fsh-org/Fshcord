@@ -170,8 +170,6 @@ main {
   gap: 10px;
   padding: 2px 5px;
   border-radius: 1rem;
-  word-break: break-word;
-  white-space: break-spaces;
   transition: 250ms;
 }
 .message:hover {
@@ -180,6 +178,13 @@ main {
 .message .name {
   color: var(--text-0);
 }
+.message .tag {
+  font-size: 75%;
+  padding: 0px 2px;
+  margin-left: 5px;
+  border-radius: 0.25rem;
+  background-color: var(--blue-1);
+}
 .message > img {
   height: 40px;
   border-radius: 2rem;
@@ -187,6 +192,11 @@ main {
 .message > span {
   display: flex;
   flex-direction: column;
+  width: 100%;
+}
+.message .inner {
+  word-break: break-word;
+  white-space: break-spaces;
 }
 .message-attach {
   max-width: 45%;
@@ -200,20 +210,145 @@ audio.message-attach {
 }
 div.message-attach {
   padding: 15px;
-  border: 2px var(--bg-1) solid;
   border-radius: 2rem;
   background-color: var(--bg-2);
+  transition: background-color 250ms;
+}
+.message:hover div.message-attach {
+  background-color: var(--bg-1);
 }
 lottie-sticker.message-attach {
   width: 160px;
   height: 160px;
 }
+.message-emoji {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  margin-bottom: -4px;
+}
+.message-rich-embed {
+  display: flex;
+  align-items: flex-start;
+  flex-direction: column;
+  position: relative;
+  width: fit-content;
+  max-width: 80%;
+  margin: 2px;
+  border-radius: 0.5rem;
+  padding: 10px;
+  white-space: normal;
+  background-color: var(--bg-2);
+  transition: background-color 250ms;
+}
+.message-rich-embed::before {
+  content: "";
+  display: inline-block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 4px;
+  border-radius: 1rem 0 0 1rem;
+  background-color: var(--embed-color);
+}
+.message:hover .message-rich-embed {
+  background-color: var(--bg-1);
+}
+.message-rich-embed a {
+  text-decoration: none;
+}
+.message-rich-embed a[href]:hover {
+  cursor: pointer;
+  text-decoration: underline;
+}
+.message-rich-embed .thumbnail {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  width: 50px;
+  height: 50px;
+  margin: 0;
+}
+.message-rich-embed .sub {
+  cursor: auto;
+  font-size: 75%;
+  color: var(--text-2);
+}
+.message-rich-embed .etitle {
+  font-weight: bold;
+}
+.message-rich-embed .etitle:not([href]) {
+  cursor: auto;
+  color: var(--text-1);
+}
+.message-rich-embed .desc {
+  word-break: break-word;
+  white-space: break-spaces;
+}
+.message-rich-embed .fields {
+  display: flex;
+  flex-wrap: wrap;
+  width: 100%;
+}
+.message-rich-embed .fields > div {
+  display: flex;
+  flex: 1 1 33.33%;
+  flex-direction: column;
+}
+.message-rich-embed .footer {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+  color: var(--text-2);
+  font-size: 75%;
+}
+.message-rich-embed .footer .text, .message-rich-embed .sub {
+  display: flex;
+  gap: 3px;
+  align-items: center;
+}
+.message-rich-embed .footer img, .message-rich-embed .sub img {
+  width: 15px;
+  height: 15px;
+  border-radius: 2rem;
+}
+.message-rich-embed .footer .dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 2rem;
+  background-color: var(--text-2);
+}
+.message-rich-embed iframe {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  max-width: 100%;
+  max-height: unset;
+}
 
+.message code {
+  word-break: break-word;
+  white-space: break-spaces;
+  padding: 2px;
+  border-radius: 0.25rem;
+  background-color: var(--bg-0);
+}
 blockquote {
   display: unset;
-  margin: 0;
-  padding-left: 10px;
-  border-left: 4px var(--text-2) solid;
+  position: relative;
+  margin: 0px;
+  padding-left: 15px;
+}
+blockquote::before {
+  content: "";
+  display: inline-block;
+  position: absolute;
+  top: -1px;
+  left: 0;
+  width: 4px;
+  height: 22px;
+  border-radius: 1rem;
+  background-color: var(--text-2);
 }
 
 .input-bar {

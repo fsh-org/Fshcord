@@ -32,30 +32,70 @@ function proxyFetch(url, o) {
     body: JSON.stringify(opts)
   })
 }
-function parseMD(text) {
-  return text
+function parseMD(text, extended=true) {
+  let reserve = {};
+  function reservemd(txt) {
+    let id = Math.floor(Math.random()*Math.pow(10, 16)).toString(10).padStart(16, '0');
+    reserve[id] = txt;
+    return `¬r${id}¬r`;
+  }
+  // Escaping + Pre steps
+  text = text
     .replaceAll('<', '~lt;')
-    .replaceAll('"', '~quot;')
+    .replaceAll('"', '~quot;');
+  if (extended) {
+    text = text.replaceAll(/```([^¬]|¬)*?```/g, function(match){
+      match = match
+        .replaceAll('&', '&amp;')
+        .replaceAll('~lt;', '&lt;')
+        .replaceAll('~quot;', '&quot;');
+      return reservemd(`<code>${match.slice(3,-3)}</code>`);
+    });
+  }
+  text = text
     .replaceAll(/(~lt;https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)>|https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*))/g, function(match){
       if (match.match(/^~lt;.+?>$/m)) match=match.slice(4,-1);
-      return `<a href="${match}">${match}</a>`
+      return reservemd(`<a href="${match}">${match}</a>`);
     })
     .replaceAll('&', '&amp;')
     .replaceAll('~lt;', '&lt;')
     .replaceAll('~quot;', '&quot;')
-    .replaceAll("'", '&apos;')
+    .replaceAll("'", '&apos;');
+  // General
+  text = text
     .replaceAll(/\*\*.+?\*\*/g, function(match){return '<b>'+match.slice(2,-2)+'</b>'})
     .replaceAll(/\*.+?\*/g, function(match){return '<i>'+match.slice(1,-1)+'</i>'})
     .replaceAll(/\_\_.+?\_\_/g, function(match){return '<u>'+match.slice(2,-2)+'</u>'})
     .replaceAll(/\_.+?\_/g, function(match){return '<i>'+match.slice(1,-1)+'</i>'})
     .replaceAll(/\~\~.+?\~\~/g, function(match){return '<s>'+match.slice(2,-2)+'</s>'})
     .replaceAll(/\|\|.+?\|\|/g, function(match){return `<span style="cursor:pointer;color:var(--bg-3);border-radius:0.25rem;background-color:var(--bg-3);transition:500ms;" onclick="this.style.color='var(--text-1)';this.style.backgroundColor='var(--bg-0)'">`+match.slice(2,-2)+'</span>'})
-    .replaceAll(/^\> .+?$/gm, function(match){return '<blockquote>'+match.slice(2)+'</blockquote>'})
-    .replaceAll(/^### .+?$/gm, function(match){return '<span style="font-size:110%">'+match.slice(4)+'</span>'})
-    .replaceAll(/^## .+?$/gm, function(match){return '<span style="font-size:125%">'+match.slice(3)+'</span>'})
-    .replaceAll(/^# .+?$/gm, function(match){return '<span style="font-size:150%">'+match.slice(2)+'</span>'})
-    .replaceAll(/^-# .+?$/gm, function(match){return '<span style="font-size:80%;color:var(--text-2);">'+match.slice(3)+'</span>'})
-    .replaceAll(/^(-|\*) .+?$/gm, function(match){return '<li>'+match.slice(2)+'</li>'});
+    .replaceAll(/\`.+?\`/g, function(match){return '<code>'+match.slice(1,-1)+'</code>'})
+    .replaceAll(/^\> .+?$/gm, function(match){return '<blockquote>'+match.slice(2)+'</blockquote>'});
+  // Discord
+  text = text
+    .replaceAll(/&lt;:.+?:[0-9]+?>/g, function(match){
+      let parts = match.replace('>','').split(':');
+      return `<img src="https://cdn.discordapp.com/emojis/${parts[2]}.webp?size=96" onerror="this.outerText='${match}'" class="message-emoji">`;
+    });
+  // Extended
+  if (extended) {
+    text = text
+      .replaceAll(/^### .+?$/gm, function(match){return '<span style="font-size:110%">'+match.slice(4)+'</span>'})
+      .replaceAll(/^## .+?$/gm, function(match){return '<span style="font-size:125%">'+match.slice(3)+'</span>'})
+      .replaceAll(/^# .+?$/gm, function(match){return '<span style="font-size:150%">'+match.slice(2)+'</span>'})
+      .replaceAll(/^-# .+?$/gm, function(match){return '<span style="font-size:80%;color:var(--text-2);">'+match.slice(3)+'</span>'})
+      .replaceAll(/^(-|\*) .+?$/gm, function(match){return '<li>'+match.slice(2)+'</li>'});
+  }
+  // Reserve
+  text = text.replaceAll(/¬r[0-9]{16}¬r/g, function(match){
+    let id = match.split('¬r')[1];
+    if (reserve[id]) {
+      return reserve[id];
+    } else {
+      return match;
+    }
+  })
+  return text;
 }
 const channelIcons = {};
 function fetchChannelIcon(type) {
@@ -85,9 +125,18 @@ function getUserAvatar(id, hash, size = 64) {
   if (hash==='system') return '/media/fshcord.png';
   return `https://cdn.discordapp.com/avatars/${id}/${hash}.${hash.startsWith('a_')?'gif':'webp'}?size=${size}`;
 }
+
 function colorToRGB(color) {
   return `#${color.toString(16).padStart(6, '0')}`;
 }
+function formateDate(date, format='r') {
+  if (format==='r') {
+    return date;
+  } else {
+    return date;
+  }
+}
+
 function loading(text) {
   Toastify({
     text: 'Loading '+text,
@@ -199,17 +248,33 @@ image -
 link -
 post_preview
 rich -
-video
+video -
 */
+  let c;
   switch (embed.type) {
     case 'gifv':
       return `<video src="${embed.video.proxy_url}" width="${Math.floor(embed.video.width/2)}" height="${Math.floor(embed.video.height/2)}" muted autoplay loop class="message-attach"></video>`;
     case 'image':
       return `<img src="${embed.thumbnail.proxy_url}" width="${Math.floor(embed.thumbnail.width/2)}" height="${Math.floor(embed.thumbnail.height/2)}" class="message-attach">`;
-    /*case 'article':
+    case 'article':
     case 'link':
     case 'rich':
-      return `<div class="message-attach"></div>`*/
+    case 'video':
+      c=[embed.title, embed.description, embed?.author?.name, embed?.provider?.name].filter(e=>!!e).length;
+      return `<div class="message-rich-embed" style="--embed-color:${colorToRGB(embed.color??0)}">
+  ${embed.thumbnail&&embed.type!=='video'?`<img src="${embed.thumbnail.proxy_url}" class="message-attach thumbnail">`:''}
+  ${embed?.provider?.name?`<a${embed.provider?.url?` href="${embed.provider.url}"`:''} class="sub">${embed.provider.name}</a>`:''}
+  ${embed?.author?.name?`<a${embed.author?.url?` href="${embed.author.url}"`:''} class="sub">${embed.author.proxy_icon_url?`<img src="${embed.author.proxy_icon_url}">`:''}${embed.author.name}</a>`:''}
+  ${embed.title?`<a${embed.url?` href="${embed.url}"`:''} class="etitle">${parseMD(embed.title, false)}</a>`:''}
+  ${embed.description&&embed.type!=='video'?`<span class="desc">${parseMD(embed.description)}</span>`:''}
+  ${embed.fields?`<div class="fields">${embed.fields.map(f=>`<div style="${f.inline?'':'flex:1 1 100%'}">
+  <span class="etitle">${parseMD(f.name, false)}</span>
+  <span class="desc">${parseMD(f.value)}</span>
+</div>`).join('')}</div>`:''}
+  ${embed.video?(embed.video.proxy_url?`<video src="${embed.video.proxy_url}" class="message-attach" style="max-width:100%" controls></video>`:`<iframe src="${embed.video.url}" class="message-attach" style="max-width:100%" allow="autoplay" frameborder="0" scrolling="no" sandbox="allow-forms allow-modals allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts allow-presentation" allowfullscreen></iframe>`):''}
+  ${embed.image&&embed.type!=='video'?`<img src="${embed.image.proxy_url}" class="message-attach" style="max-width:100%;margin-top:${embed.thumbnail?(c>2?'0':(c>1?'15':'40')):'0'}px">`:''}
+  ${embed?.footer?.text||embed.timestamp?`<span class="footer">${embed?.footer?.text?`<span class="text">${embed.footer.proxy_icon_url?`<img src="${embed.footer.proxy_icon_url}">`:''}${embed.footer.text}</span>`:''}${embed?.footer?.text&&embed.timestamp?'<span class="dot"></span>':''}${embed.timestamp?`<span>${formateDate(embed.timestamp)}</span>`:''}</span>`:''}
+</div>`;
     default:
       report(`Unknown embed type: ${embed.type}`, embed);
       return `<span>Unknown embed type: ${embed.type}</span>`;
@@ -219,8 +284,8 @@ function renderMessage(content, author, m) {
   return `<div class="message">
   <img src="${getUserAvatar(author.id, author.avatar)}" width="40" height="40" aria-hidden="true">
   <span>
-    <span><span class="name">${author.global_name ?? author.username}</span>${m.edited_timestamp?' · Edited':''}</span>
-    <span>${parseMD(content)}</span>
+    <span><span class="name">${author.global_name ?? author.username}</span>${[author.system,m.webhook_id,author.bot].filter(e=>!!e).length?`<span class="tag">${author.system?'SYSTEM':(m.webhook_id?'WEBHOOK':(author.bot?'BOT':''))}</span>`:''}${m.edited_timestamp?' · Edited':''}</span>
+    <span class="inner">${parseMD(content)}</span>
     ${m.attachments.length?m.attachments.map(attach=>{
       if (!attach.content_type) attach.content_type='image/'+attach.url.split('?')[0].split('.').slice(-1)[0];
       return `<${attach.content_type.startsWith('image/')?'img':attach.content_type.startsWith('audio/')?'audio':attach.content_type.startsWith('video/')?'video':'div'} src="${attach.url}"  width="${Math.floor(attach.width/2)}" height="${Math.floor(attach.height/2)}" class="message-attach" controls>${attach.content_type.startsWith('image/')?'':attach.content_type.startsWith('audio/')?'</audio>':attach.content_type.startsWith('video/')?'</video>':`<a download="${attach.filename}">${attach.filename}</a></div>`}`;
@@ -276,7 +341,9 @@ const SystemAuthor = {
   id: 0,
   avatar: 'system',
   global_name: 'System',
-  username: 'system'
+  username: 'system',
+  bot: true,
+  system: true
 }
 function showMessages(list) {
   document.getElementById('messages').innerHTML = list.map(m=>{
@@ -549,14 +616,17 @@ if (!localStorage.getItem('token')) {
       window.data.settings = settings;
 
       loading('icons')
-      await fetchChannelIcon('folder');
-      await fetchChannelIcon(0);
-      await fetchChannelIcon(1);
-      await fetchChannelIcon(2);
-      await fetchChannelIcon(3);
-      await fetchChannelIcon(5);
-      await fetchChannelIcon(15);
-      await fetchChannelIcon(16);
+      await Promise.allSettled([
+        fetchChannelIcon('folder'),
+        fetchChannelIcon(0),
+        fetchChannelIcon(1),
+        fetchChannelIcon(2),
+        fetchChannelIcon(3),
+        fetchChannelIcon(5),
+        fetchChannelIcon(13),
+        fetchChannelIcon(15),
+        fetchChannelIcon(16)
+      ]);
 
       loading('servers');
       let servers = await proxyFetch('https://discord.com/api/v10/users/@me/guilds');
