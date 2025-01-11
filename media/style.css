@@ -6,6 +6,23 @@ body {
   height: 100dvh;
 }
 
+#contextmenu {
+  flex-direction: column;
+  position: absolute;
+  margin: 0px;
+  padding: 2px;
+  border-radius: 0.25rem;
+  z-index: 999999;
+}
+#contextmenu[open] {
+  display: flex;
+}
+#contextmenu button {
+  text-align: left;
+  border: none;
+  border-radius: 0;
+}
+
 @keyframes select-enter {
   from {left:-15px}
   to {left:-10px}

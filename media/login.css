@@ -1,0 +1,22 @@
+body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+#login > div {
+  display: flex;
+  align-items: center;
+}
+#login > div > form {
+  display: flex;
+  flex-direction: column;
+}
+#login > div > form:nth-child(1) {
+  margin-right: 5px;
+  padding-right: 5px;
+  border-right: 2px var(--text-1) solid;
+}

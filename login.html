@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Fshcord</title>
+    <!-- Boiler plate------ -->
+    <link rel="icon" href="https://fsh.plus/fsh.png" type="image/png">
+    <meta name="description" content="Fshcord, alternative discord client">
+    <!-- ------- -->
+    <link rel="stylesheet" href="https://fsh.plus/media/style.css">
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta property="og:image" content="https://fsh.plus/fsh.png">
+    <meta name="theme-color" content="#a89c9b">
+    <!-- ------------------ -->
+    <link rel="stylesheet" href="./media/login.css">
+    <script src="https://js.hcaptcha.com/1/api.js" async defer></script>
+  </head>
+  <body>
+    <div id="login">
+      <h2>Log in</h2>
+      <div>
+        <form onsubmit="event.preventDefault()">
+          <label>Email/Phone:<br><input placeholder="Email/Phone" id="u-login"></label>
+          <label>Password:<br><input placeholder="Password" type="password" maxlength="72" id="u-password"></label>
+          <button id="btn-login">Log in</button>
+        </form>
+        <form onsubmit="event.preventDefault()">
+          <label>Token:<br><input placeholder="Token" type="password" id="u-token"></label>
+          <button id="btn-login-token">Use token</button>
+        </form>
+      </div>
+    </div>
+    <div id="captcha">
+      <div id="h-captcha"></div>
+    </div>
+    <div id="totp" style="display:none">
+      <h2>TOTP</h2>
+      <label>Authenticator code:<br><input placeholder="TOTP code" id="u-code"></label>
+      <br>
+      <button id="btn-login-totp">Check</button>
+    </div>
+    <button id="btn-back">back</button>
+    <script src="./media/login.js"></script>
+  </body>
+</html>

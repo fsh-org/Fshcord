@@ -20,7 +20,8 @@ function proxyFetch(url, o) {
       "sec-fetch-site": "none",
       "sec-fetch-user": "?1",
       "sec-gpc": "1",
-      "user-agent": navigator.userAgent
+      "x-super-properties": "eyJvcyI6IldpbmRvd3MiLCJicm93c2VyIjoiQ2hyb21lIiwiZGV2aWNlIjoiIiwic3lzdGVtX2xvY2FsZSI6ImVzLUVTIiwiYnJvd3Nlcl91c2VyX2FnZW50IjoiTW96aWxsYS81LjAgKFdpbmRvd3MgTlQgMTAuMDsgV2luNjQ7IHg2NCkgQXBwbGVXZWJLaXQvNTM3LjM2IChLSFRNTCwgbGlrZSBHZWNrbykgQ2hyb21lLzEzMS4wLjAuMCBTYWZhcmkvNTM3LjM2IiwiYnJvd3Nlcl92ZXJzaW9uIjoiMTMxLjAuMC4wIiwib3NfdmVyc2lvbiI6IjEwIiwicmVmZXJyZXIiOiIiLCJyZWZlcnJpbmdfZG9tYWluIjoiIiwicmVmZXJyZXJfY3VycmVudCI6IiIsInJlZmVycmluZ19kb21haW5fY3VycmVudCI6IiIsInJlbGVhc2VfY2hhbm5lbCI6InN0YWJsZSIsImNsaWVudF9idWlsZF9udW1iZXIiOjM1ODAxMSwiY2xpZW50X2V2ZW50X3NvdXJjZSI6bnVsbCwiaGFzX2NsaWVudF9tb2RzIjpmYWxzZX0=",
+      "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
     }
   };
   if (o?.method) opts.method=o.method;
@@ -126,8 +127,35 @@ function getChannelIcon(type, size) {
     return '<img>';
   }
 }
+function toBinaryString(numString) {
+  if (!numString || isNaN(numString)) return "0";
+  if (numString === "0") return "0";
+  let result = "";
+  let dividend = numString;
+  while (dividend !== "0") {
+    let remainder = "";
+    let newDividend = "";
+    let carry = 0;
+    let leadingZero = true;
+    for (let i = 0; i < dividend.length; i++) {
+      let current = carry * 10 + parseInt(dividend[i]);
+      let quotient = Math.floor(current / 2);
+      if (quotient !== 0 || !leadingZero) {
+        newDividend += quotient.toString();
+        leadingZero = false;
+      }
+      carry = current % 2;
+    }
+    result = carry.toString() + result;
+    dividend = newDividend.length ? newDividend : "0";
+  }
+  return result;
+}
 function getUserAvatar(id, hash, size = 64) {
-  if (!hash) return '/media/user.svg';
+  if (!hash) {
+    // Complete mess we have to do cause user ids are very long
+    return `https://cdn.discordapp.com/embed/avatars/${Number('0b'+toBinaryString(id).replace(/.{22}$/m,''))%6}.png`;
+  }
   if (hash==='system') return '/media/fshcord.png';
   return `https://cdn.discordapp.com/avatars/${id}/${hash}.${hash.startsWith('a_')?'gif':'webp'}?size=${size}`;
 }
@@ -159,11 +187,27 @@ function loading(text) {
 function report(text, obj) {
   fetch(`https://telemetry.fsh.plus?url=${encodeURIComponent(location.href)}&text=${text}&context=${encodeURIComponent(JSON.stringify(obj, null, 2))}`, { method: 'POST' })
 }
+function copy(text) {
+  navigator.clipboard.writeText(text);
+}
 
-document.getElementById('btn-login').onclick = function(){
-  localStorage.setItem('token', document.getElementById('token').value);
-  location.reload();
-};
+function showContextMenu(event, type, data) {
+  event.preventDefault();
+  let menu = document.getElementById('contextmenu');
+  menu.show();
+  menu.style.left = event.x+'px';
+  menu.style.top = event.y+'px';
+  switch(type) {
+    case 'server':
+      menu.innerHTML = `<button onclick="copy('${data.name}')">Copy name</button>
+<button onclick="copy('${data.id}')">Copy id</button>`;
+      break;
+    default:
+      menu.innerHTML = 'Error';
+      report('Unknown context menu type: '+type, data);
+  }
+}
+window.onclick = function(){document.getElementById('contextmenu').close()};
 
 /*
 Message types
@@ -543,6 +587,10 @@ function showServers(list) {
         window.currentServer = sid;
         switchChannel(sid);
       }
+      b.oncontextmenu = (event)=>{showContextMenu(event, 'server', {
+        id: b.getAttribute('data-id'),
+        name: b.getAttribute('aria-label')
+      })};
     });
   Array.from(document.querySelectorAll('#server .server-folder'))
     .forEach(b=>{
@@ -572,7 +620,7 @@ function switchServers(list) {
 }
 
 if (!localStorage.getItem('token')) {
-  document.getElementById('login').showModal();
+  location.href = '/login';
 } else {
   window.data = {};
   loading('user');
