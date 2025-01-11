@@ -209,6 +209,26 @@ function showContextMenu(event, type, data) {
 }
 window.onclick = function(){document.getElementById('contextmenu').close()};
 
+// Main logic
+function sendMessage() {
+  proxyFetch(`https://discord.com/api/v10/channels/${window.data.currentChannel}/messages`, {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json'
+    },
+    body: JSON.stringify({
+      content: document.getElementById('message-input').value
+    })
+  })
+    .then(res=>res.json())
+    .then(res=>{
+      document.getElementById('message-input').value = '';
+      switchMessage(window.data.currentChannel, window.data.currentChannelType)
+    })
+}
+document.getElementById('message-input').onkeyup = function(event){if(event.key==='Enter')sendMessage()};
+document.getElementById('message-send').onclick = sendMessage;
+
 /*
 Message types
 0: DEFAULT
