@@ -512,8 +512,8 @@ function channelName(c) {
 function setTop(text, type) {
   document.getElementById('top-name').innerHTML = getChannelIcon(type, 20)+text;
 }
-function showChannels(list) {
-  document.getElementById('channel').innerHTML = list.map(c=>{
+function showChannels(list, server) {
+  document.getElementById('channel').innerHTML = (server?'<div id="channels-server-header"></div>':'')+list.map(c=>{
     let name = channelName(c);
     if (c.type===4) {
       return `<span style="color:var(--text-2);font-size:80%;">${name}</span>`
@@ -531,6 +531,16 @@ function showChannels(list) {
         switchMessage(b.getAttribute('data-id'), b.getAttribute('data-type'));
       }
     });
+  // Server banner
+  if (server) {
+    proxyFetch(`https://discord.com/api/v10/guilds/${server}`)
+      .then(res=>res.json())
+      .then(res=>{
+        let serv = JSON.parse(res.content);
+        document.getElementById('channels-server-header').innerHTML = `<span class="name">${serv.name}</span>
+${serv.banner?`<div><img src="https://cdn.discordapp.com/banners/${serv.id}/${serv.banner}.webp?size=240"></div>`:''}`;
+      })
+  }
 }
 function switchChannel(id) {
   if (id == 0) {
@@ -561,7 +571,7 @@ function switchChannel(id) {
           if (k!='null') sorted.push(channels.find(cc=>cc.id===k));
           sorted.push(...cat[k]);
         })
-        showChannels(sorted);
+        showChannels(sorted, id);
         // Load first
         let first = sorted.filter(c=>c.type!==4)[0];
         loading(channelName(first));

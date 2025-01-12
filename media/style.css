@@ -123,6 +123,39 @@ body {
   margin: 0.5vw;
 }
 
+#channels-server-header {
+  position: relative;
+  flex-shrink: 0;
+  min-height: 35px;
+  background: var(--bg-2);
+}
+#channels-server-header div::before {
+  content: "";
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  background: linear-gradient(180deg, var(--bg-2) 0%, transparent 35%);
+}
+#channels-server-header img {
+  width: 100%;
+}
+#channels-server-header .name {
+  display: block;
+  position: absolute;
+  top: 5px;
+  left: 5%;
+  width: 90%;
+  padding: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  box-sizing: border-box;
+  z-index: 9999;
+}
+
 #channel {
   display: flex;
   flex-direction: column;
@@ -147,7 +180,7 @@ body {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-#channel img, #channel svg {
+#channel button img, #channel button svg {
   width: 20px;
   height: 20px;
 }
