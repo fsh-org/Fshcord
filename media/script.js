@@ -105,9 +105,9 @@ function parseMD(text, extended=true) {
   return text;
 }
 const channelIcons = {};
-function fetchChannelIcon(type) {
+function fetchIcon(type) {
   return new Promise((resolve, reject) => {
-    fetch('/media/channel/'+type+'.svg')
+    fetch('/media/icon/'+type+'.svg')
       .then(res=>res.text())
       .then(res=>{
         channelIcons[type] = res;
@@ -118,7 +118,7 @@ function fetchChannelIcon(type) {
       });
   })
 }
-function getChannelIcon(type, size) {
+function getIcon(type, size) {
   if (channelIcons[type]) {
     return channelIcons[type]
       .replace(/width="[0-9]+?"/, `width="${size}"`)
@@ -510,7 +510,7 @@ function channelName(c) {
   return name;
 }
 function setTop(text, type) {
-  document.getElementById('top-name').innerHTML = getChannelIcon(type, 20)+text;
+  document.getElementById('top-name').innerHTML = getIcon(type, 20)+text;
 }
 function showChannels(list, server) {
   document.getElementById('channel').innerHTML = (server?'<div id="channels-server-header"></div>':'')+list.map(c=>{
@@ -519,7 +519,7 @@ function showChannels(list, server) {
       return `<span style="color:var(--text-2);font-size:80%;">${name}</span>`
     }
     return `<button data-id="${c.id}" data-type="${c.type}" data-name="${name}">
-  ${c.type===1?`<img src="${getUserAvatar(c.recipients[0].id, c.recipients[0].avatar, 32)}" width="20" height="20" aria-hidden="true">`:getChannelIcon(c.type, 20)}
+  ${c.type===1?`<img src="${getUserAvatar(c.recipients[0].id, c.recipients[0].avatar, 32)}" width="20" height="20" aria-hidden="true">`:getIcon(c.type, 20)}
   <span>${name}</span>
 </button>`;
   }).join('');
@@ -585,7 +585,7 @@ function showServers(list) {
   document.getElementById('server-list').innerHTML = list.map(s=>{
     if (s.type==='folder') {
       return `<div aria-label="${s.name??'Folder'}" aria-role="button" class="server-folder" style="--folder-color:${colorToRGB(s.color??0)}">
-  <svg onclick="let op=(this.getAttribute('open')==='true');this.setAttribute('open', !op);this.parentElement.style.height=(!op?'${(s.guilds.length+1)*50+s.guilds.length*10}px':'50px')" open="false"${getChannelIcon('folder', 50).replace('<svg','').replace('viewBox="0 0 256 256"','viewBox="-64 -64 384 384"')}
+  <svg onclick="let op=(this.getAttribute('open')==='true');this.setAttribute('open', !op);this.parentElement.style.height=(!op?'${(s.guilds.length+1)*50+s.guilds.length*10}px':'50px')" open="false"${getIcon('folder', 50).replace('<svg','').replace('viewBox="0 0 256 256"','viewBox="-64 -64 384 384"')}
   ${s.guilds.map(g=>`<button aria-label="${g.name}" data-id="${g.id}" class="server-clicky">${g.icon == null ? g.name.trim().split(/\s+/).map(word=>word[0]??'').join('') : `<img src="https://cdn.discordapp.com/icons/${g.id}/${g.icon}.png?size=64" alt="${g.name}">`}</button>`).join('')}
 </div>`;
     }
@@ -653,46 +653,80 @@ if (!localStorage.getItem('token')) {
   location.href = '/login';
 } else {
   window.data = {};
-  loading('user');
+  window.data.ws = {};
   window.data.servers = [];
   window.data.currentServer = 0;
   window.data.currentChannel = 0;
   window.data.currentChannelType = 0;
-  // TODO: Switch to new settings system
-  proxyFetch('https://discord.com/api/v10/users/@me')
-    .then(res=>res.json())
-    .then(async res=>{
-      let user = JSON.parse(res.content);
-      window.data.user = user;
-      document.querySelector('#account img').src = getUserAvatar(user.id, user.avatar, 80)
+  loading('gateway');
+  let ws = new WebSocket('wss://gateway.discord.gg/?v=10&encoding=json');
+  function wsheartbeat() {
+    ws.send(`{"op":1,"d":${window.data.ws.d}}`);
+  }
+  ws.onmessage = function(event) {
+    let wsd = JSON.parse(event.data);
+    console.log(wsd);
+    switch (wsd.op) {
+      case 0: // Just anything
+        window.data.ws.d = wsd.s;
+        switch (wsd.t) {
+          case 'READY':
+            init(wsd.d.user, wsd.d.user_settings, wsd.d.guilds)
+            break;
+        }
+        break;
+      case 1: // Heartbeat
+        wsheartbeat();
+        break;
+      case 10: // Hewwo
+        // Auth
+        window.data.ws.heartbeat_interval = wsd.d.heartbeat_interval;
+        window.data.ws.d = wsd.s;
+        wsheartbeat();
+        ws.send(JSON.stringify({
+          op: 2,
+          d: {
+            token: localStorage.getItem('token'),
+            properties: {
+              os: "windows",
+              browser: "chrome"
+            },
+            compress: false,
+            capabilities: 0
+          }
+        }));
+        break;
+      case 11: // Heartbeat ACK
+        // Wait and heartbeat
+        setTimeout(wsheartbeat, window.data.ws.heartbeat_interval);
+        break;
+    }
+  }
 
-      loading('settings');
-      let settings = await proxyFetch('https://discord.com/api/v10/users/@me/settings');
-      settings = await settings.json();
-      settings = JSON.parse(settings.content);
-      window.data.settings = settings;
+  async function init(user, settings, guilds) {
+    window.data.user = user;
+    document.querySelector('#account img').src = getUserAvatar(user.id, user.avatar, 80)
 
-      loading('icons')
-      await Promise.allSettled([
-        fetchChannelIcon('folder'),
-        fetchChannelIcon(0),
-        fetchChannelIcon(1),
-        fetchChannelIcon(2),
-        fetchChannelIcon(3),
-        fetchChannelIcon(5),
-        fetchChannelIcon(13),
-        fetchChannelIcon(15),
-        fetchChannelIcon(16)
-      ]);
+    // TODO: Switch to new settings system
+    window.data.settings = settings;
 
-      loading('servers');
-      let servers = await proxyFetch('https://discord.com/api/v10/users/@me/guilds');
-      servers = await servers.json();
-      servers = JSON.parse(servers.content);
-      window.data.servers = servers;
-      switchServers(servers);
+    window.data.servers = guilds;
+    switchServers(guilds);
 
-      loading('DMs');
-      switchChannel(0);
-    })
+    loading('icons')
+    await Promise.allSettled([
+      fetchIcon('folder'),
+      fetchIcon(0),
+      fetchIcon(1),
+      fetchIcon(2),
+      fetchIcon(3),
+      fetchIcon(5),
+      fetchIcon(13),
+      fetchIcon(15),
+      fetchIcon(16)
+    ]);
+
+    loading('DMs');
+    switchChannel(0);
+  }
 }
