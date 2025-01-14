@@ -42,6 +42,14 @@ const userFlags = {
   COLLABORATOR: 50n,
   RESTRICTED_COLLABORATOR: 51n
 };
+const dateFormats = {
+	t: {timeStyle: 'short'},
+	T: {timeStyle: 'medium'},
+	d: {dateStyle: 'short'},
+	D: {dateStyle: 'long'},
+	f: {dateStyle: 'long', timeStyle: 'short'},
+	F: {dateStyle: 'full', timeStyle: 'short'}
+};
 
 // Fetching
 function proxyFetch(url, o) {
@@ -218,11 +226,37 @@ function getUserFlags(bitfield) {
 function colorToRGB(color) {
   return `#${color.toString(16).padStart(6, '0')}`;
 }
-function formatDate(date, format='r') {
-  if (format==='r') {
-    return date;
+function formatDate(date, format='f') {
+  if (format==='R') {
+    // TODO: Fix
+    let now = new Date().getTime();
+    let da = new Date(date);
+    let dat = da.getTime();
+    let off = Math.floor((now - dat)/1000);
+    if (off === 0) return 'now';
+    if (off > 0) {
+      if (off < 60) return `${off} seconds ago`;
+      if (off < (60 * 60)) return `${Math.floor(off/60)} minutes ago`;
+      if (off < (24 * 60 * 60)) return `${Math.floor(off/(60*60))} hours ago`;
+      if (off < (2 * 24 * 60 * 60)) return `today at ${da.toLocaleString(navigator, dateFormats.t)}`;
+      if (off < (3 * 24 * 60 * 60)) return `yesterday at ${da.toLocaleString(navigator, dateFormats.t)}`;
+      if (off < (30 * 24 * 60 * 60)) return `${Math.floor(off/(24*60*60))} days ago`;
+      if (off < (365 * 24 * 60 * 60)) return `${Math.floor(off/(30*24*60*60))} months ago`;
+      return `${Math.floor(off/(365*24*60*60))} years ago`;
+    } else {
+      off = off * -1;
+      if (off < 60) return `in ${off} seconds`;
+      if (off < (60 * 60)) return `in ${Math.floor(off/60)} minutes`;
+      if (off < (24 * 60 * 60)) return `in ${Math.floor(off/(60*60))} hours`;
+      if (off < (2 * 24 * 60 * 60)) return `today at ${da.toLocaleString(navigator, dateFormats.t)}`;
+      if (off < (3 * 24 * 60 * 60)) return `tomorrow at ${da.toLocaleString(navigator, dateFormats.t)}`;
+      if (off < (30 * 24 * 60 * 60)) return `in ${Math.floor(off/(24*60*60))} days`;
+      if (off < (365 * 24 * 60 * 60)) return `in ${Math.floor(off/(30*24*60*60))} months`;
+      return `in ${Math.floor(off/(365*24*60*60))} years`;
+    }
   } else {
-    return date;
+    if (!dateFormats[format]) return date;
+    return new Date(date).toLocaleString(navigator, dateFormats[format])
   }
 }
 
