@@ -1,0 +1,2 @@
+# Fshcord
+Alternative discord client.
