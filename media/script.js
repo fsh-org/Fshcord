@@ -175,14 +175,6 @@ function renderMessage(content, author, m) {
   </span>
 </div>`;
 }
-const SystemAuthor = {
-  id: 0,
-  avatar: 'system',
-  global_name: 'System',
-  username: 'system',
-  bot: true,
-  system: true
-}
 function showMessages(list) {
   document.getElementById('messages').innerHTML = list.map(m=>{
     // System non changing
@@ -456,7 +448,7 @@ if (!localStorage.getItem('token')) {
   location.href = '/login';
 } else {
   window.data = {};
-  window.data.ws = {};
+  window.data.ws = {log:false};
   window.data.servers = [];
   window.data.currentServer = 0;
   window.data.currentChannel = 0;
@@ -468,7 +460,7 @@ if (!localStorage.getItem('token')) {
   }
   ws.onmessage = function(event) {
     let wsd = JSON.parse(event.data);
-    console.log(wsd);
+    if (window.date.ws.log) console.log(wsd);
     switch (wsd.op) {
       case 0: // Just anything
         window.data.ws.d = wsd.s;

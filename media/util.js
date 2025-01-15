@@ -42,6 +42,14 @@ const userFlags = {
   COLLABORATOR: 50n,
   RESTRICTED_COLLABORATOR: 51n
 };
+const SystemAuthor = {
+  id: 0,
+  avatar: 'system',
+  global_name: 'System',
+  username: 'system',
+  bot: true,
+  system: true
+}
 const dateFormats = {
 	t: {timeStyle: 'short'},
 	T: {timeStyle: 'medium'},
@@ -138,6 +146,7 @@ function parseMD(text, extended=true) {
   // Extended
   if (extended) {
     text = text
+      .replaceAll(/&lt;t:[0-9]+?(:[tTdDfFR])?>/gm, function(match){match=match.split(':');match[1]=Number(match[1].replace('>',''))*1000;return `<code title="" style="font-family:unset"${((match[2]??'f')[0])==='R'?' class="timestamp-relative" data-time="'+match[1]+'"':''}>${formatDate(match[1], (match[2]??'f')[0])}</code>`})
       .replaceAll(/^### .+?$/gm, function(match){return '<span style="font-size:110%">'+match.slice(4)+'</span>'})
       .replaceAll(/^## .+?$/gm, function(match){return '<span style="font-size:125%">'+match.slice(3)+'</span>'})
       .replaceAll(/^# .+?$/gm, function(match){return '<span style="font-size:150%">'+match.slice(2)+'</span>'})
@@ -155,6 +164,12 @@ function parseMD(text, extended=true) {
   })
   return text;
 }
+setInterval(function(){
+  Array.from(document.querySelectorAll('.timestamp-relative'))
+    .forEach(relative => {
+      relative.innerText = formatDate(Number(relative.getAttribute('data-time')), 'R');
+    })
+}, 1000)
 
 // Icons
 const iconCache = {};
@@ -228,7 +243,6 @@ function colorToRGB(color) {
 }
 function formatDate(date, format='f') {
   if (format==='R') {
-    // TODO: Fix
     let now = new Date().getTime();
     let da = new Date(date);
     let dat = da.getTime();
