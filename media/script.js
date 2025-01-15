@@ -162,7 +162,7 @@ function renderMessage(content, author, m) {
     <span class="inner">${parseMD(content)}</span>
     ${m.attachments.length?m.attachments.map(attach=>{
       if (!attach.content_type) attach.content_type='image/'+attach.url.split('?')[0].split('.').slice(-1)[0];
-      return `<${attach.content_type.startsWith('image/')?'img':attach.content_type.startsWith('audio/')?'audio':attach.content_type.startsWith('video/')?'video':'div'} src="${attach.url}"  width="${Math.floor(attach.width/2)}" height="${Math.floor(attach.height/2)}" class="message-attach" controls>${attach.content_type.startsWith('image/')?'':attach.content_type.startsWith('audio/')?'</audio>':attach.content_type.startsWith('video/')?'</video>':`<a download="${attach.filename}">${attach.filename}</a></div>`}`;
+      return `<${attach.content_type.startsWith('image/')?'img':attach.content_type.startsWith('audio/')?'audio':attach.content_type.startsWith('video/')?'video':'div'} src="${attach.url}" width="${Math.floor(attach.width/2)}" height="${Math.floor(attach.height/2)}" class="message-attach${attach.flags?(getAttachmentFlags(attach.flags).SPOILER?` spoiler"onclick="this.classList.remove('spoiler')`:''):''}" controls>${attach.content_type.startsWith('image/')?'':attach.content_type.startsWith('audio/')?'</audio>':attach.content_type.startsWith('video/')?'</video>':`<a download="${attach.filename}">${attach.filename}</a></div>`}`;
     }).join(''):''}
     ${m.embeds.length?m.embeds.map(embed=>renderEmbed(embed)).join(''):''}
     ${m.sticker_items?.length?m.sticker_items.map(sticker=>{
@@ -357,7 +357,12 @@ function switchChannel(id) {
       .then(res=>res.json())
       .then(res=>{
         // Get and sort the channels
-        let channels = JSON.parse(res.content).sort((a,b)=>(a.position+([2,13].includes(a.type)?999:0))-(b.position+([2,13].includes(b.type)?999:0)));
+        let con = JSON.parse(res.content);
+        if (con.code === 50001) {
+          alert('Could not access channel');
+          reutrn;
+        }
+        let channels = con.sort((a,b)=>(a.position+([2,13].includes(a.type)?999:0))-(b.position+([2,13].includes(b.type)?999:0)));
         let sorted = [];
         let cat = {'null':[]};
         Object.values(channels.filter(c=>c.type===4).map(c=>c.id)).forEach(id=>cat[id]=[]);
@@ -448,7 +453,10 @@ if (!localStorage.getItem('token')) {
   location.href = '/login';
 } else {
   window.data = {};
+
   window.data.ws = {log:false};
+  window.data.localReport = false;
+
   window.data.servers = [];
   window.data.currentServer = 0;
   window.data.currentChannel = 0;
@@ -495,6 +503,8 @@ if (!localStorage.getItem('token')) {
         // Wait and heartbeat
         setTimeout(wsheartbeat, window.data.ws.heartbeat_interval);
         break;
+      default:
+        report('Unknown gateway op: '+wsd.op, wsd)
     }
   }
 

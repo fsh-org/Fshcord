@@ -42,6 +42,14 @@ const userFlags = {
   COLLABORATOR: 50n,
   RESTRICTED_COLLABORATOR: 51n
 };
+const attachmentFlags = {
+  CLIP: 0n,
+  THUMBNAIL: 1n,
+  REMIX: 2n,
+  SPOILER: 3n,
+  CONTAINS_EXPLICIT_MEDIA: 4n,
+  ANIMATED: 5n
+}
 const SystemAuthor = {
   id: 0,
   avatar: 'system',
@@ -127,6 +135,12 @@ function parseMD(text, extended=true) {
     .replaceAll('~lt;', '&lt;')
     .replaceAll('~quot;', '&quot;')
     .replaceAll("'", '&apos;');
+  // Discord
+  text = text
+    .replaceAll(/&lt;:.+?:[0-9]+?>/g, function(match){
+      let parts = match.replace('>','').split(':');
+      return reservemd(`<img src="https://cdn.discordapp.com/emojis/${parts[2]}.webp?size=96" onerror="this.outerText='${match}'" class="message-emoji">`);
+    });
   // General
   text = text
     .replaceAll(/\*\*.+?\*\*/g, function(match){return '<b>'+match.slice(2,-2)+'</b>'})
@@ -137,12 +151,6 @@ function parseMD(text, extended=true) {
     .replaceAll(/\|\|.+?\|\|/g, function(match){return `<span style="cursor:pointer;color:var(--bg-3);border-radius:0.25rem;background-color:var(--bg-3);transition:500ms;" onclick="this.style.color='var(--text-1)';this.style.backgroundColor='var(--bg-0)'">`+match.slice(2,-2)+'</span>'})
     .replaceAll(/\`.+?\`/g, function(match){return '<code>'+match.slice(1,-1)+'</code>'})
     .replaceAll(/^\> .+?$/gm, function(match){return '<blockquote>'+match.slice(2)+'</blockquote>'});
-  // Discord
-  text = text
-    .replaceAll(/&lt;:.+?:[0-9]+?>/g, function(match){
-      let parts = match.replace('>','').split(':');
-      return `<img src="https://cdn.discordapp.com/emojis/${parts[2]}.webp?size=96" onerror="this.outerText='${match}'" class="message-emoji">`;
-    });
   // Extended
   if (extended) {
     text = text
@@ -236,6 +244,14 @@ function getUserFlags(bitfield) {
   }
   return flags;
 }
+function getAttachmentFlags(bitfield) {
+  let flags = {};
+  bitfield = BigInt(bitfield);
+  for (const [name, position] of Object.entries(attachmentFlags)) {
+    flags[name] = (bitfield & (1n << position))>0n;
+  }
+  return flags;
+}
 
 // General utility
 function colorToRGB(color) {
@@ -301,8 +317,15 @@ function loading(text) {
     }
   }).showToast();
 }
+let lastReport = '';
 function report(text, obj) {
-  fetch(`https://telemetry.fsh.plus?url=${encodeURIComponent(location.href)}&text=${text}&context=${encodeURIComponent(JSON.stringify(obj, null, 2))}`, { method: 'POST' })
+  if (window.data.localReport) {
+    console.log(text, obj);
+  } else {
+    if (lastReport===text) return;
+    lastReport = text;
+    fetch(`https://telemetry.fsh.plus?url=${encodeURIComponent(location.href)}&text=${text}&context=${encodeURIComponent(JSON.stringify(obj, null, 2))}`, { method: 'POST' })
+  }
 }
 function copy(text) {
   navigator.clipboard.writeText(text);

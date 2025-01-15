@@ -284,6 +284,7 @@ main {
   margin: 2px;
   border-radius: 0.25rem;
   object-fit: contain;
+  transition: filter 500ms;
 }
 audio.message-attach {
   width: 100%;
@@ -300,6 +301,9 @@ div.message-attach {
 lottie-sticker.message-attach {
   width: 160px;
   height: 160px;
+}
+.message-attach.spoiler {
+  filter: blur(6px) contrast(1.5) saturate(0.5) grayscale(0.5);
 }
 .message-emoji {
   width: 18px;
