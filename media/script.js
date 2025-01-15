@@ -158,7 +158,7 @@ function renderMessage(content, author, m) {
   return `<div class="message${m.mentions.map(e=>e.id).includes(window.data.user.id)?' mention':''}">
   <img src="${getUserAvatar(author.id, author.avatar)}" width="40" height="40" aria-hidden="true">
   <span>
-    <span><span class="name">${author.global_name ?? author.username}</span>${[author.system,m.webhook_id,author.bot].filter(e=>!!e).length?`<span class="tag">${author.system?'SYSTEM':(m.webhook_id?'WEBHOOK':(author.bot?`BOT${getUserFlags(author.flags).VERIFIED_BOT?' ✔':''}`:''))}</span>`:''}${formatDate(m.timestamp)}${m.edited_timestamp?' · Edited':''}</span>
+    <span><span class="name">${author.global_name ?? author.username}</span>${[author.system,m.webhook_id,author.bot].filter(e=>!!e).length?`<span class="tag">${author.system?'SYSTEM':(m.webhook_id?'WEBHOOK':(author.bot?`BOT${getUserFlags(author.flags).VERIFIED_BOT?' ✔':''}`:''))}</span>`:''}<span class="timestamp">${formatDate(m.timestamp, 'r')}</span>${m.edited_timestamp?'<span>· Edited</span>':''}</span>
     <span class="inner">${parseMD(content)}</span>
     ${m.attachments.length?m.attachments.map(attach=>{
       if (!attach.content_type) attach.content_type='image/'+attach.url.split('?')[0].split('.').slice(-1)[0];

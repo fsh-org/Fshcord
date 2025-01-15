@@ -59,7 +59,7 @@ body {
   border-radius: 2rem;
   color: var(--text-1) !important;
   background-color: var(--bg-1) !important;
-  transition: border-radius 500ms;
+  transition: border-radius 250ms;
   outline: none !important;
 }
 .server-clicky:hover, .server-clicky[selected] {
@@ -84,9 +84,9 @@ body {
   width: 50px;
   height: 50px;
   border-radius: 2rem;
-  transition: border-radius 500ms;
+  transition: border-radius 250ms;
 }
-.server-clicky img:hover, .server-clicky[selected] img {
+.server-clicky:hover img, .server-clicky[selected] img {
   border-radius: 1rem;
 }
 .server-folder {
@@ -228,6 +228,11 @@ main {
 }
 .message .name {
   color: var(--text-0);
+}
+.message .timestamp {
+  margin: 0px 5px;
+  font-size: 70%;
+  color: var(--text-2);
 }
 .message .tag {
   font-size: 75%;
