@@ -460,7 +460,7 @@ if (!localStorage.getItem('token')) {
   }
   ws.onmessage = function(event) {
     let wsd = JSON.parse(event.data);
-    if (window.date.ws.log) console.log(wsd);
+    if (window.data.ws.log) console.log(wsd);
     switch (wsd.op) {
       case 0: // Just anything
         window.data.ws.d = wsd.s;
