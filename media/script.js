@@ -447,6 +447,7 @@ function switchServers(list) {
       })
     }
   });
+  ordered = ordered.filter(e=>!!e);
   showServers(ordered);
 }
 
