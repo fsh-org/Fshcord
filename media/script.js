@@ -308,7 +308,8 @@ function setTop(text, type) {
   document.getElementById('top-name').innerHTML = getIcon(type, 20)+text;
 }
 function showChannels(list, server) {
-  const rules = window.data.servers.find(e=>e.id===server).rules_channel_id;
+  let rules;
+  if (server) rules = window.data.servers.find(e=>e.id===server).rules_channel_id;
   document.getElementById('channel').innerHTML = (server?'<div id="channels-server-header"></div>':'')+list.map(c=>{
     let name = channelName(c);
     if (c.type===4) {
