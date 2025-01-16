@@ -308,13 +308,14 @@ function setTop(text, type) {
   document.getElementById('top-name').innerHTML = getIcon(type, 20)+text;
 }
 function showChannels(list, server) {
+  const rules = window.data.servers.find(e=>e.id===server).rules_channel_id;
   document.getElementById('channel').innerHTML = (server?'<div id="channels-server-header"></div>':'')+list.map(c=>{
     let name = channelName(c);
     if (c.type===4) {
       return `<span style="color:var(--text-2);font-size:80%;">${name}</span>`
     }
     return `<button data-id="${c.id}" data-type="${c.type}" data-name="${name}">
-  ${c.type===1?`<img src="${getUserAvatar(c.recipients[0].id, c.recipients[0].avatar, 32)}" width="20" height="20" aria-hidden="true">`:getIcon(c.type, 20)}
+  ${c.type===1?`<img src="${getUserAvatar(c.recipients[0].id, c.recipients[0].avatar, 32)}" width="20" height="20" aria-hidden="true">`:(rules===c.id?getIcon('rules', 20):getIcon(c.type, 20))}
   <span>${name}</span>
 </button>`;
   }).join('');
@@ -383,7 +384,7 @@ function switchChannel(id) {
 
 function showServers(list) {
   document.getElementById('server-list').innerHTML = list.map(s=>{
-    if (s.type==='folder') {
+    if (s?.type==='folder') {
       return `<div aria-label="${s.name??'Folder'}" aria-role="button" class="server-folder" style="--folder-color:${colorToRGB(s.color??0)}">
   <svg onclick="let op=(this.getAttribute('open')==='true');this.setAttribute('open', !op);this.parentElement.style.height=(!op?'${(s.guilds.length+1)*50+s.guilds.length*10}px':'50px')" open="false"${getIcon('folder', 50).replace('<svg','').replace('viewBox="0 0 256 256"','viewBox="-64 -64 384 384"')}
   ${s.guilds.map(g=>`<button aria-label="${g.name}" data-id="${g.id}" class="server-clicky">${g.icon == null ? g.name.trim().split(/\s+/).map(word=>word[0]??'').join('') : `<img src="https://cdn.discordapp.com/icons/${g.id}/${g.icon}.png?size=64" alt="${g.name}">`}</button>`).join('')}
@@ -528,7 +529,8 @@ if (!localStorage.getItem('token')) {
       fetchIcon(5),
       fetchIcon(13),
       fetchIcon(15),
-      fetchIcon(16)
+      fetchIcon(16),
+      fetchIcon('rules')
     ]);
 
     loading('DMs');
