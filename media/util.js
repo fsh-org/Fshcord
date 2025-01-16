@@ -94,7 +94,7 @@ function proxyFetch(url, o) {
   }
   if (o?.body) {
     opts.body = o.body;
-    if (!opts.headers['content-type']) opt.headers['content-type']='application/json';
+    if (!opts.headers['content-type']) opts.headers['content-type']='application/json';
   }
   return fetch('https://api.fsh.plus/request?url='+encodeURIComponent(url), {
     method: 'POST',
