@@ -279,8 +279,10 @@ main {
   z-index: -5;
 }
 .message-attach {
-  max-width: 45%;
-  max-height: fit-content;
+  width: fit-content;
+  height: fit-content;
+  max-width: 45vh;
+  max-height: 45vh;
   margin: 2px;
   border-radius: 0.25rem;
   object-fit: contain;
@@ -440,9 +442,12 @@ lottie-sticker.message-attach {
 }
 
 .message code {
+  display: block;
+  width: fit-content;
+  height: fit-content;
   word-break: break-word;
   white-space: break-spaces;
-  padding: 2px;
+  padding: 2px 6px;
   border-radius: 0.25rem;
   background-color: var(--bg-0);
 }

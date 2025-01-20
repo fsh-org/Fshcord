@@ -26,7 +26,7 @@ function sendMessage() {
     .then(res=>res.json())
     .then(res=>{
       document.getElementById('message-input').value = '';
-      switchMessage(window.data.currentChannel, window.data.currentChannelType)
+      switchMessage(window.data.currentChannel, window.data.currentChannelType);
     })
 }
 document.getElementById('message-input').onkeyup = function(event){if(event.key==='Enter')sendMessage()};
@@ -437,18 +437,19 @@ function switchServers(list) {
   let ordered = [];
   window.data.settings.guild_folders.forEach(f => {
     if (f.guild_ids.length<2) {
-      ordered.push(list.find(s=>s.id===f.guild_ids[0]))
+      let g = list.find(s=>s.id===f.guild_ids[0]);
+      if (g) ordered.push(g);
     } else {
+      let gs = f.guild_ids.map(g=>list.find(s=>s.id===g)).filter(e=>!!e);
       ordered.push({
         type: 'folder',
         id: f.id,
         name: f.name,
         color: f.color,
-        guilds: f.guild_ids.map(g=>list.find(s=>s.id===g))
+        guilds: gs
       })
     }
   });
-  ordered = ordered.filter(e=>!!e);
   showServers(ordered);
 }
 
