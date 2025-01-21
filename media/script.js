@@ -480,6 +480,23 @@ if (!localStorage.getItem('token')) {
           case 'READY':
             init(wsd.d.user, wsd.d.user_settings, wsd.d.guilds)
             break;
+          case 'GUILD_CREATE':
+            window.data.servers.unshift(wsd.d);
+            switchServers(window.data.servers);
+            break;
+          case 'GUILD_UPDATE':
+            window.data.servers.find(e=>e.id===wsd.d.id) = wsd.d;
+            switchServers(window.data.servers);
+            break;
+          case 'USER_SETTINGS_UPDATE':
+            Object.entries(wsd.d).forEach((k,v)=>{
+              window.data.settings[k] = v;
+            });
+            if (wsd.d.guild_folders) switchServers(window.data.servers);
+            break;
+          case 'USER_SETTINGS_PROTO_UPDATE':
+            // For future
+            break;
         }
         break;
       case 1: // Heartbeat
@@ -499,7 +516,8 @@ if (!localStorage.getItem('token')) {
               browser: "chrome"
             },
             compress: false,
-            capabilities: 0
+            capabilities: 9217 // Lazy notes, client state v2, debounce message reactions
+            // ^ Consideration: 1 << 9	USER_SETTINGS_PROTO
           }
         }));
         break;
