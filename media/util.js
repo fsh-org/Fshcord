@@ -154,7 +154,7 @@ function parseMD(text, extended=true) {
   // Extended
   if (extended) {
     text = text
-      .replaceAll(/&lt;t:[0-9]+?(:[tTdDfFR])?>/gm, function(match){match=match.split(':');match[1]=Number(match[1].replace('>',''))*1000;return `<code title="${formatDate(match[1], 'F')}" style="font-family:unset"${((match[2]??'f')[0])==='R'?` class="timestamp-relative" data-time="${match[1]}"`:''}>${formatDate(match[1], (match[2]??'f')[0])}</code>`})
+      .replaceAll(/&lt;t:[0-9]+?(:[tTdDfFR])?>/gm, function(match){match=match.split(':');match[1]=Number(match[1].replace('>',''))*1000;return `<code title="${formatDate(match[1], 'F')}" style="display:unset"${((match[2]??'f')[0])==='R'?` class="timestamp-relative" data-time="${match[1]}"`:''}>${formatDate(match[1], (match[2]??'f')[0])}</code>`})
       .replaceAll(/^### .+?$/gm, function(match){return '<span style="font-size:110%">'+match.slice(4)+'</span>'})
       .replaceAll(/^## .+?$/gm, function(match){return '<span style="font-size:125%">'+match.slice(3)+'</span>'})
       .replaceAll(/^# .+?$/gm, function(match){return '<span style="font-size:150%">'+match.slice(2)+'</span>'})
