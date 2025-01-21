@@ -481,11 +481,26 @@ if (!localStorage.getItem('token')) {
             init(wsd.d.user, wsd.d.user_settings, wsd.d.guilds)
             break;
           case 'GUILD_CREATE':
-            window.data.servers.unshift(wsd.d);
-            switchServers(window.data.servers);
+            proxyFetch(`https://discord.com/api/v10/guilds/${wsd.d.id}`)
+              .then(res=>res.json())
+              .then(res=>{
+                let con = JSON.parse(res.content);
+                window.data.servers.push(con);
+                window.data.settings.guild_folders.unshift({
+                  id: null,
+                  name: null,
+                  color: null,
+                  guild_ids: [con.id]
+                });
+                switchServers(window.data.servers);
+              })
             break;
           case 'GUILD_UPDATE':
-            window.data.servers.find(e=>e.id===wsd.d.id) = wsd.d;
+            window.data.servers[window.data.servers.findIndex(e=>e.id===wsd.d.id)] = wsd.d;
+            switchServers(window.data.servers);
+            break;
+          case 'GUILD_DELETE':
+            window.data.servers = window.data.servers.filter(e=>e.id!==wsd.d.id);
             switchServers(window.data.servers);
             break;
           case 'USER_SETTINGS_UPDATE':
@@ -516,7 +531,7 @@ if (!localStorage.getItem('token')) {
               browser: "chrome"
             },
             compress: false,
-            capabilities: 9217 // Lazy notes, client state v2, debounce message reactions
+            capabilities: 8193 // Lazy notes, client state v2, debounce message reactions
             // ^ Consideration: 1 << 9	USER_SETTINGS_PROTO
           }
         }));
