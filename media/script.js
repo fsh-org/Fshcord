@@ -253,7 +253,12 @@ function switchMessage(id, type) {
     proxyFetch(`https://discord.com/api/v10/channels/${id}/messages?limit=50`)
       .then(res=>res.json())
       .then(res=>{
-        showMessages(JSON.parse(res.content));
+        let con = JSON.parse(res.content);
+        if (con.code === 50001) {
+          alert('Could not access channel');
+          return;
+        }
+        showMessages(con);
       })
     return;
   }/*
@@ -317,6 +322,7 @@ function showChannels(list, server) {
     }
     return `<button data-id="${c.id}" data-type="${c.type}" data-name="${name}">
   ${c.type===1?`<img src="${getUserAvatar(c.recipients[0].id, c.recipients[0].avatar, 32)}" width="20" height="20" aria-hidden="true">`:(rules===c.id?getIcon('rules', 20):getIcon(c.type, 20))}
+  ${c.nsfw?getIcon('nsfw', 20).replace('>',' class="channel-nsfw">'):''}
   <span>${name}</span>
 </button>`;
   }).join('');
@@ -359,12 +365,7 @@ function switchChannel(id) {
       .then(res=>res.json())
       .then(res=>{
         // Get and sort the channels
-        let con = JSON.parse(res.content);
-        if (con.code === 50001) {
-          alert('Could not access channel');
-          reutrn;
-        }
-        let channels = con.sort((a,b)=>(a.position+([2,13].includes(a.type)?999:0))-(b.position+([2,13].includes(b.type)?999:0)));
+        let channels = JSON.parse(res.content).sort((a,b)=>(a.position+([2,13].includes(a.type)?999:0))-(b.position+([2,13].includes(b.type)?999:0)));
         let sorted = [];
         let cat = {'null':[]};
         Object.values(channels.filter(c=>c.type===4).map(c=>c.id)).forEach(id=>cat[id]=[]);
@@ -566,7 +567,8 @@ if (!localStorage.getItem('token')) {
       fetchIcon(13),
       fetchIcon(15),
       fetchIcon(16),
-      fetchIcon('rules')
+      fetchIcon('rules'),
+      fetchIcon('nsfw')
     ]);
 
     loading('DMs');

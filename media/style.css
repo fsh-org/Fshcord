@@ -171,6 +171,7 @@ body {
   display: flex;
   gap: 5px;
   align-items: center;
+  position: relative;
   border: none;
   text-align: left;
   border-radius: 0.2rem;
@@ -186,6 +187,9 @@ body {
 }
 #channel button[data-type="1"] img {
   border-radius: 2rem;
+}
+.channel-nsfw {
+  position: absolute;
 }
 
 main {
