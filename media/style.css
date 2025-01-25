@@ -181,15 +181,24 @@ body {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-#channel button img, #channel button svg {
+#channel button .avatar, #channel button svg {
   width: 20px;
   height: 20px;
 }
-#channel button[data-type="1"] img {
+#channel button[data-type="1"] .avatar, #channel button[data-type="1"] .avatar img {
   border-radius: 2rem;
 }
 .channel-nsfw {
   position: absolute;
+}
+
+.avatar {
+  position: relative;
+}
+.decoration {
+  position: absolute;
+  top: 0px;
+  left: 0px;
 }
 
 main {
@@ -245,8 +254,11 @@ main {
   border-radius: 0.25rem;
   background-color: var(--blue-1);
 }
-.message > img {
+.message > .avatar {
+  width: 40px;
   height: 40px;
+}
+.message .avatar img:not(.decoration) {
   border-radius: 2rem;
 }
 .message > span {

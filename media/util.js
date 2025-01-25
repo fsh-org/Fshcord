@@ -236,6 +236,10 @@ function getUserAvatar(id, hash, size = 64) {
   if (hash==='system') return '/media/fshcord.png';
   return `https://cdn.discordapp.com/avatars/${id}/${hash}.${hash.startsWith('a_')?'gif':'webp'}?size=${size}`;
 }
+function getUserDeco(hash) {
+  if (!hash) return '';
+  return `https://cdn.discordapp.com/avatar-decoration-presets/${hash}.png?passthrough=true`;
+}
 function getUserFlags(bitfield) {
   let flags = {};
   bitfield = BigInt(bitfield);

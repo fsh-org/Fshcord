@@ -156,7 +156,10 @@ video -
 }
 function renderMessage(content, author, m) {
   return `<div class="message${m.mentions.map(e=>e.id).includes(window.data.user.id)?' mention':''}">
-  <img src="${getUserAvatar(author.id, author.avatar)}" width="40" height="40" aria-hidden="true">
+  <div class="avatar" aria-hidden="true">
+    <img src="${getUserAvatar(author.id, author.avatar)}" width="40" height="40" aria-hidden="true">
+    <img src="${getUserDeco(author?.avatar_decoration_data?.asset)}" class="decoration" width="40" height="40" aria-hidden="true" onerror="this.remove()">
+  </div>
   <span>
     <span><span class="name">${author.global_name ?? author.username}</span>${[author.system,m.webhook_id,author.bot].filter(e=>!!e).length?`<span class="tag">${author.system?'SYSTEM':(m.webhook_id?'WEBHOOK':(author.bot?`BOT${getUserFlags(author.flags).VERIFIED_BOT?' ✔':''}`:''))}</span>`:''}<span class="timestamp">${formatDate(m.timestamp, 'r')}</span>${m.edited_timestamp?'<span>· Edited</span>':''}</span>
     <span class="inner">${parseMD(content)}</span>
@@ -321,7 +324,7 @@ function showChannels(list, server) {
       return `<span style="color:var(--text-2);font-size:80%;">${name}</span>`
     }
     return `<button data-id="${c.id}" data-type="${c.type}" data-name="${name}">
-  ${c.type===1?`<img src="${getUserAvatar(c.recipients[0].id, c.recipients[0].avatar, 32)}" width="20" height="20" aria-hidden="true">`:(rules===c.id?getIcon('rules', 20):getIcon(c.type, 20))}
+  ${c.type===1?`<div class="avatar" aria-hidden="true"><img src="${getUserAvatar(c.recipients[0].id, c.recipients[0].avatar, 32)}" width="20" height="20" aria-hidden="true"><img src="${getUserDeco(c.recipients[0]?.avatar_decoration_data?.asset)}" class="decoration" width="20" height="20" aria-hidden="true" onerror="this.remove()"></div>`:(rules===c.id?getIcon('rules', 20):getIcon(c.type, 20))}
   ${c.nsfw?getIcon('nsfw', 20).replace('>',' class="channel-nsfw">'):''}
   <span>${name}</span>
 </button>`;
