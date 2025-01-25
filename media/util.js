@@ -123,7 +123,7 @@ function parseMD(text, extended=true) {
         .replaceAll('&', '&amp;')
         .replaceAll('~lt;', '&lt;')
         .replaceAll('~quot;', '&quot;');
-      return reservemd(`<code>${match.slice(3,-3)}</code>`);
+      return reservemd(`<code class="block">${match.slice(3,-3)}</code>`);
     });
   }
   text = text
