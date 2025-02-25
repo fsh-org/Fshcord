@@ -364,26 +364,23 @@ function switchChannel(id) {
   } else if (id == 1) {
     // User
   } else {
-    proxyFetch(`https://discord.com/api/v10/guilds/${id}/channels`)
-      .then(res=>res.json())
-      .then(res=>{
-        // Get and sort the channels
-        let channels = JSON.parse(res.content).sort((a,b)=>(a.position+([2,13].includes(a.type)?999:0))-(b.position+([2,13].includes(b.type)?999:0)));
-        let sorted = [];
-        let cat = {'null':[]};
-        Object.values(channels.filter(c=>c.type===4).map(c=>c.id)).forEach(id=>cat[id]=[]);
-        channels.filter(c=>c.type!==4).forEach(c=>cat[c.parent_id].push(c));
-        Object.keys(cat).forEach(k=>{
-          if (k!='null') sorted.push(channels.find(cc=>cc.id===k));
-          sorted.push(...cat[k]);
-        })
-        showChannels(sorted, id);
-        // Load first
-        let first = sorted.filter(c=>c.type!==4)[0];
-        loading(channelName(first));
-        setTop(channelName(first), first.type);
-        switchMessage(first.id, first.type);
-      })
+    let server = window.data.servers.find(e=>e.id===id);
+    // Get and sort the channels
+    let channels = structuredClone(server.channels).sort((a,b)=>(a.position+([2,13].includes(a.type)?999:0))-(b.position+([2,13].includes(b.type)?999:0)));
+    let sorted = [];
+    let cat = {'':[]};
+    Object.values(channels.filter(c=>c.type===4).map(c=>c.id)).forEach(id=>cat[id]=[]);
+    channels.filter(c=>c.type!==4).forEach(c=>cat[c.parent_id??''].push(c));
+    Object.keys(cat).forEach(k=>{
+      if (k!='') sorted.push(channels.find(cc=>cc.id===k));
+      sorted.push(...cat[k]);
+    })
+    showChannels(sorted, id);
+    // Load first
+    let first = sorted.filter(c=>c.type!==4)[0];
+    loading(channelName(first));
+    setTop(channelName(first), first.type);
+    switchMessage(first.id, first.type);
   }
 }
 
