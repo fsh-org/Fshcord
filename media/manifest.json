@@ -1,0 +1,29 @@
+{
+  "name": "Fshcord",
+  "short_name": "Fshcord",
+  "scope": "/",
+  "start_url": "/",
+  "display": "standalone",
+  "display_override": ["minimal-ui"],
+  "theme_color": "#333333",
+  "background_color": "#181818",
+  "description": "Fshcord - Alternative discord client",
+  "icons": [
+    {
+      "src": "https://fsh.plus/fsh.png",
+      "type": "image/png",
+      "sizes": "256x256"
+    },
+    {
+      "src": "https://fsh.plus/fsh-512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    },
+    {
+      "src": "https://fsh.plus/mask.png",
+      "sizes": "256x256",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
