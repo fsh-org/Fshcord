@@ -241,6 +241,7 @@ function showMessages(list) {
   // Scroll to top
   document.getElementById('messages').scrollTop = 0;
 }
+let messageCache = {};
 function switchMessage(id, type) {
   type = Number(type);
   // How??
@@ -253,6 +254,10 @@ function switchMessage(id, type) {
   this.data.currentChannelType = type;
   // Text
   if ([0,1,3,5,10,11,12].includes(type)) {
+    if (messageCache[id]) {
+      showMessages(messageCache[id]);
+      return;
+    }
     proxyFetch(`https://discord.com/api/v10/channels/${id}/messages?limit=50`)
       .then(res=>res.json())
       .then(res=>{
@@ -261,6 +266,7 @@ function switchMessage(id, type) {
           alert('Could not access channel');
           return;
         }
+        messageCache[id] = con;
         showMessages(con);
       })
     return;
@@ -339,13 +345,9 @@ function showChannels(list, server) {
     });
   // Server banner
   if (server) {
-    proxyFetch(`https://discord.com/api/v10/guilds/${server}`)
-      .then(res=>res.json())
-      .then(res=>{
-        let serv = JSON.parse(res.content);
-        document.getElementById('channels-server-header').innerHTML = `<span class="name">${serv.name}</span>
-${serv.banner?`<div><img src="https://cdn.discordapp.com/banners/${serv.id}/${serv.banner}.webp?size=240"></div>`:''}`;
-      })
+    server = window.data.servers.find(e=>e.id===server);
+    document.getElementById('channels-server-header').innerHTML = `<span class="name">${server.name}</span>
+${server.banner?`<div><img src="https://cdn.discordapp.com/banners/${server.id}/${server.banner}.webp?size=240"></div>`:''}`;
   }
 }
 function switchChannel(id) {
