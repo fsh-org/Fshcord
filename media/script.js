@@ -178,7 +178,7 @@ function renderMessage(content, author, m) {
   </span>
 </div>`;
 }
-function showMessages(list) {
+function showMessages(list, channelType) {
   document.getElementById('messages').innerHTML = list.map(m=>{
     // System non changing
     if ([14,15,16,17,22].includes(m.type)) {
@@ -202,6 +202,14 @@ function showMessages(list) {
   `${m.author.global_name ?? m.author.username} started a call that ended.` :
   `You missed a call from ${m.author.global_name ?? m.author.username}.`) :
 `${m.author.global_name ?? m.author.username} started a call.`, SystemAuthor, m);
+    }
+    // Channel name change
+    if (m.type===4) {
+      return renderMessage(`${m.author.global_name ?? m.author.username} changed the ${[15,16].includes(channelType) ? "post title" : "channel name"}: ${m.content}`, SystemAuthor, m);
+    }
+    // Channel icon change
+    if (m.type===5) {
+      return renderMessage(`${m.author.global_name ?? m.author.username} changed the channel icon.`, SystemAuthor, m);
     }
     // User join
     if (m.type===7) {
@@ -255,7 +263,7 @@ function switchMessage(id, type) {
   // Text
   if ([0,1,3,5,10,11,12].includes(type)) {
     if (messageCache[id]) {
-      showMessages(messageCache[id]);
+      showMessages(messageCache[id], type);
       return;
     }
     proxyFetch(`https://discord.com/api/v10/channels/${id}/messages?limit=50`)
@@ -267,7 +275,7 @@ function switchMessage(id, type) {
           return;
         }
         messageCache[id] = con;
-        showMessages(con);
+        showMessages(con, type);
       })
     return;
   }/*
