@@ -266,6 +266,7 @@ function switchMessage(id, type) {
       showMessages(messageCache[id], type);
       return;
     }
+    showMessages([], type);
     proxyFetch(`https://discord.com/api/v10/channels/${id}/messages?limit=50`)
       .then(res=>res.json())
       .then(res=>{
@@ -491,6 +492,7 @@ if (!localStorage.getItem('token')) {
           case 'READY':
             init(wsd.d.user, wsd.d.user_settings, wsd.d.guilds)
             break;
+
           case 'GUILD_CREATE':
             proxyFetch(`https://discord.com/api/v10/guilds/${wsd.d.id}`)
               .then(res=>res.json())
@@ -514,6 +516,20 @@ if (!localStorage.getItem('token')) {
             window.data.servers = window.data.servers.filter(e=>e.id!==wsd.d.id);
             switchServers(window.data.servers);
             break;
+
+          case 'MESSAGE_CREATE':
+            if (messageCache[wsd.d.channel_id]) {
+              // Add to cache
+              messageCache[wsd.d.channel_id].unshift(messageCache[wsd.d]);
+              // If current, show new
+              if (window.data.currentChannel===wsd.d.channel_id) {
+                if ([0,1,3,5,10,11,12].includes(window.data.currentChannelType)) {
+                  showMessages(messageCache[id], window.data.currentChannelType);
+                }
+              }
+            }
+            break;
+
           case 'USER_SETTINGS_UPDATE':
             Object.entries(wsd.d).forEach((k,v)=>{
               window.data.settings[k] = v;
