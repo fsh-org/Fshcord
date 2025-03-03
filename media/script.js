@@ -211,6 +211,10 @@ function showMessages(list, channelType) {
     if (m.type===5) {
       return renderMessage(`${m.author.global_name ?? m.author.username} changed the channel icon.`, SystemAuthor, m);
     }
+    // Channel pin
+    if (m.type===6) {
+      return renderMessage(`${m.author.global_name ?? m.author.username} pinned a message to this channel.`, SystemAuthor, m);
+    }
     // User join
     if (m.type===7) {
       const messages = ["{author} joined the party.",
@@ -227,6 +231,10 @@ function showMessages(list, channelType) {
 "Good to see you, {author}.",
 "Yay you made it, {author}!"];
       return renderMessage(messages[new Date(m.timestamp).getTime()%13].replace('{author}',(m.author.global_name ?? m.author.username)), SystemAuthor, m);
+    }
+    // Channel follow
+    if (m.type===12) {
+      return renderMessage(`${m.author.global_name ?? m.author.username} has added ${m.content} to this channel. Its most important updates will show up here.`, SystemAuthor, m);
     }
     // Normal
     if (![0,19].includes(m.type)) {
