@@ -161,7 +161,7 @@ function renderMessage(content, author, m) {
     <img src="${getUserDeco(author?.avatar_decoration_data?.asset)}" class="decoration" width="40" height="40" aria-hidden="true" onerror="this.remove()">
   </div>
   <span>
-    <span><span class="name">${author.global_name ?? author.username}</span>${[author.system,m.webhook_id,author.bot].filter(e=>!!e).length?`<span class="tag">${author.system?'SYSTEM':(m.webhook_id?'WEBHOOK':(author.bot?`BOT${getUserFlags(author.flags).VERIFIED_BOT?' ✔':''}`:''))}</span>`:''}<span class="timestamp">${formatDate(m.timestamp, 'r')}</span>${m.edited_timestamp?'<span>· Edited</span>':''}</span>
+    <span><span class="name">${getUserDisplay(author)}</span>${[author.system,m.webhook_id,author.bot].filter(e=>!!e).length?`<span class="tag">${author.system?'SYSTEM':(m.webhook_id?'WEBHOOK':(author.bot?`BOT${getUserFlags(author.flags??author.public_flags).VERIFIED_BOT?' ✔':''}`:''))}</span>`:''}<span class="timestamp">${formatDate(m.timestamp, 'r')}</span>${m.edited_timestamp?'<span>· Edited</span>':''}</span>
     <span class="inner">${parseMD(content)}</span>
     ${m.attachments.length?m.attachments.map(attach=>{
       if (!attach.content_type) attach.content_type='image/'+attach.url.split('?')[0].split('.').slice(-1)[0];
@@ -180,40 +180,22 @@ function renderMessage(content, author, m) {
 }
 function showMessages(list, channelType) {
   document.getElementById('messages').innerHTML = list.map(m=>{
-    // System non changing
-    if ([14,15,16,17,22].includes(m.type)) {
-      const texts = {
-        '14': `This server has been removed from Server Discovery because it no longer passes all the requirements. Check Server Settings for more details.`,
-        '15': `This server is eligible for Server Discovery again and has been automatically relisted!`,
-        '16': `This server has failed Discovery activity requirements for 1 week. If this server fails for 4 weeks in a row, it will be automatically removed from Discovery.`,
-        '17': `This server has failed Discovery activity requirements for 3 weeks in a row. If this server fails for 1 more week, it will be removed from Discovery.`,
-        '22': `**Wondering who to invite?**\nStart by inviting anyone who can help you build the server!`
-      };
-      return renderMessage(texts[m.type.toString()], SystemAuthor, m);
+    // System
+    if (systemMessages[m.type.toString()]) {
+      let text = systemMessages[m.type.toString()].replaceAll(/\{.*?\}/g, function(match){return eval(match)});
+      return renderMessage(text, SystemAuthor, m);
     }
     // Group DM/Thread add/remove member
     if ([1,2].includes(m.type)) {
-      return renderMessage(`${m.author.global_name ?? m.author.username} ${m.type===1?'added':'removed'} ${m.mentions[0].global_name ?? m.mentions[0].username} ${m.type===1?'to':'from'} the ${window.data.currentChannelType===3?'group':'thread'}.`, SystemAuthor, m);
+      return renderMessage(`${getUserDisplay(m.author)} ${m.type===1?'added':'removed'} ${getUserDisplay(m.mentions[0])} ${m.type===1?'to':'from'} the ${window.data.currentChannelType===3?'group':'thread'}.`, SystemAuthor, m);
     }
     // Call
     if (m.type===3) {
       return renderMessage(m.call.ended_timestamp ?
 (m.call.participants.includes(window.data.user.id) ?
-  `${m.author.global_name ?? m.author.username} started a call that ended.` :
-  `You missed a call from ${m.author.global_name ?? m.author.username}.`) :
-`${m.author.global_name ?? m.author.username} started a call.`, SystemAuthor, m);
-    }
-    // Channel name change
-    if (m.type===4) {
-      return renderMessage(`${m.author.global_name ?? m.author.username} changed the ${[15,16].includes(channelType) ? "post title" : "channel name"}: ${m.content}`, SystemAuthor, m);
-    }
-    // Channel icon change
-    if (m.type===5) {
-      return renderMessage(`${m.author.global_name ?? m.author.username} changed the channel icon.`, SystemAuthor, m);
-    }
-    // Channel pin
-    if (m.type===6) {
-      return renderMessage(`${m.author.global_name ?? m.author.username} pinned a message to this channel.`, SystemAuthor, m);
+  `${getUserDisplay(m.author)} started a call that ended.` :
+  `You missed a call from ${getUserDisplay(m.author)}.`) :
+`${getUserDisplay(m.author)} started a call.`, SystemAuthor, m);
     }
     // User join
     if (m.type===7) {
@@ -230,11 +212,7 @@ function showMessages(list, channelType) {
 "Glad you're here, {author}.",
 "Good to see you, {author}.",
 "Yay you made it, {author}!"];
-      return renderMessage(messages[new Date(m.timestamp).getTime()%13].replace('{author}',(m.author.global_name ?? m.author.username)), SystemAuthor, m);
-    }
-    // Channel follow
-    if (m.type===12) {
-      return renderMessage(`${m.author.global_name ?? m.author.username} has added ${m.content} to this channel. Its most important updates will show up here.`, SystemAuthor, m);
+      return renderMessage(messages[new Date(m.timestamp).getTime()%13].replace('{author}',(getUserDisplay(m.author))), SystemAuthor, m);
     }
     // Normal
     if (![0,19].includes(m.type)) {
@@ -324,9 +302,9 @@ Channel types
 function channelName(c) {
   let name = c.id;
   if (c.type === 1) {
-    name = c.recipients[0].global_name ?? c.recipients[0].username;
+    name = getUserDisplay(c.recipients[0]);
   } else if (c.type === 3) {
-    name = c.name ?? (c.recipients.map(r=>r.global_name??r.username).join(', '));
+    name = c.name ?? (c.recipients.map(r=>getUserDisplay(r)).join(', '));
   } else {
     name = c.name ?? c.id;
   }

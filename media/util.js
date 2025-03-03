@@ -58,6 +58,26 @@ const SystemAuthor = {
   bot: true,
   system: true
 }
+// {} gets evaluated, m is the message object
+const systemMessages = {
+  '4': `{getUserDisplay(m.author)} changed the {[15,16].includes(channelType) ? "post title" : "channel name"}: {m.content}`,
+  '5': `{getUserDisplay(m.author)} changed the channel icon.`,
+  '6': `{getUserDisplay(m.author)} pinned a message to this channel.`,
+  '12': `{getUserDisplay(m.author)} has added {m.content} to this channel. Its most important updates will show up here.`,
+  '14': `This server has been removed from Server Discovery because it no longer passes all the requirements. Check Server Settings for more details.`,
+  '15': `This server is eligible for Server Discovery again and has been automatically relisted!`,
+  '16': `This server has failed Discovery activity requirements for 1 week. If this server fails for 4 weeks in a row, it will be automatically removed from Discovery.`,
+  '17': `This server has failed Discovery activity requirements for 3 weeks in a row. If this server fails for 1 more week, it will be removed from Discovery.`,
+  '18': `{getUserDisplay(m.author)} started a thread: {m.content}. See all threads.`,
+  '22': `**Wondering who to invite?**\nStart by inviting anyone who can help you build the server!`,
+  '27': `{getUserDisplay(m.author)} started {m.content}`,
+  '28': `{getUserDisplay(m.author)} ended {m.content}`,
+  '29': `{getUserDisplay(m.author)} is now a speaker.`,
+  '30': `{getUserDisplay(m.author)} requested to speak.`,
+  '31': `{getUserDisplay(m.author)} changed the Stage topic: {m.content}`,
+  '36': `{getUserDisplay(m.author)} enabled security actions until {m.content}.`,
+  '37': `{getUserDisplay(m.author)} disabled security actions.`
+};
 const dateFormats = {
 	t: {timeStyle: 'short'},
 	T: {timeStyle: 'medium'},
@@ -66,6 +86,29 @@ const dateFormats = {
 	f: {dateStyle: 'long', timeStyle: 'short'},
 	F: {dateStyle: 'full', timeStyle: 'short'}
 };
+function toBinaryString(numString) {
+  if (!numString || isNaN(numString)) return "0";
+  if (numString === "0") return "0";
+  let result = "";
+  let dividend = numString;
+  while (dividend !== "0") {
+    let newDividend = "";
+    let carry = 0;
+    let leadingZero = true;
+    for (let i = 0; i < dividend.length; i++) {
+      let current = carry * 10 + parseInt(dividend[i]);
+      let quotient = Math.floor(current / 2);
+      if (quotient !== 0 || !leadingZero) {
+        newDividend += quotient.toString();
+        leadingZero = false;
+      }
+      carry = current % 2;
+    }
+    result = carry.toString() + result;
+    dividend = newDividend.length ? newDividend : "0";
+  }
+  return result;
+}
 
 // Fetching
 function proxyFetch(url, o) {
@@ -205,28 +248,8 @@ function getIcon(type, size) {
 }
 
 // Users
-function toBinaryString(numString) {
-  if (!numString || isNaN(numString)) return "0";
-  if (numString === "0") return "0";
-  let result = "";
-  let dividend = numString;
-  while (dividend !== "0") {
-    let newDividend = "";
-    let carry = 0;
-    let leadingZero = true;
-    for (let i = 0; i < dividend.length; i++) {
-      let current = carry * 10 + parseInt(dividend[i]);
-      let quotient = Math.floor(current / 2);
-      if (quotient !== 0 || !leadingZero) {
-        newDividend += quotient.toString();
-        leadingZero = false;
-      }
-      carry = current % 2;
-    }
-    result = carry.toString() + result;
-    dividend = newDividend.length ? newDividend : "0";
-  }
-  return result;
+function getUserDisplay(obj) {
+  return (obj.global_name ?? obj.username);
 }
 function getUserAvatar(id, hash, size = 64) {
   if (!hash) {
