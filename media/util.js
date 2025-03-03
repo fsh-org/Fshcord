@@ -76,7 +76,8 @@ const systemMessages = {
   '30': `{getUserDisplay(m.author)} requested to speak.`,
   '31': `{getUserDisplay(m.author)} changed the Stage topic: {m.content}`,
   '36': `{getUserDisplay(m.author)} enabled security actions until {m.content}.`,
-  '37': `{getUserDisplay(m.author)} disabled security actions.`
+  '37': `{getUserDisplay(m.author)} disabled security actions.`,
+  '55': `{getUserDisplay(m.author)} activated HD Splash Potion`
 };
 const dateFormats = {
 	t: {timeStyle: 'short'},

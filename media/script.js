@@ -318,7 +318,11 @@ function setTop(text, type) {
 }
 function showChannels(list, server) {
   let rules;
-  if (server) rules = window.data.servers.find(e=>e.id===server).rules_channel_id;
+  if (server) {
+    server = window.data.servers.find(e=>e.id===server);
+    // Rules
+    rules = server.rules_channel_id;
+  }
   document.getElementById('channel').innerHTML = (server?'<div id="channels-server-header"></div>':'')+list.map(c=>{
     let name = channelName(c);
     if (c.type===4) {
@@ -338,26 +342,22 @@ function showChannels(list, server) {
         switchMessage(b.getAttribute('data-id'), b.getAttribute('data-type'));
       }
     });
-  // Server banner
   if (server) {
-    server = window.data.servers.find(e=>e.id===server);
+    // Server banner
     document.getElementById('channels-server-header').innerHTML = `<span class="name">${server.name}</span>
 ${server.banner?`<div><img src="https://cdn.discordapp.com/banners/${server.id}/${server.banner}.webp?size=240"></div>`:''}`;
   }
 }
 function switchChannel(id) {
   if (id == 0) {
-    proxyFetch('https://discord.com/api/v10/users/@me/channels')
-      .then(res=>res.json())
-      .then(res=>{
-        // Show channels
-        let list = JSON.parse(res.content).sort((a,b)=>b.last_message_id-a.last_message_id);
-        showChannels(list);
-        // Select first
-        loading(channelName(list[0]));
-        setTop(channelName(list[0]), list[0].type);
-        switchMessage(list[0].id, list[0].type);
-      })
+    window.data.dms.sort((a,b)=>b.last_message_id-a.last_message_id);
+    // Show channels
+    showChannels(window.data.dms)
+    // Select first
+    let first = window.data.dms[0];
+    loading(channelName(first));
+    setTop(channelName(first), first.type);
+    switchMessage(first.id, first.type);
   } else if (id == 1) {
     // User
   } else {
@@ -456,10 +456,11 @@ if (!localStorage.getItem('token')) {
 } else {
   window.data = {};
 
-  window.data.ws = {log:false};
+  window.data.ws = { log: false, d: undefined, sesion_id: undefined, resume_url: undefined };
   window.data.localReport = false;
 
   window.data.servers = [];
+  window.data.dms = [];
   window.data.currentServer = 0;
   window.data.currentChannel = 0;
   window.data.currentChannelType = 0;
@@ -476,7 +477,12 @@ if (!localStorage.getItem('token')) {
         window.data.ws.d = wsd.s;
         switch (wsd.t) {
           case 'READY':
-            init(wsd.d.user, wsd.d.user_settings, wsd.d.guilds)
+            // Resume
+            window.data.resume_url = wsd.d.resume_gateway_url;
+            window.data.sesion_id = wsd.d.session_id;
+            // Start
+            window.data.dms = wsd.d.private_channels;
+            init(wsd.d.user, wsd.d.user_settings, wsd.d.guilds);
             break;
 
           case 'GUILD_CREATE':
@@ -529,6 +535,8 @@ if (!localStorage.getItem('token')) {
         break;
       case 1: // Heartbeat
         wsheartbeat();
+        break;
+      case 7: // About to disconect
         break;
       case 10: // Hewwo
         // Auth
