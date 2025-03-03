@@ -528,7 +528,7 @@ if (!localStorage.getItem('token')) {
           case 'MESSAGE_CREATE':
             if (messageCache[wsd.d.channel_id]) {
               // Add to cache
-              messageCache[wsd.d.channel_id].unshift(messageCache[wsd.d]);
+              messageCache[wsd.d.channel_id].unshift(wsd.d);
               // If current, show new
               if (window.data.currentChannel===wsd.d.channel_id) {
                 if ([0,1,3,5,10,11,12].includes(window.data.currentChannelType)) {
