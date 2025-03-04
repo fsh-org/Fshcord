@@ -461,6 +461,20 @@ lottie-sticker.message-attach {
   max-width: 100%;
   max-height: unset;
 }
+.message-poll-result {
+  gap: 5px;
+  flex-direction: row;
+  align-items: center;
+  width: 40%;
+}
+.message-poll-result::before {
+  content: unset;
+}
+.message-poll-result .small {
+  display: block;
+  color: var(--text-2);
+  font-size: 75%;
+}
 
 .message code {
   word-break: break-word;

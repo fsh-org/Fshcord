@@ -119,6 +119,7 @@ gift
 gifv -
 image -
 link -
+poll_result -
 post_preview
 rich -
 video -
@@ -129,6 +130,14 @@ video -
       return `<video src="${embed.video.proxy_url}" width="${Math.floor(embed.video.width/2)}" height="${Math.floor(embed.video.height/2)}" muted autoplay loop class="message-attach"></video>`;
     case 'image':
       return `<img src="${embed.thumbnail.proxy_url}" width="${Math.floor(embed.thumbnail.width/2)}" height="${Math.floor(embed.thumbnail.height/2)}" class="message-attach">`;
+    case 'poll_result':
+      return `<div class="message-rich-embed message-poll-result">
+  ${embed.fields[5]?.value?`<span>${embed.fields[5].value}</span>`:''}
+  <div>
+    <span>${embed.fields[3]?.value?embed.fields[4].value+' ✓':'The results were tied'}</span>
+    <span class="small">${embed.fields[3]?.value?'Winning answer • ':''}${(embed.fields[1].value/embed.fields[2].value*100).toFixed(2).replace('.00','')}%</span>
+  </div>
+</div>`;
     case 'article':
     case 'link':
     case 'rich':
@@ -187,7 +196,7 @@ function showMessages(list, channelType) {
     }
     // Group DM/Thread add/remove member
     if ([1,2].includes(m.type)) {
-      return renderMessage(`${getUserDisplay(m.author)} ${m.type===1?'added':'removed'} ${getUserDisplay(m.mentions[0])} ${m.type===1?'to':'from'} the ${window.data.currentChannelType===3?'group':'thread'}.`, SystemAuthor, m);
+      return renderMessage(`${getUserDisplay(m.author)} ${m.type===1?'added':'removed'} ${getUserDisplay(m.mentions[0])} ${m.type===1?'to':'from'} the ${channelType===3?'group':'thread'}.`, SystemAuthor, m);
     }
     // Call
     if (m.type===3) {
@@ -213,6 +222,10 @@ function showMessages(list, channelType) {
 "Good to see you, {author}.",
 "Yay you made it, {author}!"];
       return renderMessage(messages[new Date(m.timestamp).getTime()%13].replace('{author}',(getUserDisplay(m.author))), SystemAuthor, m);
+    }
+    // Poll result
+    if (m.type===46) {
+      return renderMessage(`${getUserDisplay(m.author)}'s poll ${m.embeds[0].fields[0].value} has closed.`, SystemAuthor, m);
     }
     // Normal
     if (![0,19].includes(m.type)) {
@@ -539,6 +552,10 @@ if (!localStorage.getItem('token')) {
       case 7: // About to disconect
         break;
       case 10: // Hewwo
+        // Have we been here before?
+        if (window.data.ws.sesion_id) {
+          // Resume
+        }
         // Auth
         window.data.ws.heartbeat_interval = wsd.d.heartbeat_interval;
         window.data.ws.d = wsd.s;
