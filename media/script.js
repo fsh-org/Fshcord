@@ -485,7 +485,7 @@ if (!localStorage.getItem('token')) {
 } else {
   window.data = {};
 
-  window.data.ws = { log: false, socket: undefined, d: undefined, sesion_id: undefined, resume_url: undefined };
+  window.data.ws = { log: false, socket: undefined, d: undefined, session_id: undefined, resume_url: undefined };
   window.data.localReport = false;
 
   window.data.servers = [];
@@ -508,8 +508,8 @@ if (!localStorage.getItem('token')) {
         switch (wsd.t) {
           case 'READY':
             // Resume
-            window.data.resume_url = wsd.d.resume_gateway_url;
-            window.data.sesion_id = wsd.d.session_id;
+            window.data.ws.resume_url = wsd.d.resume_gateway_url;
+            window.data.ws.session_id = wsd.d.session_id;
             // Start
             window.data.dms = wsd.d.private_channels;
             init(wsd.d.user, wsd.d.user_settings, wsd.d.guilds);
@@ -580,7 +580,7 @@ if (!localStorage.getItem('token')) {
         break;
       case 7: // About to disconect
         ws.onclose = function() {
-          let nws = new WebSocket(window.data.ws.resume_gateway_url);//'wss://gateway.discord.gg/?v=10&encoding=json');
+          let nws = new WebSocket(window.data.ws.resume_url);//'wss://gateway.discord.gg/?v=10&encoding=json');
           window.data.ws.socket = nws;
           nws.onmessage = ws.onmessage;
         }
@@ -588,13 +588,13 @@ if (!localStorage.getItem('token')) {
       case 10: // Hewwo
         window.data.ws.heartbeat_interval = wsd.d.heartbeat_interval;
         // Have we been here before?
-        if (window.data.ws.sesion_id) {
+        if (window.data.ws.session_id) {
           // Resume
           ws.send(JSON.stringify({
             op: 6,
             d: {
               token: localStorage.getItem('token'),
-              session_id: window.data.ws.sesion_id,
+              session_id: window.data.ws.session_id,
               seq: window.data.ws.d
             }
           }));
