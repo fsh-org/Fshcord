@@ -11,6 +11,7 @@ body {
   position: absolute;
   margin: 0px;
   padding: 2px;
+  border-color: var(--bg-3);
   border-radius: 0.25rem;
   z-index: 999999;
 }

@@ -9,6 +9,10 @@ function showContextMenu(event, type, data) {
       menu.innerHTML = `<button onclick="copy('${data.name}')">Copy name</button>
 <button onclick="copy('${data.id}')">Copy id</button>`;
       break;
+    case 'channel':
+      menu.innerHTML = `<button onclick="copy('${data.name}')">Copy name</button>
+<button onclick="copy('${data.id}')">Copy id</button>`;
+      break;
     default:
       menu.innerHTML = 'Error';
       report('Unknown context menu type: '+type, data);
@@ -256,7 +260,7 @@ let messageCache = {};
 function switchMessage(id, type) {
   type = Number(type);
   // How??
-  if ([4,7,8].includes(type)) {
+  if (channelType.invalid.includes(type)) {
     report('User either entered a category or a channel that has not existed for over 3 years?', [id, type])
     return;
   }
@@ -264,7 +268,7 @@ function switchMessage(id, type) {
   this.data.currentChannel = id;
   this.data.currentChannelType = type;
   // Text
-  if ([0,1,3,5,10,11,12].includes(type)) { // Add 17 when discord releases lobies (they should be a normal text channel?)
+  if (channelType.text.includes(type)) {
     if (messageCache[id]) {
       showMessages(messageCache[id], type);
       return;
@@ -284,15 +288,15 @@ function switchMessage(id, type) {
     return;
   }/*
   // Voice
-  if ([2,13].includes(type)) {
+  if (channelType.voice.includes(type)) {
     return;
   }
   // Store
-  if (type===6) {
+  if (channelType.store.includes(type)) {
     return;
   }
   // Forum
-  if ([15,16].includes(type)) {
+  if (channelType.forum.includes(type)) {
     return;
   }*/
   report(`Unhandled channel type: ${type}`, [id, type]);
@@ -361,7 +365,11 @@ function showChannels(list, server) {
         loading(b.getAttribute('data-name'));
         setTop(b.getAttribute('data-name'), b.getAttribute('data-type'))
         switchMessage(b.getAttribute('data-id'), b.getAttribute('data-type'));
-      }
+      };
+      b.oncontextmenu = (event)=>{showContextMenu(event, 'channel', {
+        id: b.getAttribute('data-id'),
+        name: b.getAttribute('data-name')
+      })};
     });
   if (server) {
     // Server banner
@@ -477,7 +485,7 @@ if (!localStorage.getItem('token')) {
 } else {
   window.data = {};
 
-  window.data.ws = { log: false, d: undefined, sesion_id: undefined, resume_url: undefined };
+  window.data.ws = { log: false, socket: undefined, d: undefined, sesion_id: undefined, resume_url: undefined };
   window.data.localReport = false;
 
   window.data.servers = [];
@@ -487,6 +495,7 @@ if (!localStorage.getItem('token')) {
   window.data.currentChannelType = 0;
   loading('gateway');
   let ws = new WebSocket('wss://gateway.discord.gg/?v=10&encoding=json');
+  window.data.ws.socket = ws;
   function wsheartbeat() {
     ws.send(`{"op":1,"d":${window.data.ws.d}}`);
   }
@@ -536,7 +545,19 @@ if (!localStorage.getItem('token')) {
               messageCache[wsd.d.channel_id].unshift(wsd.d);
               // If current, show new
               if (window.data.currentChannel===wsd.d.channel_id) {
-                if ([0,1,3,5,10,11,12].includes(window.data.currentChannelType)) {
+                if (channelType.text.includes(window.data.currentChannelType)) {
+                  showMessages(messageCache[wsd.d.channel_id], window.data.currentChannelType);
+                }
+              }
+            }
+            break;
+          case 'MESSAGE_UPDATE':
+            if (messageCache[wsd.d.channel_id]) {
+              let message = messageCache[wsd.d.channel_id].find(m=>m.id===wsd.d.id);
+              message = wsd.d;
+              // If current, show new
+              if (window.data.currentChannel===wsd.d.channel_id) {
+                if (channelType.text.includes(window.data.currentChannelType)) {
                   showMessages(messageCache[wsd.d.channel_id], window.data.currentChannelType);
                 }
               }
@@ -560,6 +581,7 @@ if (!localStorage.getItem('token')) {
       case 7: // About to disconect
         ws.onclose = function() {
           let nws = new WebSocket(window.data.ws.resume_gateway_url);//'wss://gateway.discord.gg/?v=10&encoding=json');
+          window.data.ws.socket = nws;
           nws.onmessage = ws.onmessage;
         }
         break;

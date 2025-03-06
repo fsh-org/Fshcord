@@ -50,6 +50,13 @@ const attachmentFlags = {
   CONTAINS_EXPLICIT_MEDIA: 4n,
   ANIMATED: 5n
 }
+const channelType = {
+  invalid: [4,7,8], // These can't be opened or haven't existed for very long
+  text: [0,1,3,5,10,11,12], // Add 17 when discord releases lobies (they should be a normal text channel?)
+  voice: [2,13],
+  store: [6],
+  forum: [15,16]
+}
 const SystemAuthor = {
   id: 0,
   avatar: 'system',
