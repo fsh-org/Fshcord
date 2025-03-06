@@ -264,7 +264,7 @@ function switchMessage(id, type) {
   this.data.currentChannel = id;
   this.data.currentChannelType = type;
   // Text
-  if ([0,1,3,5,10,11,12].includes(type)) {
+  if ([0,1,3,5,10,11,12].includes(type)) { // Add 17 when discord releases lobies (they should be a normal text channel?)
     if (messageCache[id]) {
       showMessages(messageCache[id], type);
       return;
@@ -283,12 +283,16 @@ function switchMessage(id, type) {
       })
     return;
   }/*
-  // Forum
-  if ([15,16].includes(type)) {
-    return;
-  }
   // Voice
   if ([2,13].includes(type)) {
+    return;
+  }
+  // Store
+  if (type===6) {
+    return;
+  }
+  // Forum
+  if ([15,16].includes(type)) {
     return;
   }*/
   report(`Unhandled channel type: ${type}`, [id, type]);
@@ -296,19 +300,19 @@ function switchMessage(id, type) {
 
 /*
 Channel types
-0: GUILD_TEXT
-1: DM
+0: GUILD_TEXT -
+1: DM -
 2: GUILD_VOICE
-3: GROUP_DM
-4: GUILD_CATEGORY
-5: GUILD_NEWS
+3: GROUP_DM -
+4: GUILD_CATEGORY -
+5: GUILD_NEWS -
 6: GUILD_STORE
-7: GUILD_LFG
-8: LFG_GROUP_DM
+7: GUILD_LFG x
+8: LFG_GROUP_DM x
 9: THREAD_ALPHA
-10: NEWS_THREAD
-11: PUBLIC_THREAD
-12: PRIVATE_THREAD
+10: NEWS_THREAD -
+11: PUBLIC_THREAD -
+12: PRIVATE_THREAD -
 13: GUILD_STAGE_VOICE
 14: GUILD_DIRECTORY
 15: GUILD_FORUM
@@ -554,29 +558,42 @@ if (!localStorage.getItem('token')) {
         wsheartbeat();
         break;
       case 7: // About to disconect
+        ws.onclose = function() {
+          let nws = new WebSocket(window.data.ws.resume_gateway_url);//'wss://gateway.discord.gg/?v=10&encoding=json');
+          nws.onmessage = ws.onmessage;
+        }
         break;
       case 10: // Hewwo
+        window.data.ws.heartbeat_interval = wsd.d.heartbeat_interval;
+        wsheartbeat();
         // Have we been here before?
         if (window.data.ws.sesion_id) {
           // Resume
+          ws.send(JSON.stringify({
+            op: 6,
+            d: {
+              token: localStorage.getItem('token'),
+              session_id: window.data.ws.sesion_id,
+              seq: window.data.ws.d
+            }
+          }));
+        } else {
+          // Auth
+          window.data.ws.d = wsd.s;
+          ws.send(JSON.stringify({
+            op: 2,
+            d: {
+              token: localStorage.getItem('token'),
+              properties: {
+                os: "windows",
+                browser: "chrome"
+              },
+              compress: false,
+              capabilities: 8193 // Lazy notes, client state v2, debounce message reactions
+              // ^ Consideration: 1 << 9	USER_SETTINGS_PROTO
+            }
+          }));
         }
-        // Auth
-        window.data.ws.heartbeat_interval = wsd.d.heartbeat_interval;
-        window.data.ws.d = wsd.s;
-        wsheartbeat();
-        ws.send(JSON.stringify({
-          op: 2,
-          d: {
-            token: localStorage.getItem('token'),
-            properties: {
-              os: "windows",
-              browser: "chrome"
-            },
-            compress: false,
-            capabilities: 8193 // Lazy notes, client state v2, debounce message reactions
-            // ^ Consideration: 1 << 9	USER_SETTINGS_PROTO
-          }
-        }));
         break;
       case 11: // Heartbeat ACK
         // Wait and heartbeat
