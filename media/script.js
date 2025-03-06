@@ -165,12 +165,12 @@ video -
 }
 function renderMessage(content, author, m) {
   return `<div class="message${m.mentions.map(e=>e.id).includes(window.data.user.id)?' mention':''}">
-  <div class="avatar" aria-hidden="true">
+  ${author.hide?'<div class="avatar" aria-hidden="true"></div>':`<div class="avatar" aria-hidden="true">
     <img src="${getUserAvatar(author.id, author.avatar)}" width="40" height="40" aria-hidden="true">
     <img src="${getUserDeco(author?.avatar_decoration_data?.asset)}" class="decoration" width="40" height="40" aria-hidden="true" onerror="this.remove()">
-  </div>
+  </div>`}
   <span>
-    <span><span class="name">${getUserDisplay(author)}</span>${[author.system,m.webhook_id,author.bot].filter(e=>!!e).length?`<span class="tag">${author.system?'SYSTEM':(m.webhook_id?'WEBHOOK':(author.bot?`BOT${getUserFlags(author.flags??author.public_flags).VERIFIED_BOT?' ✔':''}`:''))}</span>`:''}<span class="timestamp">${formatDate(m.timestamp, 'r')}</span>${m.edited_timestamp?'<span>· Edited</span>':''}</span>
+    ${author.hide?'':`<span><span class="name">${getUserDisplay(author)}</span>${[author.system,m.webhook_id,author.bot].filter(e=>!!e).length?`<span class="tag">${author.system?'SYSTEM':(m.webhook_id?'WEBHOOK':(author.bot?`BOT${getUserFlags(author.flags??author.public_flags).VERIFIED_BOT?' ✔':''}`:''))}</span>`:''}<span class="timestamp">${formatDate(m.timestamp, 'r')}</span>${m.edited_timestamp?'<span>· Edited</span>':''}</span>`}
     <span class="inner">${parseMD(content)}</span>
     ${m.attachments.length?m.attachments.map(attach=>{
       if (!attach.content_type) attach.content_type='image/'+attach.url.split('?')[0].split('.').slice(-1)[0];
@@ -188,7 +188,7 @@ function renderMessage(content, author, m) {
 </div>`;
 }
 function showMessages(list, channelType) {
-  document.getElementById('messages').innerHTML = list.map(m=>{
+  document.getElementById('messages').innerHTML = list.map((m,i,a)=>{
     // System
     if (systemMessages[m.type.toString()]) {
       let text = systemMessages[m.type.toString()].replaceAll(/\{.*?\}/g, function(match){return eval(match)});
@@ -232,7 +232,9 @@ function showMessages(list, channelType) {
       report(`Unhandled message type: ${m.type}`, m);
       return `<div>Unhandled message type: ${m.type}</div>`;
     }
-    return renderMessage(m.content, m.author, m)
+    let auth = m.author;
+    if (a[i+1]?.author?.id===auth.id) auth.hide = true;
+    return renderMessage(m.content, auth, m)
   }).join('');
   // Lottie stickers
   Array.from(document.querySelectorAll('lottie-sticker.message-attach'))

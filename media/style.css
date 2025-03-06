@@ -256,7 +256,7 @@ main {
 }
 .message > .avatar {
   width: 40px;
-  height: 40px;
+  height: fit-content;
 }
 .message .avatar img:not(.decoration) {
   border-radius: 2rem;
