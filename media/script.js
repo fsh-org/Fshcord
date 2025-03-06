@@ -565,8 +565,6 @@ if (!localStorage.getItem('token')) {
         break;
       case 10: // Hewwo
         window.data.ws.heartbeat_interval = wsd.d.heartbeat_interval;
-        window.data.ws.d ??= wsd.s;
-        wsheartbeat();
         // Have we been here before?
         if (window.data.ws.sesion_id) {
           // Resume
@@ -580,6 +578,8 @@ if (!localStorage.getItem('token')) {
           }));
         } else {
           // Auth
+          window.data.ws.d = wsd.s;
+          wsheartbeat();
           ws.send(JSON.stringify({
             op: 2,
             d: {
