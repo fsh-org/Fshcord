@@ -495,6 +495,7 @@ if (!localStorage.getItem('token')) {
   window.data.currentChannelType = 0;
   loading('gateway');
   let ws = new WebSocket('wss://gateway.discord.gg/?v=10&encoding=json');
+  let nws;
   window.data.ws.socket = ws;
   function wsheartbeat() {
     ws.send(`{"op":1,"d":${window.data.ws.d}}`);
@@ -554,7 +555,7 @@ if (!localStorage.getItem('token')) {
           case 'MESSAGE_UPDATE':
             if (messageCache[wsd.d.channel_id]) {
               let message = messageCache[wsd.d.channel_id].find(m=>m.id===wsd.d.id);
-              message = wsd.d;
+              Object.keys(wsd.d).forEach(k=>message[k]=wsd.d[k]);
               // If current, show new
               if (window.data.currentChannel===wsd.d.channel_id) {
                 if (channelType.text.includes(window.data.currentChannelType)) {
@@ -580,10 +581,17 @@ if (!localStorage.getItem('token')) {
         break;
       case 7: // About to disconect
         ws.onclose = function() {
-          let nws = new WebSocket(window.data.ws.resume_url);//'wss://gateway.discord.gg/?v=10&encoding=json');
+          nws = new WebSocket(window.data.ws.resume_url);//'wss://gateway.discord.gg/?v=10&encoding=json');
           window.data.ws.socket = nws;
           nws.onmessage = ws.onmessage;
         }
+        break;
+      case 9: // Invalid session
+        window.data.ws.resume_url = undefined;
+        window.data.ws.session_id = undefined;
+        nws = new WebSocket('wss://gateway.discord.gg/?v=10&encoding=json');
+        window.data.ws.socket = nws;
+        nws.onmessage = ws.onmessage;
         break;
       case 10: // Hewwo
         window.data.ws.heartbeat_interval = wsd.d.heartbeat_interval;
