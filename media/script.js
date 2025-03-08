@@ -30,7 +30,6 @@ function sendMessage() {
     .then(res=>res.json())
     .then(res=>{
       document.getElementById('message-input').value = '';
-      switchMessage(window.data.currentChannel, window.data.currentChannelType);
     })
 }
 document.getElementById('message-input').onkeyup = function(event){if(event.key==='Enter')sendMessage()};
@@ -228,17 +227,16 @@ function showMessages(list, channelType) {
 "Yay you made it, {author}!"];
       return renderMessage(messages[new Date(m.timestamp).getTime()%13].replace('{author}',(getUserDisplay(m.author))), SystemAuthor, m);
     }
-    // Poll result
-    if (m.type===46) {
-      return renderMessage(`${getUserDisplay(m.author)}'s poll ${m.embeds[0].fields[0].value} has closed.`, SystemAuthor, m);
-    }
     // Normal
     if (![0,19].includes(m.type)) {
       report(`Unhandled message type: ${m.type}`, m);
       return `<div>Unhandled message type: ${m.type}</div>`;
     }
     let auth = m.author;
-    if (a[i+1]?.author?.id===auth.id) auth.hide = true;
+    if (a[i+1]?.author?.id===auth.id) {
+      auth.hide = true;
+      if ((new Date(m.timestamp).getTime()-new Date(a[i+1].timestamp).getTime())>(8*60*1000)) auth.hide = false;
+    }
     if ([19].includes(m.type)) auth.hide = false;
     return renderMessage(m.content, auth, m)
   }).join('');
@@ -256,7 +254,6 @@ function showMessages(list, channelType) {
   // Scroll to top
   document.getElementById('messages').scrollTop = 0;
 }
-let messageCache = {};
 function switchMessage(id, type) {
   type = Number(type);
   // How??
@@ -269,8 +266,8 @@ function switchMessage(id, type) {
   this.data.currentChannelType = type;
   // Text
   if (channelType.text.includes(type)) {
-    if (messageCache[id]) {
-      showMessages(messageCache[id], type);
+    if (window.data.messageCache[id]) {
+      showMessages(window.data.messageCache[id], type);
       return;
     }
     showMessages([], type);
@@ -282,7 +279,7 @@ function switchMessage(id, type) {
           alert('Could not access channel');
           return;
         }
-        messageCache[id] = con;
+        window.data.messageCache[id] = con;
         showMessages(con, type);
       })
     return;
@@ -379,9 +376,8 @@ ${server.banner?`<div><img src="https://cdn.discordapp.com/banners/${server.id}/
 }
 function switchChannel(id) {
   if (id == 0) {
-    window.data.dms.sort((a,b)=>b.last_message_id-a.last_message_id);
     // Show channels
-    showChannels(window.data.dms)
+    showChannels(window.data.dms);
     // Select first
     let first = window.data.dms[0];
     loading(channelName(first));
@@ -443,7 +439,7 @@ function showServers(list) {
         }
         // Switch the server and show channels
         loading(b.getAttribute('aria-label'));
-        window.currentServer = sid;
+        window.data.currentServer = sid;
         switchChannel(sid);
       }
       b.oncontextmenu = (event)=>{showContextMenu(event, 'server', {
@@ -484,15 +480,18 @@ if (!localStorage.getItem('token')) {
   location.href = '/login';
 } else {
   window.data = {};
+  window.data.localReport = false;
 
   window.data.ws = { log: false, socket: undefined, d: undefined, session_id: undefined, resume_url: undefined };
-  window.data.localReport = false;
 
   window.data.servers = [];
   window.data.dms = [];
+  window.data.messageCache = {};
+
   window.data.currentServer = 0;
   window.data.currentChannel = 0;
   window.data.currentChannelType = 0;
+
   loading('gateway');
   let ws = new WebSocket('wss://gateway.discord.gg/?v=10&encoding=json');
   let nws;
@@ -513,6 +512,7 @@ if (!localStorage.getItem('token')) {
             window.data.ws.session_id = wsd.d.session_id;
             // Start
             window.data.dms = wsd.d.private_channels;
+            window.data.dms.sort((a,b)=>b.last_message_id-a.last_message_id);
             init(wsd.d.user, wsd.d.user_settings, wsd.d.guilds);
             break;
 
@@ -541,25 +541,25 @@ if (!localStorage.getItem('token')) {
             break;
 
           case 'MESSAGE_CREATE':
-            if (messageCache[wsd.d.channel_id]) {
+            if (window.data.messageCache[wsd.d.channel_id]) {
               // Add to cache
-              messageCache[wsd.d.channel_id].unshift(wsd.d);
+              window.data.messageCache[wsd.d.channel_id].unshift(wsd.d);
               // If current, show new
               if (window.data.currentChannel===wsd.d.channel_id) {
                 if (channelType.text.includes(window.data.currentChannelType)) {
-                  showMessages(messageCache[wsd.d.channel_id], window.data.currentChannelType);
+                  showMessages(window.data.messageCache[wsd.d.channel_id], window.data.currentChannelType);
                 }
               }
             }
             break;
           case 'MESSAGE_UPDATE':
-            if (messageCache[wsd.d.channel_id]) {
-              let message = messageCache[wsd.d.channel_id].find(m=>m.id===wsd.d.id);
+            if (window.data.messageCache[wsd.d.channel_id]) {
+              let message = window.data.messageCache[wsd.d.channel_id].find(m=>m.id===wsd.d.id);
               Object.keys(wsd.d).forEach(k=>message[k]=wsd.d[k]);
               // If current, show new
               if (window.data.currentChannel===wsd.d.channel_id) {
                 if (channelType.text.includes(window.data.currentChannelType)) {
-                  showMessages(messageCache[wsd.d.channel_id], window.data.currentChannelType);
+                  showMessages(window.data.messageCache[wsd.d.channel_id], window.data.currentChannelType);
                 }
               }
             }

@@ -84,6 +84,8 @@ const systemMessages = {
   '31': `{getUserDisplay(m.author)} changed the Stage topic: {m.content}`,
   '36': `{getUserDisplay(m.author)} enabled security actions until {m.content}.`,
   '37': `{getUserDisplay(m.author)} disabled security actions.`,
+  '38': `{getUserDisplay(m.author)} reported a raid in {window.data.servers.find(s=>s.id===window.data.currentServer).name}.`,
+  '46': `{getUserDisplay(m.author)}'s poll {m.embeds[0].fields[0].value} has closed.`,
   '55': `{getUserDisplay(m.author)} activated HD Splash Potion`
 };
 const dateFormats = {
