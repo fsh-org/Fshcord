@@ -351,7 +351,7 @@ function showChannels(list, server) {
       return `<span style="color:var(--text-2);font-size:80%;">${name}</span>`
     }
     return `<button data-id="${c.id}" data-type="${c.type}" data-name="${name}">
-  ${c.type===1?`<div class="avatar" aria-hidden="true"><img src="${getUserAvatar(c.recipients[0].id, c.recipients[0].avatar, 32)}" width="20" height="20" aria-hidden="true"><img src="${getUserDeco(c.recipients[0]?.avatar_decoration_data?.asset)}" class="decoration" width="20" height="20" aria-hidden="true" onerror="this.remove()"></div>`:(rules===c.id?getIcon('rules', 20):getIcon(c.type, 20))}
+  ${c.type===1?`<div class="avatar" aria-hidden="true"><img src="${getUserAvatar(c.recipients[0].id, c.recipients[0].avatar, 32)}" width="20" height="20" loading="lazy" aria-hidden="true"><img src="${getUserDeco(c.recipients[0]?.avatar_decoration_data?.asset)}" class="decoration" width="20" height="20" loading="lazy" aria-hidden="true" onerror="this.remove()"></div>`:(rules===c.id?getIcon('rules', 20):getIcon(c.type, 20))}
   ${c.nsfw?getIcon('nsfw', 20).replace('>',' class="channel-nsfw">'):''}
   <span>${name}</span>
 </button>`;
@@ -411,10 +411,10 @@ function showServers(list) {
     if (s?.type==='folder') {
       return `<div aria-label="${s.name??'Folder'}" aria-role="button" class="server-folder" style="--folder-color:${colorToRGB(s.color??0)}">
   <svg onclick="let op=(this.getAttribute('open')==='true');this.setAttribute('open', !op);this.parentElement.style.height=(!op?'${(s.guilds.length+1)*50+s.guilds.length*10}px':'50px')" open="false"${getIcon('folder', 50).replace('<svg','').replace('viewBox="0 0 256 256"','viewBox="-64 -64 384 384"')}
-  ${s.guilds.map(g=>`<button aria-label="${g.name}" data-id="${g.id}" class="server-clicky">${g.icon == null ? g.name.trim().split(/\s+/).map(word=>word[0]??'').join('') : `<img src="https://cdn.discordapp.com/icons/${g.id}/${g.icon}.png?size=64" alt="${g.name}">`}</button>`).join('')}
+  ${s.guilds.map(g=>`<button aria-label="${g.name}" data-id="${g.id}" class="server-clicky">${g.icon == null ? g.name.trim().split(/\s+/).map(word=>word[0]??'').join('') : `<img src="https://cdn.discordapp.com/icons/${g.id}/${g.icon}.png?size=64" alt="${g.name}" loading="lazy">`}</button>`).join('')}
 </div>`;
     }
-    return `<button aria-label="${s.name}" data-id="${s.id}" class="server-clicky">${s.icon == null ? s.name.trim().split(/\s+/).map(word=>word[0]??'').join('') : `<img src="https://cdn.discordapp.com/icons/${s.id}/${s.icon}.png?size=64" alt="${s.name}">`}</button>`
+    return `<button aria-label="${s.name}" data-id="${s.id}" class="server-clicky">${s.icon == null ? s.name.trim().split(/\s+/).map(word=>word[0]??'').join('') : `<img src="https://cdn.discordapp.com/icons/${s.id}/${s.icon}.png?size=64" alt="${s.name}" loading="lazy">`}</button>`
   }).join('');
   Array.from(document.querySelectorAll('#server button'))
     .forEach(b=>{
@@ -497,7 +497,7 @@ if (!localStorage.getItem('token')) {
   let nws;
   window.data.ws.socket = ws;
   function wsheartbeat() {
-    ws.send(`{"op":1,"d":${window.data.ws.d}}`);
+    window.data.ws.socket.send(`{"op":1,"d":${window.data.ws.d}}`);
   }
   ws.onmessage = function(event) {
     let wsd = JSON.parse(event.data);
