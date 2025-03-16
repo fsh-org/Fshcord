@@ -539,6 +539,10 @@ if (!localStorage.getItem('token')) {
             window.data.servers = window.data.servers.filter(e=>e.id!==wsd.d.id);
             switchServers(window.data.servers);
             break;
+          case 'GUILD_MEMBERS_CHUNK':
+            console.log('aaa');
+            window.data.servers[window.data.servers.findIndex(e=>e.id===wsd.d.guild_id)].members = wsd.d.members;
+            break;
 
           case 'MESSAGE_CREATE':
             if (window.data.messageCache[wsd.d.channel_id]) {
