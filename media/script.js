@@ -145,7 +145,7 @@ video -
     case 'link':
     case 'rich':
     case 'video':
-      // TODO: Add very strange thing where if the embed has url it will allow other embeds with only imgase to join up to 4
+      // TODO: Add very strange thing where if the embed has url it will allow other embeds with only images to join up to 4
       c=[embed.title, embed.description, embed?.author?.name, embed?.provider?.name].filter(e=>!!e).length;
       return `<div class="message-rich-embed" style="--embed-color:${colorToRGB(embed.color??0)}">
   ${embed.thumbnail&&embed.type!=='video'?`<img src="${embed.thumbnail.proxy_url}" class="message-attach thumbnail">`:''}
@@ -173,8 +173,8 @@ function renderMessage(content, author, m) {
     <img src="${getUserDeco(author?.avatar_decoration_data?.asset)}" class="decoration" width="40" height="40" loading="lazy" aria-hidden="true" onerror="this.remove()">
   </div>`}
   <span>
-    ${author.hide?'':`<span><span class="name">${getUserDisplay(author)}</span>${[author.system,m.webhook_id,author.bot].filter(e=>!!e).length?`<span class="tag">${author.system?'SYSTEM':(m.webhook_id?'WEBHOOK':(author.bot?`BOT${getUserFlags(author.flags??author.public_flags).VERIFIED_BOT?' ✔':''}`:''))}</span>`:''}<span class="timestamp">${formatDate(m.timestamp, 'r')}</span>${m.edited_timestamp?'<span>· Edited</span>':''}</span>`}
-    <span class="inner">${parseMD(content)}</span>
+    ${author.hide?'':`<span><span class="name">${getUserDisplay(author)}</span>${[author.system,m.webhook_id,author.bot].filter(e=>!!e).length?`<span class="tag">${author.system?'SYSTEM':(m.webhook_id?'WEBHOOK':(author.bot?`BOT${getUserFlags(author.flags??author.public_flags).VERIFIED_BOT?' ✔':''}`:''))}</span>`:''}<span class="timestamp">${formatDate(m.timestamp, 'r')}</span></span>`}
+    <span class="inner">${parseMD(content)}${m.edited_timestamp?'<span class="edited"> (edited)</span>':''}</span>
     ${m.attachments.length?m.attachments.map(attach=>{
       if (!attach.content_type) attach.content_type=`image/${attach.url.split('?')[0].split('.').slice(-1)[0]}`;
       if (attach.content_type.startsWith('image')&&!attach.width) attach.content_type=`application/${attach.content_type.split('/')[1]}`;
@@ -499,7 +499,7 @@ if (!localStorage.getItem('token')) {
   function wsheartbeat() {
     window.data.ws.socket.send(`{"op":1,"d":${window.data.ws.d}}`);
   }
-  ws.onmessage = function(event) {
+  window.data.ws.socket.onmessage = function(event) {
     let wsd = JSON.parse(event.data);
     if (window.data.ws.log) console.log(wsd);
     switch (wsd.op) {
@@ -580,25 +580,25 @@ if (!localStorage.getItem('token')) {
         wsheartbeat();
         break;
       case 7: // About to disconect
-        ws.onclose = function() {
-          nws = new WebSocket(window.data.ws.resume_url);//'wss://gateway.discord.gg/?v=10&encoding=json');
+        window.data.ws.socket.onclose = function() {
+          nws = new WebSocket(window.data.ws.resume_url);
+          nws.onmessage = window.data.ws.socket.onmessage;
           window.data.ws.socket = nws;
-          nws.onmessage = ws.onmessage;
         }
         break;
       case 9: // Invalid session
         window.data.ws.resume_url = undefined;
         window.data.ws.session_id = undefined;
         nws = new WebSocket('wss://gateway.discord.gg/?v=10&encoding=json');
+        nws.onmessage = window.data.ws.socket.onmessage;
         window.data.ws.socket = nws;
-        nws.onmessage = ws.onmessage;
         break;
       case 10: // Hewwo
         window.data.ws.heartbeat_interval = wsd.d.heartbeat_interval;
         // Have we been here before?
         if (window.data.ws.session_id) {
           // Resume
-          ws.send(JSON.stringify({
+          window.data.ws.socket.send(JSON.stringify({
             op: 6,
             d: {
               token: localStorage.getItem('token'),
@@ -610,7 +610,7 @@ if (!localStorage.getItem('token')) {
           // Auth
           window.data.ws.d = wsd.s;
           wsheartbeat();
-          ws.send(JSON.stringify({
+          window.data.ws.socket.send(JSON.stringify({
             op: 2,
             d: {
               token: localStorage.getItem('token'),

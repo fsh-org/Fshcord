@@ -184,6 +184,7 @@ body {
   text-overflow: ellipsis;
 }
 #channel button .avatar, #channel button svg {
+  flex-shrink: 0;
   width: 20px;
   height: 20px;
 }
@@ -272,6 +273,10 @@ main {
 .message .inner {
   word-break: break-word;
   white-space: break-spaces;
+}
+.message .inner .edited {
+  color: var(--text-2);
+  font-size: 60%;
 }
 .message.mention::before {
   display: block;
