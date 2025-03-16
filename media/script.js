@@ -169,8 +169,8 @@ video -
 function renderMessage(content, author, m) {
   return `<div class="message${m.mentions.map(e=>e.id).includes(window.data.user.id)?' mention':''}">
   ${author.hide?'<div class="avatar" aria-hidden="true"></div>':`<div class="avatar" aria-hidden="true">
-    <img src="${getUserAvatar(author.id, author.avatar)}" width="40" height="40" aria-hidden="true">
-    <img src="${getUserDeco(author?.avatar_decoration_data?.asset)}" class="decoration" width="40" height="40" aria-hidden="true" onerror="this.remove()">
+    <img src="${getUserAvatar(author.id, author.avatar)}" width="40" height="40" loading="lazy" aria-hidden="true">
+    <img src="${getUserDeco(author?.avatar_decoration_data?.asset)}" class="decoration" width="40" height="40" loading="lazy" aria-hidden="true" onerror="this.remove()">
   </div>`}
   <span>
     ${author.hide?'':`<span><span class="name">${getUserDisplay(author)}</span>${[author.system,m.webhook_id,author.bot].filter(e=>!!e).length?`<span class="tag">${author.system?'SYSTEM':(m.webhook_id?'WEBHOOK':(author.bot?`BOT${getUserFlags(author.flags??author.public_flags).VERIFIED_BOT?' ✔':''}`:''))}</span>`:''}<span class="timestamp">${formatDate(m.timestamp, 'r')}</span>${m.edited_timestamp?'<span>· Edited</span>':''}</span>`}
@@ -185,9 +185,9 @@ function renderMessage(content, author, m) {
       if (sticker.format_type===3) {
         return `<lottie-sticker class="message-attach" data-id="${sticker.id}"></lottie-sticker>`;
       }
-      return `<img src="https://media.discordapp.net/stickers/${sticker.id}.${['webp','png','png','webp','gif'][sticker.format_type]}?size=160&quality=lossless" width="160" height="160" class="message-attach">`;
+      return `<img src="https://media.discordapp.net/stickers/${sticker.id}.${['webp','png','png','webp','gif'][sticker.format_type]}?size=160&quality=lossless" width="160" height="160" loading="lazy" class="message-attach">`;
     }).join(''):''}
-    ${m.reactions?.length?`<div class="reactions">${m.reactions.map(reaction=>`<button${reaction.me?' class="me"':''}>${reaction.emoji.id?`<img src="https://cdn.discordapp.com/emojis/${reaction.emoji.id}.${reaction.emoji.animated?'gif':'webp'}?size=96">`:twemoji.parse(reaction.emoji.name, twemojiConfig)}${reaction.count}</button>`).join('')}</div>`:''}
+    ${m.reactions?.length?`<div class="reactions">${m.reactions.map(reaction=>`<button${reaction.me?' class="me"':''}>${reaction.emoji.id?`<img src="https://cdn.discordapp.com/emojis/${reaction.emoji.id}.${reaction.emoji.animated?'gif':'webp'}?size=96" width="16" height="16" loading="lazy">`:twemoji.parse(reaction.emoji.name, twemojiConfig)}${reaction.count}</button>`).join('')}</div>`:''}
   </span>
 </div>`;
 }

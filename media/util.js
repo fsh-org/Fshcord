@@ -190,9 +190,9 @@ function parseMD(text, extended=true) {
     .replaceAll("'", '&apos;');
   // Discord
   text = text
-    .replaceAll(/&lt;:.+?:[0-9]+?>/g, function(match){
+    .replaceAll(/&lt;a?:.+?:[0-9]+?>/g, function(match){
       let parts = match.replace('>','').split(':');
-      return reservemd(`<img src="https://cdn.discordapp.com/emojis/${parts[2]}.webp?size=96" onerror="this.outerText='${match}'" class="message-emoji">`);
+      return reservemd(`<img src="https://cdn.discordapp.com/emojis/${parts[2]}.${parts[0]==='&lt;a'?'gif':'webp'}?size=96" width="18" height="18" loading="lazy" onerror="this.outerText='${match}'" class="message-emoji">`);
     });
   // General
   text = text
