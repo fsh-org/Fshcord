@@ -370,8 +370,8 @@ function showChannels(list, server) {
     });
   if (server) {
     // Server banner
-    document.getElementById('channels-server-header').innerHTML = `<span class="name">${server.name}</span>
-${server.banner?`<div><img src="https://cdn.discordapp.com/banners/${server.id}/${server.banner}.webp?size=240"></div>`:''}`;
+    document.getElementById('channels-server-header').innerHTML = `<span class="name">${server.properties.name}</span>
+${server.properties.banner?`<div><img src="https://cdn.discordapp.com/banners/${server.id}/${server.properties.banner}.webp?size=240"></div>`:''}`;
   }
 }
 function switchChannel(id) {
@@ -411,10 +411,10 @@ function showServers(list) {
     if (s?.type==='folder') {
       return `<div aria-label="${s.name??'Folder'}" aria-role="button" class="server-folder" style="--folder-color:${colorToRGB(s.color??0)}">
   <svg onclick="let op=(this.getAttribute('open')==='true');this.setAttribute('open', !op);this.parentElement.style.height=(!op?'${(s.guilds.length+1)*50+s.guilds.length*10}px':'50px')" open="false"${getIcon('folder', 50).replace('<svg','').replace('viewBox="0 0 256 256"','viewBox="-64 -64 384 384"')}
-  ${s.guilds.map(g=>`<button aria-label="${g.name}" data-id="${g.id}" class="server-clicky">${g.icon == null ? g.name.trim().split(/\s+/).map(word=>word[0]??'').join('') : `<img src="https://cdn.discordapp.com/icons/${g.id}/${g.icon}.png?size=64" alt="${g.name}" loading="lazy">`}</button>`).join('')}
+  ${s.guilds.map(g=>`<button aria-label="${g.properties.name}" data-id="${g.id}" class="server-clicky">${g.properties.icon == null ? g.properties.name.trim().split(/\s+/).map(word=>word[0]??'').join('') : `<img src="https://cdn.discordapp.com/icons/${g.id}/${g.properties.icon}.png?size=64" alt="${g.properties.name}" loading="lazy">`}</button>`).join('')}
 </div>`;
     }
-    return `<button aria-label="${s.name}" data-id="${s.id}" class="server-clicky">${s.icon == null ? s.name.trim().split(/\s+/).map(word=>word[0]??'').join('') : `<img src="https://cdn.discordapp.com/icons/${s.id}/${s.icon}.png?size=64" alt="${s.name}" loading="lazy">`}</button>`
+    return `<button aria-label="${s.properties.name}" data-id="${s.id}" class="server-clicky">${s.properties.icon == null ? s.properties.name.trim().split(/\s+/).map(word=>word[0]??'').join('') : `<img src="https://cdn.discordapp.com/icons/${s.id}/${s.properties.icon}.png?size=64" alt="${s.properties.name}" loading="lazy">`}</button>`
   }).join('');
   Array.from(document.querySelectorAll('#server button'))
     .forEach(b=>{
