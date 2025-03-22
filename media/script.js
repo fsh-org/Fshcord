@@ -324,9 +324,9 @@ Channel types
 function channelName(c) {
   let name = c.id;
   if (c.type === 1) {
-    name = getUserDisplay(c.recipients[0]);
+    name = getUserDisplay(getUser(c.recipient_ids[0]));
   } else if (c.type === 3) {
-    name = c.name ?? (c.recipients.map(r=>getUserDisplay(r)).join(', '));
+    name = c.name ?? (c.recipient_ids.map(r=>getUserDisplay(getUser(r))).join(', '));
   } else {
     name = c.name ?? c.id;
   }
@@ -484,6 +484,7 @@ if (!localStorage.getItem('token')) {
 
   window.data.ws = { log: false, socket: undefined, d: undefined, session_id: undefined, resume_url: undefined };
 
+  window.data.users = {};
   window.data.servers = [];
   window.data.dms = [];
   window.data.messageCache = {};
@@ -510,10 +511,7 @@ if (!localStorage.getItem('token')) {
             // Resume
             window.data.ws.resume_url = wsd.d.resume_gateway_url;
             window.data.ws.session_id = wsd.d.session_id;
-            // Start
-            window.data.dms = wsd.d.private_channels;
-            window.data.dms.sort((a,b)=>b.last_message_id-a.last_message_id);
-            init(wsd.d.user, wsd.d.user_settings, wsd.d.guilds);
+            init(wsd.d);
             break;
 
           case 'GUILD_CREATE':
@@ -637,16 +635,24 @@ if (!localStorage.getItem('token')) {
     }
   }
 
-  async function init(user, settings, guilds) {
-    window.data.user = user;
-    document.querySelector('#account img').src = getUserAvatar(user.id, user.avatar, 80)
+  async function init(d) {
+    // User
+    window.data.user = d.user;
+    document.querySelector('#account img').src = getUserAvatar(d.user.id, d.user.avatar, 80);
+    window.data.settings = d.user_settings; // TODO: Switch to new settings system
 
-    // TODO: Switch to new settings system
-    window.data.settings = settings;
+    // Users
+    d.users.forEach(u=>window.data.users[u.id]=u);
+    window.data.users[d.user.id] = d.user;
 
-    window.data.servers = guilds;
+    // DMs
+    window.data.dms = d.private_channels;
+    window.data.dms.sort((a,b)=>b.last_message_id-a.last_message_id);
+
+    // Servers
+    window.data.servers = d.guilds;
     await fetchIcon('folder');
-    switchServers(guilds);
+    switchServers(d.guilds);
 
     loading('icons')
     await Promise.allSettled([

@@ -260,6 +260,9 @@ function getIcon(type, size) {
 }
 
 // Users
+function getUser(id) {
+  return window.data.users[id];
+}
 function getUserDisplay(obj) {
   return (obj.global_name ?? obj.username);
 }
