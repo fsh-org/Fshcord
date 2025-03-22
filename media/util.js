@@ -192,7 +192,7 @@ function parseMD(text, extended=true) {
   text = text
     .replaceAll(/&lt;a?:.+?:[0-9]+?>/g, function(match){
       let parts = match.replace('>','').split(':');
-      return reservemd(`<img src="https://cdn.discordapp.com/emojis/${parts[2]}.${parts[0]==='&lt;a'?'gif':'webp'}?size=96" width="18" height="18" loading="lazy" onerror="this.outerText='${match}'" class="message-emoji">`);
+      return reservemd(`<img src="https://cdn.discordapp.com/emojis/${parts[2]}.${parts[0]==='&lt;a'?'gif':'webp'}?size=96" width="18" height="18" loading="lazy" onerror="this.outerText='${match}'" class="emoji">`);
     });
   // General
   text = text
@@ -214,6 +214,8 @@ function parseMD(text, extended=true) {
       .replaceAll(/^-# .+?$/gm, function(match){return '<span style="font-size:80%;color:var(--text-2);">'+match.slice(3)+'</span>'})
       .replaceAll(/^(-|\*) .+?$/gm, function(match){return '<li>'+match.slice(2)+'</li>'});
   }
+  // Twemojis
+  text = twemoji.parse(text, twemojiConfig);
   // Reserve
   text = text.replaceAll(/¬r[0-9]{16}¬r/g, function(match){
     let id = match.split('¬r')[1];
