@@ -538,11 +538,10 @@ if (!localStorage.getItem('token')) {
           case 'GUILD_DELETE':
             window.data.servers = window.data.servers.filter(e=>e.id!==wsd.d.id);
             switchServers(window.data.servers);
-            break;
+            break;/*
           case 'GUILD_MEMBERS_CHUNK':
-            console.log('aaa');
             window.data.servers[window.data.servers.findIndex(e=>e.id===wsd.d.guild_id)].members = wsd.d.members;
-            break;
+            break;*/
 
           case 'MESSAGE_CREATE':
             if (window.data.messageCache[wsd.d.channel_id]) {
@@ -623,7 +622,7 @@ if (!localStorage.getItem('token')) {
                 browser: "chrome"
               },
               compress: false,
-              capabilities: 8193 // Lazy notes, client state v2, debounce message reactions
+              capabilities: (1<<0)+(1<<4)+(1<<10)+(1<<13) // Lazy notes, dedupe user objects, client state v2, debounce message reactions
               // ^ Consideration: 1 << 9	USER_SETTINGS_PROTO
             }
           }));
