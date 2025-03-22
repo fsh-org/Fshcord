@@ -351,7 +351,7 @@ function showChannels(list, server) {
       return `<span style="color:var(--text-2);font-size:80%;">${name}</span>`
     }
     return `<button data-id="${c.id}" data-type="${c.type}" data-name="${name}">
-  ${c.type===1?`<div class="avatar" aria-hidden="true"><img src="${getUserAvatar(c.recipients[0].id, c.recipients[0].avatar, 32)}" width="20" height="20" loading="lazy" aria-hidden="true"><img src="${getUserDeco(c.recipients[0]?.avatar_decoration_data?.asset)}" class="decoration" width="20" height="20" loading="lazy" aria-hidden="true" onerror="this.remove()"></div>`:(rules===c.id?getIcon('rules', 20):getIcon(c.type, 20))}
+  ${c.type===1?`<div class="avatar" aria-hidden="true"><img src="${getUserAvatar(c.recipient_ids[0], getUser(c.recipient_ids[0]).avatar, 32)}" width="20" height="20" loading="lazy" aria-hidden="true"><img src="${getUserDeco(getUser(c.recipient_ids[0])?.avatar_decoration_data?.asset)}" class="decoration" width="20" height="20" loading="lazy" aria-hidden="true" onerror="this.remove()"></div>`:(rules===c.id?getIcon('rules', 20):getIcon(c.type, 20))}
   ${c.nsfw?getIcon('nsfw', 20).replace('>',' class="channel-nsfw">'):''}
   <span>${name}</span>
 </button>`;
