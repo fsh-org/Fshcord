@@ -63,7 +63,9 @@ const SystemAuthor = {
   global_name: 'System',
   username: 'system',
   bot: true,
-  system: true
+  system: true,
+  flags: 4097,
+  public_flags: 4097
 }
 // {} gets evaluated, m is the message object
 const systemMessages = {
@@ -274,6 +276,9 @@ function getUserAvatar(id, hash, size = 64) {
   if (hash==='system') return '/media/fshcord.png';
   return `https://cdn.discordapp.com/avatars/${id}/${hash}.${hash.startsWith('a_')?'gif':'webp'}?size=${size}`;
 }
+function getUserBanner(id, hash, color, size = 480) {
+  return `<div class="banner" style="--color:${color}">${hash?`<img src="https://cdn.discordapp.com/banners/${id}/${hash}.png?size=${size}" aria-hidden="true">`:''}</div>`
+}
 function getUserDeco(hash) {
   if (!hash) return '';
   return `https://cdn.discordapp.com/avatar-decoration-presets/${hash}.png?passthrough=true`;
@@ -286,6 +291,8 @@ function getUserFlags(bitfield) {
   }
   return flags;
 }
+
+// Attachments
 function getAttachmentFlags(bitfield) {
   let flags = {};
   bitfield = BigInt(bitfield);

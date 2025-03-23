@@ -25,6 +25,38 @@ body {
   border-radius: 0;
 }
 
+#usermenu {
+  width: 280px;
+  margin: 0px;
+  z-index: 999999;
+}
+#usermenu .avatar {
+  position: absolute;
+  top: 50px;
+  left: 10px;
+  width: 80px;
+  height: 80px;
+  border-radius: 5rem;
+  border: 5px var(--bg-1) solid;
+}
+.banner {
+  width: 300px;
+  height: 100px;
+  margin: -10px 0px 40px -10px;
+  border-radius: 1rem 1rem 0px 0px;
+  background: var(--color);
+}
+#usermenu > b {
+  display: block;
+  font-size: 125%;
+}
+#usermenu .emoji {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  margin-bottom: -4px;
+}
+
 @keyframes select-enter {
   from {left:-15px}
   to {left:-10px}
@@ -200,8 +232,8 @@ body {
 }
 .decoration {
   position: absolute;
-  top: 0px;
-  left: 0px;
+  top: -12.5%;
+  left: -12.5%;
 }
 
 main {

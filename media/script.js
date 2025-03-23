@@ -20,6 +20,45 @@ function showContextMenu(event, type, data) {
 }
 window.onclick = function(){document.getElementById('contextmenu').close()};
 
+async function showMinifiedProfile(element, user) {
+  // Show modal
+  let bound = element.getBoundingClientRect();
+  let menu = document.getElementById('usermenu');
+  menu.show();
+  menu.style.left = bound.left+bound.width+10+'px';
+  menu.style.top = bound.top+'px';
+
+  // System user
+  if (user==="0") {
+    menu.innerHTML = 'This is a built-in user account';
+    return;
+  }
+
+  // Modal content
+  menu.innerHTML = "Loading user data...";
+  if (!getUser(user).full) {
+    let usr = await proxyFetch(`https://discord.com/api/v10/users/${user}/profile?type=popout&with_mutual_guilds=true&with_mutual_friends=true&with_mutual_friends_count=false${window.data.currentServer!==0?`&guild_id=${window.data.currentServer}`:''}`);
+    usr = await usr.json();
+    window.data.users[user] = JSON.parse(usr.content);
+    window.data.users[user].full = true;
+  }
+  user = window.data.users[user];
+  menu.innerHTML = `<div>
+  <div class="avatar">
+    <img src="${getUserAvatar(user.user.id, user.user.avatar, 80)}" width="80" height="80" loading="lazy" aria-hidden="true" style="border-radius:5rem">
+    <img src="${getUserDeco(user.user?.avatar_decoration_data?.asset)}" class="decoration" width="100" height="100" loading="lazy" aria-hidden="true" onerror="this.remove()">
+  </div>
+  ${getUserBanner(user.user.id, user.user.banner, user.user.banner_color??colorToRGB(user.user.accent_color))}
+</div>
+<b>${getUserDisplay(user.user)}</b>
+<span>${user.user.username} · ${user.badges.map(b=>b.id).join('')}</span>
+<span>${parseMD(user.user.bio, false)}</span>`;
+  let menubound = menu.getBoundingClientRect();
+  if (window.innerHeight<menubound.bottom) {
+    menu.style.top = bound.top-(menubound.bottom-window.innerHeight)+'px';
+  }
+}
+
 function sendMessage() {
   proxyFetch(`https://discord.com/api/v10/channels/${window.data.currentChannel}/messages`, {
     method: 'POST',
@@ -168,12 +207,12 @@ video -
 }
 function renderMessage(content, author, m) {
   return `<div class="message${m.mentions.map(e=>e.id).includes(window.data.user.id)?' mention':''}">
-  ${author.hide?'<div class="avatar" aria-hidden="true"></div>':`<div class="avatar" aria-hidden="true">
+  ${author.hide?'<div class="avatar" aria-hidden="true"></div>':`<div class="avatar" aria-hidden="true" onclick="showMinifiedProfile(this, '${author.id}')">
     <img src="${getUserAvatar(author.id, author.avatar)}" width="40" height="40" loading="lazy" aria-hidden="true">
-    <img src="${getUserDeco(author?.avatar_decoration_data?.asset)}" class="decoration" width="40" height="40" loading="lazy" aria-hidden="true" onerror="this.remove()">
+    <img src="${getUserDeco(author?.avatar_decoration_data?.asset)}" class="decoration" width="50" height="50" loading="lazy" aria-hidden="true" onerror="this.remove()">
   </div>`}
   <span>
-    ${author.hide?'':`<span><span class="name">${getUserDisplay(author)}</span>${[author.system,m.webhook_id,author.bot].filter(e=>!!e).length?`<span class="tag">${author.system?'SYSTEM':(m.webhook_id?'WEBHOOK':(author.bot?`BOT${getUserFlags(author.flags??author.public_flags).VERIFIED_BOT?' ✔':''}`:''))}</span>`:''}<span class="timestamp">${formatDate(m.timestamp, 'r')}</span>${getUserFlags(author.flags??author.public_flags).SPAMMER?'<span>· Possible spammer</span>':''}</span>`}
+    ${author.hide?'':`<span><span class="name" onclick="showMinifiedProfile(this, '${author.id}')">${getUserDisplay(author)}</span>${[author.system,m.webhook_id,author.bot].filter(e=>!!e).length?`<span class="tag">${author.system?'SYSTEM':(m.webhook_id?'WEBHOOK':(author.bot?`BOT${getUserFlags(author.flags??author.public_flags).VERIFIED_BOT?' ✔':''}`:''))}</span>`:''}<span class="timestamp">${formatDate(m.timestamp, 'r')}</span>${getUserFlags(author.flags??author.public_flags).SPAMMER?'<span>· Possible spammer</span>':''}</span>`}
     <span class="inner">${parseMD(content)}${m.edited_timestamp?'<span class="edited"> (edited)</span>':''}</span>
     ${m.attachments.length?m.attachments.map(attach=>{
       if (!attach.content_type) attach.content_type=`image/${attach.url.split('?')[0].split('.').slice(-1)[0]}`;
@@ -351,7 +390,7 @@ function showChannels(list, server) {
       return `<span style="color:var(--text-2);font-size:80%;">${name}</span>`
     }
     return `<button data-id="${c.id}" data-type="${c.type}" data-name="${name}">
-  ${c.type===1?`<div class="avatar" aria-hidden="true"><img src="${getUserAvatar(c.recipient_ids[0], getUser(c.recipient_ids[0]).avatar, 32)}" width="20" height="20" loading="lazy" aria-hidden="true"><img src="${getUserDeco(getUser(c.recipient_ids[0])?.avatar_decoration_data?.asset)}" class="decoration" width="20" height="20" loading="lazy" aria-hidden="true" onerror="this.remove()"></div>`:(rules===c.id?getIcon('rules', 20):getIcon(c.type, 20))}
+  ${c.type===1?`<div class="avatar" aria-hidden="true"><img src="${getUserAvatar(c.recipient_ids[0], getUser(c.recipient_ids[0]).avatar, 32)}" width="20" height="20" loading="lazy" aria-hidden="true"><img src="${getUserDeco(getUser(c.recipient_ids[0])?.avatar_decoration_data?.asset)}" class="decoration" width="25" height="25" loading="lazy" aria-hidden="true" onerror="this.remove()"></div>`:(rules===c.id?getIcon('rules', 20):getIcon(c.type, 20))}
   ${c.nsfw?getIcon('nsfw', 20).replace('>',' class="channel-nsfw">'):''}
   <span>${name}</span>
 </button>`;
@@ -644,6 +683,7 @@ if (!localStorage.getItem('token')) {
     // Users
     d.users.forEach(u=>window.data.users[u.id]=u);
     window.data.users[d.user.id] = d.user;
+    window.data.users[d.user.id].full = true;
 
     // DMs
     window.data.dms = d.private_channels;
