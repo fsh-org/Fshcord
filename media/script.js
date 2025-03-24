@@ -63,16 +63,16 @@ async function showMinifiedProfile(element, user) {
     <img src="${getUserAvatar(user.user.id, user.user.avatar, 80)}" width="80" height="80" loading="lazy" aria-hidden="true" style="border-radius:5rem">
     <img src="${getUserDeco(user.user?.avatar_decoration_data?.asset)}" class="decoration" width="100" height="100" loading="lazy" aria-hidden="true" onerror="this.remove()">
     <div class="badges">
-      ${user.badges.map(b=>`<a${b.link?` href="${b.link}"`:''} target="_blank" title="${b.description}" aria-hidden="true"><img src="https://cdn.discordapp.com/badge-icons/${b.icon}.png" alt="${b.description}" aria-hidden="true"></a>`).join('')}
+      ${user.badges.map(b=>`<a${b.link?` href="${b.link}"`:''} target="_blank" title="${b.description}" aria-hidden="true"><img src="https://cdn.discordapp.com/badge-icons/${b.icon}.png" width="25" height="25" alt="${b.description}" aria-hidden="true"></a>`).join('')}
     </div>
   </div>
   ${getUserBanner(user.user.id, user.user.banner, user.user.banner_color??colorToRGB(user.user.accent_color??0))}
 </div>
 <div class="name">
   <b>${getUserDisplay(user.user)}</b>
-  <span>${user.user.username}${user.user_profile.pronouns?` · ${user.user_profile.pronouns}`:''}</span>
+  <span>${user.user.username}${user.user.discriminator!=="0"?'#'+user.user.discriminator:''}${user.user_profile.pronouns?` · ${user.user_profile.pronouns}`:''}</span>
 </div>
-<span class="bio">${parseMD(user.user.bio, 1)}</span>`;
+<span class="bio">${parseMD(user.user.bio?.trim(), 1)}</span>`;
   let menubound = menu.getBoundingClientRect();
   if (window.innerHeight<menubound.bottom) {
     menu.style.top = bound.top-(menubound.bottom-window.innerHeight)+'px';

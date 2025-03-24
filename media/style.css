@@ -38,6 +38,7 @@ body {
   height: 80px;
   border-radius: 5rem;
   border: 5px var(--bg-1) solid;
+  background: var(--bg-1);
 }
 .banner {
   width: 300px;
