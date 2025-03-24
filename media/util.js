@@ -65,7 +65,23 @@ const SystemAuthor = {
   bot: true,
   system: true,
   flags: 4097,
-  public_flags: 4097
+  public_flags: 4097,
+  user: {
+    id: "0",
+    username: "system",
+    global_name: "System",
+    avatar: "system",
+    avatar_decoration_data: null,
+    banner: null,
+    banner_color: "#58b9ff",
+    accent_color: 5814783,
+    bio: "This is a built-in user account"
+  },
+  user_profile: {
+    pronouns: ""
+  },
+  badges: [],
+  full: true
 }
 // {} gets evaluated, m is the message object
 const systemMessages = {
@@ -161,7 +177,7 @@ function proxyFetch(url, o) {
 }
 
 // MD Parse
-function parseMD(text, extended=true) {
+function parseMD(text, extended=2) {
   let reserve = {};
   function reservemd(txt) {
     let id = Math.floor(Math.random()*Math.pow(10, 16)).toString(10).padStart(16, '0');
@@ -172,7 +188,7 @@ function parseMD(text, extended=true) {
   text = text
     .replaceAll('<', '~lt;')
     .replaceAll('"', '~quot;');
-  if (extended) {
+  if (extended>0) {
     text = text.replaceAll(/```([^¬]|¬)*?```/g, function(match){
       match = match
         .replaceAll('&', '&amp;')
@@ -207,14 +223,17 @@ function parseMD(text, extended=true) {
     .replaceAll(/\`.+?\`/g, function(match){return '<code>'+match.slice(1,-1)+'</code>'})
     .replaceAll(/^\> .+?$/gm, function(match){return '<blockquote>'+match.slice(2)+'</blockquote>'});
   // Extended
-  if (extended) {
+  if (extended>0) {
     text = text
       .replaceAll(/&lt;t:[0-9]+?(:[tTdDfFR])?>/gm, function(match){match=match.split(':');match[1]=Number(match[1].replace('>',''))*1000;return `<code title="${formatDate(match[1], 'F')}" style="display:unset"${((match[2]??'f')[0])==='R'?` class="timestamp-relative" data-time="${match[1]}"`:''}>${formatDate(match[1], (match[2]??'f')[0])}</code>`})
+      .replaceAll(/^(-|\*) .+?$/gm, function(match){return '<li>'+match.slice(2)+'</li>'});
+  }
+  if (extended>1) {
+    text = text
       .replaceAll(/^### .+?$/gm, function(match){return '<span style="font-size:110%">'+match.slice(4)+'</span>'})
       .replaceAll(/^## .+?$/gm, function(match){return '<span style="font-size:125%">'+match.slice(3)+'</span>'})
       .replaceAll(/^# .+?$/gm, function(match){return '<span style="font-size:150%">'+match.slice(2)+'</span>'})
-      .replaceAll(/^-# .+?$/gm, function(match){return '<span style="font-size:80%;color:var(--text-2);">'+match.slice(3)+'</span>'})
-      .replaceAll(/^(-|\*) .+?$/gm, function(match){return '<li>'+match.slice(2)+'</li>'});
+      .replaceAll(/^-# .+?$/gm, function(match){return '<span style="font-size:80%;color:var(--text-2);">'+match.slice(3)+'</span>'});
   }
   // Twemojis
   text = twemoji.parse(text, twemojiConfig);
@@ -277,7 +296,7 @@ function getUserAvatar(id, hash, size = 64) {
   return `https://cdn.discordapp.com/avatars/${id}/${hash}.${hash.startsWith('a_')?'gif':'webp'}?size=${size}`;
 }
 function getUserBanner(id, hash, color, size = 480) {
-  return `<div class="banner" style="--color:${color}">${hash?`<img src="https://cdn.discordapp.com/banners/${id}/${hash}.png?size=${size}" aria-hidden="true">`:''}</div>`
+  return `<div class="banner" style="--color:${color}">${hash?`<img src="https://cdn.discordapp.com/banners/${id}/${hash}.${hash.startsWith('a_')?'gif':'webp'}?size=${size}" aria-hidden="true">`:''}</div>`
 }
 function getUserDeco(hash) {
   if (!hash) return '';

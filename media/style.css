@@ -42,13 +42,30 @@ body {
 .banner {
   width: 300px;
   height: 100px;
-  margin: -10px 0px 40px -10px;
+  margin: -10px 0px 35px -10px;
   border-radius: 1rem 1rem 0px 0px;
   background: var(--color);
+  overflow: hidden;
 }
-#usermenu > b {
-  display: block;
+.banner img {
+  width: 300px;
+  height: 100px;
+  object-fit: cover;
+}
+#usermenu .badges {
+  position: absolute;
+  top: 50px;
+  left: 90px;
+  display: flex;
+}
+#usermenu > .name > b {
   font-size: 125%;
+}
+#usermenu > .name > span {
+  font-size: 75%;
+}
+#usermenu .bio {
+  white-space: break-spaces;
 }
 #usermenu .emoji {
   width: 18px;
@@ -275,6 +292,7 @@ main {
   background-color: var(--bg-2);
 }
 .message .name {
+  cursor: pointer;
   color: var(--text-0);
 }
 .message .timestamp {
@@ -290,6 +308,7 @@ main {
   background-color: var(--blue-1);
 }
 .message > .avatar {
+  cursor: pointer;
   width: 40px;
   height: fit-content;
   flex-shrink: 0;

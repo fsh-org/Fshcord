@@ -18,9 +18,25 @@ function showContextMenu(event, type, data) {
       report('Unknown context menu type: '+type, data);
   }
 }
-window.onclick = function(){document.getElementById('contextmenu').close()};
+window.addEventListener('click', function(){document.getElementById('contextmenu').close()});
 
+let userpopupevent = false;
+function handleUserPopupClose(event) {
+  let menu = document.getElementById('usermenu');
+  if (!menu.open) return;
+  let menubound = menu.getBoundingClientRect();
+  let isInDialog = (menubound.top <= event.clientY && event.clientY <= menubound.top + menubound.height && menubound.left <= event.clientX && event.clientX <= menubound.left + menubound.width);
+  if (!isInDialog) {
+    menu.close();
+    window.removeEventListener('click', handleUserPopupClose);
+    userpopupevent = false;
+  }
+}
 async function showMinifiedProfile(element, user) {
+  if (userpopupevent) {
+    window.removeEventListener('click', handleUserPopupClose);
+    userpopupevent = false;
+  }
   // Show modal
   let bound = element.getBoundingClientRect();
   let menu = document.getElementById('usermenu');
@@ -28,15 +44,14 @@ async function showMinifiedProfile(element, user) {
   menu.style.left = bound.left+bound.width+10+'px';
   menu.style.top = bound.top+'px';
 
-  // System user
-  if (user==="0") {
-    menu.innerHTML = 'This is a built-in user account';
-    return;
-  }
+  setTimeout(()=>{
+    userpopupevent = true;
+    window.addEventListener('click', handleUserPopupClose);
+  }, 0);
 
   // Modal content
   menu.innerHTML = "Loading user data...";
-  if (!getUser(user).full) {
+  if (!getUser(user)?.full) {
     let usr = await proxyFetch(`https://discord.com/api/v10/users/${user}/profile?type=popout&with_mutual_guilds=true&with_mutual_friends=true&with_mutual_friends_count=false${window.data.currentServer!==0?`&guild_id=${window.data.currentServer}`:''}`);
     usr = await usr.json();
     window.data.users[user] = JSON.parse(usr.content);
@@ -47,12 +62,17 @@ async function showMinifiedProfile(element, user) {
   <div class="avatar">
     <img src="${getUserAvatar(user.user.id, user.user.avatar, 80)}" width="80" height="80" loading="lazy" aria-hidden="true" style="border-radius:5rem">
     <img src="${getUserDeco(user.user?.avatar_decoration_data?.asset)}" class="decoration" width="100" height="100" loading="lazy" aria-hidden="true" onerror="this.remove()">
+    <div class="badges">
+      ${user.badges.map(b=>`<a${b.link?` href="${b.link}"`:''} target="_blank" title="${b.description}" aria-hidden="true"><img src="https://cdn.discordapp.com/badge-icons/${b.icon}.png" alt="${b.description}" aria-hidden="true"></a>`).join('')}
+    </div>
   </div>
-  ${getUserBanner(user.user.id, user.user.banner, user.user.banner_color??colorToRGB(user.user.accent_color))}
+  ${getUserBanner(user.user.id, user.user.banner, user.user.banner_color??colorToRGB(user.user.accent_color??0))}
 </div>
-<b>${getUserDisplay(user.user)}</b>
-<span>${user.user.username} · ${user.badges.map(b=>b.id).join('')}</span>
-<span>${parseMD(user.user.bio, false)}</span>`;
+<div class="name">
+  <b>${getUserDisplay(user.user)}</b>
+  <span>${user.user.username}${user.user_profile.pronouns?` · ${user.user_profile.pronouns}`:''}</span>
+</div>
+<span class="bio">${parseMD(user.user.bio, 1)}</span>`;
   let menubound = menu.getBoundingClientRect();
   if (window.innerHeight<menubound.bottom) {
     menu.style.top = bound.top-(menubound.bottom-window.innerHeight)+'px';
@@ -190,10 +210,10 @@ video -
   ${embed.thumbnail&&embed.type!=='video'?`<img src="${embed.thumbnail.proxy_url}" class="message-attach thumbnail">`:''}
   ${embed?.provider?.name?`<a${embed.provider?.url?` href="${embed.provider.url}"`:''} class="sub">${embed.provider.name}</a>`:''}
   ${embed?.author?.name?`<a${embed.author?.url?` href="${embed.author.url}"`:''} class="sub">${embed.author.proxy_icon_url?`<img src="${embed.author.proxy_icon_url}">`:''}${embed.author.name}</a>`:''}
-  ${embed.title?`<a${embed.url?` href="${embed.url}"`:''} class="etitle">${parseMD(embed.title, false)}</a>`:''}
+  ${embed.title?`<a${embed.url?` href="${embed.url}"`:''} class="etitle">${parseMD(embed.title, 0)}</a>`:''}
   ${embed.description&&embed.type!=='video'?`<span class="desc">${parseMD(embed.description)}</span>`:''}
   ${embed.fields?`<div class="fields">${embed.fields.map(f=>`<div style="${f.inline?'':'flex:1 1 100%'}">
-  <span class="etitle">${parseMD(f.name, false)}</span>
+  <span class="etitle">${parseMD(f.name, 0)}</span>
   <span class="desc">${parseMD(f.value)}</span>
 </div>`).join('')}</div>`:''}
   ${embed.video?(embed.video.proxy_url?`<video src="${embed.video.proxy_url}" class="message-attach" style="max-width:100%" controls></video>`:`<iframe src="${embed.video.url}" class="message-attach" allow="autoplay" frameborder="0" scrolling="no" sandbox="allow-forms allow-modals allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts allow-presentation" allowfullscreen></iframe>`):''}
@@ -683,7 +703,7 @@ if (!localStorage.getItem('token')) {
     // Users
     d.users.forEach(u=>window.data.users[u.id]=u);
     window.data.users[d.user.id] = d.user;
-    window.data.users[d.user.id].full = true;
+    window.data.users['0'] = SystemAuthor;
 
     // DMs
     window.data.dms = d.private_channels;
