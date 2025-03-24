@@ -43,7 +43,7 @@ body {
 .banner {
   width: 300px;
   height: 100px;
-  margin: -10px 0px 35px -10px;
+  margin: -10px 0px 40px -10px;
   border-radius: 1rem 1rem 0px 0px;
   background: var(--color);
   overflow: hidden;

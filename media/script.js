@@ -89,9 +89,17 @@ function sendMessage() {
     .then(res=>res.json())
     .then(res=>{
       document.getElementById('message-input').value = '';
+      window.data.channelTyping[window.data.currentChannel] = 0;
     })
 }
-document.getElementById('message-input').onkeyup = function(event){if(event.key==='Enter')sendMessage()};
+document.getElementById('message-input').onkeyup = function(event){
+  if (event.key==='Enter') sendMessage();
+  let last = window.data.channelTyping[window.data.currentChannel] ?? 0;
+  if (Date.now() > last+(10 * 1000)) {
+    window.data.channelTyping[window.data.currentChannel] = Date.now();
+    proxyFetch(`https://discord.com/api/v10/channels/${window.data.currentChannel}/typing`, { method: 'POST' })
+  }
+};
 document.getElementById('message-send').onclick = sendMessage;
 
 /*
@@ -546,7 +554,9 @@ if (!localStorage.getItem('token')) {
   window.data.users = {};
   window.data.servers = [];
   window.data.dms = [];
+
   window.data.messageCache = {};
+  window.data.channelTyping = {};
 
   window.data.currentServer = 0;
   window.data.currentChannel = 0;
