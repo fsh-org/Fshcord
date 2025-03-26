@@ -160,6 +160,8 @@ Message types
 53: GUILD_JOIN_REQUEST_REJECT_NOTIFICATION
 54: GUILD_JOIN_REQUEST_WITHDRAWN_NOTIFICATION
 55: HD_STREAMING_UPGRADED
+56: CHAT_WALLPAPER_SET
+57: CHAT_WALLPAPER_REMOVED
 */
 function renderEmbed(embed) {
       /*
@@ -549,7 +551,7 @@ if (!localStorage.getItem('token')) {
   window.data = {};
   window.data.localReport = false;
 
-  window.data.ws = { log: false, socket: undefined, d: undefined, session_id: undefined, resume_url: undefined };
+  window.data.ws = { log: false, logUnhandled: false, socket: undefined, d: undefined, session_id: undefined, resume_url: undefined };
 
   window.data.users = {};
   window.data.servers = [];
@@ -634,6 +636,74 @@ if (!localStorage.getItem('token')) {
               }
             }
             break;
+          case 'MESSAGE_REACTION_ADD':
+            if (window.data.messageCache[wsd.d.channel_id]) {
+              let message = window.data.messageCache[wsd.d.channel_id].find(m=>m.id===wsd.d.message_id);
+              let same = message.reactions.find(r=>r.emoji.id==wsd.d.emoji.id&&r.emoji.name===wsd.d.emoji.name);
+              if (same) {
+                // Count up
+                same.count += 1;
+                if (wsd.d.type===0) {
+                  same.count_details.normal += 1;
+                } else {
+                  same.count_details.burst += 1;
+                }
+                // If user set me :3
+                if (wsd.d.user_id===window.data.user.id) {
+                  same.me = true;
+                  same.me_burst = (wsd.d.type===1);
+                }
+              } else {
+                // New reaction
+                message.reactions.push({
+                  count: 1,
+                  count_details: {
+                    normal: wsd.d.type^1,
+                    burst: wsd.d.type
+                  },
+                  emoji: wsd.d.emoji,
+                  burst_colors: [],
+                  me: (wsd.d.user_id===window.data.user.id),
+                  me_burst: (wsd.d.type===1)&&(wsd.d.user_id===window.data.user.id)
+                })
+              }
+              // If current, show new
+              if (window.data.currentChannel===wsd.d.channel_id) {
+                if (channelType.text.includes(window.data.currentChannelType)) {
+                  showMessages(window.data.messageCache[wsd.d.channel_id], window.data.currentChannelType);
+                }
+              }
+            }
+            break;
+          case 'MESSAGE_REACTION_REMOVE':
+            if (window.data.messageCache[wsd.d.channel_id]) {
+              let message = window.data.messageCache[wsd.d.channel_id].find(m=>m.id===wsd.d.message_id);
+              let same = message.reactions.find(r=>r.emoji.id==wsd.d.emoji.id&&r.emoji.name===wsd.d.emoji.name);
+              if (same) {
+                // Count down
+                same.count -= 1;
+                if (wsd.d.type===0) {
+                  same.count_details.normal -= 1;
+                } else {
+                  same.count_details.burst -= 1;
+                }
+                if (wsd.d.user_id===window.data.user.id) {
+                  same.me = false;
+                  same.me_burst = false;
+                }
+                // If count 0 remove
+                if (same.count<1) {
+                  message.reactions = message.reactions.filter(r=>r.emoji.id!=wsd.d.emoji.id||r.emoji.name!==wsd.d.emoji.name);
+                }
+              }
+              // If current, show new
+              if (window.data.currentChannel===wsd.d.channel_id) {
+                if (channelType.text.includes(window.data.currentChannelType)) {
+                  showMessages(window.data.messageCache[wsd.d.channel_id], window.data.currentChannelType);
+                }
+              }
+            }
+            break;
 
           case 'USER_SETTINGS_UPDATE':
             Object.entries(wsd.d).forEach((k,v)=>{
@@ -643,6 +713,10 @@ if (!localStorage.getItem('token')) {
             break;
           case 'USER_SETTINGS_PROTO_UPDATE':
             // For future
+            break;
+
+          default:
+            if (window.data.ws.logUnhandled) console.log(wsd);
             break;
         }
         break;

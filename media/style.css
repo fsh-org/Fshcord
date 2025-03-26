@@ -547,6 +547,7 @@ lottie-sticker.message-attach {
   display: inline-block;
   width: fit-content;
   height: fit-content;
+  margin: 2px 0px;
 }
 blockquote {
   display: unset;
