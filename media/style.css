@@ -566,6 +566,20 @@ blockquote::before {
   border-radius: 1rem;
   background-color: var(--text-2);
 }
+.message.deleted {
+  color: var(--red-2);
+  text-decoration: line-through;
+}
+.message.deleted:hover {
+  color: var(--red-1);
+  text-decoration: none;
+}
+.message.deleted .message-attach {
+  filter: grayscale(1);
+}
+.message.deleted:hover .message-attach {
+  filter: grayscale(0);
+}
 
 .input-bar {
   display: flex;

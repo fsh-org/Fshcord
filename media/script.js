@@ -236,7 +236,7 @@ video -
   }
 }
 function renderMessage(content, author, m) {
-  return `<div class="message${m.mentions.map(e=>e.id).includes(window.data.user.id)?' mention':''}">
+  return `<div class="message${m.deleted?' deleted':''}${m.mentions.map(e=>e.id).includes(window.data.user.id)?' mention':''}">
   ${author.hide?'<div class="avatar" aria-hidden="true"></div>':`<div class="avatar" aria-hidden="true" onclick="showMinifiedProfile(this, '${author.id}')">
     <img src="${getUserAvatar(author.id, author.avatar)}" width="40" height="40" loading="lazy" aria-hidden="true">
     <img src="${getUserDeco(author?.avatar_decoration_data?.asset)}" class="decoration" width="50" height="50" loading="lazy" aria-hidden="true" onerror="this.remove()">
@@ -628,6 +628,18 @@ if (!localStorage.getItem('token')) {
             if (window.data.messageCache[wsd.d.channel_id]) {
               let message = window.data.messageCache[wsd.d.channel_id].find(m=>m.id===wsd.d.id);
               Object.keys(wsd.d).forEach(k=>message[k]=wsd.d[k]);
+              // If current, show new
+              if (window.data.currentChannel===wsd.d.channel_id) {
+                if (channelType.text.includes(window.data.currentChannelType)) {
+                  showMessages(window.data.messageCache[wsd.d.channel_id], window.data.currentChannelType);
+                }
+              }
+            }
+            break;
+          case 'MESSAGE_DELETE':
+            if (window.data.messageCache[wsd.d.channel_id]) {
+              let message = window.data.messageCache[wsd.d.channel_id].find(m=>m.id===wsd.d.id);
+              message.deleted = true;
               // If current, show new
               if (window.data.currentChannel===wsd.d.channel_id) {
                 if (channelType.text.includes(window.data.currentChannelType)) {
