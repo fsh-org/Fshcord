@@ -54,29 +54,30 @@ async function showMinifiedProfile(element, user) {
   if (!getUser(user)?.full) {
     let usr = await proxyFetch(`https://discord.com/api/v10/users/${user}/profile?type=popout&with_mutual_guilds=true&with_mutual_friends=true&with_mutual_friends_count=false${window.data.currentServer!==0?`&guild_id=${window.data.currentServer}`:''}`);
     usr = await usr.json();
-    if (usr.code !== 10013) {
+    if (JSON.parse(usr.content).code !== 10013) {
       window.data.users[user] = JSON.parse(usr.content);
       window.data.users[user].full = true;
     } else {
-      user = '1';
+      if (!window.data.users[user]) user = '1';
     }
   }
   user = window.data.users[user];
   menu.innerHTML = `<div>
   <div class="avatar">
-    <img src="${getUserAvatar(user.user.id, user.user.avatar, 80)}" width="80" height="80" loading="lazy" aria-hidden="true" style="border-radius:5rem">
-    <img src="${getUserDeco(user.user?.avatar_decoration_data?.asset)}" class="decoration" width="100" height="100" loading="lazy" aria-hidden="true" onerror="this.remove()">
+    <img src="${getUserAvatar((user.user??user).id, (user.user??user).avatar, 80)}" width="80" height="80" loading="lazy" aria-hidden="true" style="border-radius:5rem">
+    <img src="${getUserDeco((user.user??user)?.avatar_decoration_data?.asset)}" class="decoration" width="100" height="100" loading="lazy" aria-hidden="true" onerror="this.remove()">
     <div class="badges">
-      ${user.badges.map(b=>`<a${b.link?` href="${b.link}"`:''} target="_blank" title="${b.description}" aria-hidden="true"><img src="https://cdn.discordapp.com/badge-icons/${b.icon}.png" width="25" height="25" alt="${b.description}" aria-hidden="true"></a>`).join('')}
+      ${user.user?'':'<img src="/media/icon/limited.svg" width="25" height="25" alt="This profile has limited info" title="This profile has limited info">'}
+      ${(user.badges??[]).map(b=>`<a${b.link?` href="${b.link}"`:''} target="_blank" title="${b.description}" aria-hidden="true"><img src="https://cdn.discordapp.com/badge-icons/${b.icon}.png" width="25" height="25" alt="${b.description}" aria-hidden="true"></a>`).join('')}
     </div>
   </div>
-  ${getUserBanner(user.user.id, user.user.banner, user.user.banner_color??colorToRGB(user.user.accent_color??0))}
+  ${getUserBanner((user.user??user).id, user?.user?.banner, user?.user?.banner_color??colorToRGB(user?.user?.accent_color??0))}
 </div>
 <div class="name">
-  <b>${getUserDisplay(user.user)}</b>
-  <span>${user.user.username}${user.user.discriminator!=="0"?'#'+user.user.discriminator:''}${user.user_profile.pronouns?` · ${user.user_profile.pronouns}`:''}</span>
+  <b>${getUserDisplay(user.user??user)}</b>
+  <span>${(user.user??user).username}${user?.user?.discriminator?.length>1?'#'+user.user.discriminator:''}${user?.user_profile?.pronouns?` · ${user.user_profile.pronouns}`:''}</span>
 </div>
-<span class="bio">${parseMD(user.user.bio?.trim(), 1)}</span>`;
+<span class="bio">${user?.user?.bio?parseMD(user.user.bio.trim(), 1):''}</span>`;
   let menubound = menu.getBoundingClientRect();
   if (window.innerHeight<menubound.bottom) {
     menu.style.top = bound.top-(menubound.bottom-window.innerHeight)+'px';

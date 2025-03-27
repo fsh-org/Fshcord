@@ -69,6 +69,7 @@ const SystemAuthor = {
   user: {
     id: '0',
     username: 'system',
+    discriminator: '0',
     global_name: 'System',
     avatar: 'system',
     avatar_decoration_data: null,
@@ -95,6 +96,7 @@ const UnknownAuthor = {
   user: {
     id: '1',
     username: 'Deleted User',
+    discriminator: '0000',
     global_name: 'Deleted User',
     avatar: null,
     avatar_decoration_data: null,
