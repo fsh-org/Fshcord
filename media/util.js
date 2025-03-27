@@ -67,22 +67,48 @@ const SystemAuthor = {
   flags: 4097,
   public_flags: 4097,
   user: {
-    id: "0",
-    username: "system",
-    global_name: "System",
-    avatar: "system",
+    id: '0',
+    username: 'system',
+    global_name: 'System',
+    avatar: 'system',
     avatar_decoration_data: null,
     banner: null,
-    banner_color: "#58b9ff",
+    banner_color: '#58b9ff',
     accent_color: 5814783,
-    bio: "This is a built-in user account"
+    bio: 'This is a built-in user account'
   },
   user_profile: {
-    pronouns: ""
+    pronouns: ''
   },
   badges: [],
   full: true
-}
+};
+const UnknownAuthor = {
+  id: 1,
+  avatar: null,
+  global_name: 'Deleted User',
+  username: 'Deleted User',
+  bot: false,
+  system: false,
+  flags: 0,
+  public_flags: 0,
+  user: {
+    id: '1',
+    username: 'Deleted User',
+    global_name: 'Deleted User',
+    avatar: null,
+    avatar_decoration_data: null,
+    banner: null,
+    banner_color: '#58b9ff',
+    accent_color: 5814783,
+    bio: ''
+  },
+  user_profile: {
+    pronouns: ''
+  },
+  badges: [],
+  full: true
+};
 // {} gets evaluated, m is the message object
 const systemMessages = {
   '4': `{getUserDisplay(m.author)} changed the {[15,16].includes(channelType) ? "post title" : "channel name"}: {m.content}`,

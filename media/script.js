@@ -54,8 +54,12 @@ async function showMinifiedProfile(element, user) {
   if (!getUser(user)?.full) {
     let usr = await proxyFetch(`https://discord.com/api/v10/users/${user}/profile?type=popout&with_mutual_guilds=true&with_mutual_friends=true&with_mutual_friends_count=false${window.data.currentServer!==0?`&guild_id=${window.data.currentServer}`:''}`);
     usr = await usr.json();
-    window.data.users[user] = JSON.parse(usr.content);
-    window.data.users[user].full = true;
+    if (usr.code !== 10013) {
+      window.data.users[user] = JSON.parse(usr.content);
+      window.data.users[user].full = true;
+    } else {
+      user = '1';
+    }
   }
   user = window.data.users[user];
   menu.innerHTML = `<div>
@@ -775,7 +779,7 @@ if (!localStorage.getItem('token')) {
                 browser: "chrome"
               },
               compress: false,
-              capabilities: (1<<0)+(1<<4)+(1<<10)+(1<<13) // Lazy notes, dedupe user objects, client state v2, debounce message reactions
+              capabilities: (1<<0)+(1<<4)+(1<<5)+(1<<10)+(1<<13) // Lazy notes, dedupe user objects, prioritizied ready payload, client state v2, debounce message reactions
               // ^ Consideration: 1 << 9	USER_SETTINGS_PROTO
             }
           }));
@@ -796,10 +800,32 @@ if (!localStorage.getItem('token')) {
     document.querySelector('#account img').src = getUserAvatar(d.user.id, d.user.avatar, 80);
     window.data.settings = d.user_settings; // TODO: Switch to new settings system
 
+    // User relationships
+    window.data.relationships = {};
+    d.relationships.forEach(r=>{
+      window.data.relationships[r.id??r.user_id] = {
+        nick: r.nickname,
+
+        friend: (r.type===1),
+        ignored: r.user_ignored,
+        blocked: (r.type===2),
+        implicit: (r.type===5),
+        suggestion: (r.type===6), // Deprecated
+
+        in_req: (r.type===3),
+        out_req: (r.type===4),
+        spam_req: r.is_spam_request??false,
+        stranger_req: r.stranger_request??false,
+
+        since: r.since??null
+      };
+    });
+
     // Users
     d.users.forEach(u=>window.data.users[u.id]=u);
     window.data.users[d.user.id] = d.user;
     window.data.users['0'] = SystemAuthor;
+    window.data.users['1'] = UnknownAuthor;
 
     // DMs
     window.data.dms = d.private_channels;
@@ -809,6 +835,9 @@ if (!localStorage.getItem('token')) {
     window.data.servers = d.guilds;
     await fetchIcon('folder');
     switchServers(d.guilds);
+
+    // Channels
+    window.data.channelRead = d.read_state;
 
     loading('icons')
     await Promise.allSettled([
