@@ -488,7 +488,7 @@ function showServers(list) {
   ${s.guilds.map(g=>`<button aria-label="${g.properties.name}" data-id="${g.id}" class="server-clicky">${g.properties.icon == null ? g.properties.name.trim().split(/\s+/).map(word=>word[0]??'').join('') : `<img src="https://cdn.discordapp.com/icons/${g.id}/${g.properties.icon}.png?size=64" alt="${g.properties.name}" loading="lazy">`}</button>`).join('')}
 </div>`;
     }
-    return `<button aria-label="${s.properties.name}" data-id="${s.id}" class="server-clicky">${s.properties.icon == null ? s.properties.name.trim().split(/\s+/).map(word=>word[0]??'').join('') : `<img src="https://cdn.discordapp.com/icons/${s.id}/${s.properties.icon}.png?size=64" alt="${s.properties.name}" loading="lazy">`}</button>`
+    return `<button aria-label="${s.name??s?.properties?.name??'Server'}" data-id="${s.id}" class="server-clicky">${(s.icon??s?.properties?.icon??null) == null ? (s.name??s?.properties?.name??'Server').trim().split(/\s+/).map(word=>word[0]??'').join('') : `<img src="https://cdn.discordapp.com/icons/${s.id}/${s.icon??s.properties.icon}.png?size=64" alt="${s.name??s?.properties?.name??'Server'}" loading="lazy">`}</button>`;
   }).join('');
   Array.from(document.querySelectorAll('#server button'))
     .forEach(b=>{
@@ -504,9 +504,9 @@ function showServers(list) {
         // Set selected
         let previous = document.querySelector('#server button[selected]');
         if (!b.isSameNode(previous)) {
-          previous.classList.add('leaving');
+          previous?.classList?.add('leaving');
           setTimeout(() => {
-            previous.classList.remove('leaving');
+            previous?.classList?.remove('leaving');
             previous?.removeAttribute('selected');
           }, 250);
           b.setAttribute('selected', true);
@@ -648,7 +648,7 @@ if (!localStorage.getItem('token')) {
               })
             break;
           case 'GUILD_UPDATE':
-            window.data.servers[window.data.servers.findIndex(e=>e.id===wsd.d.id)] = wsd.d;
+            Object.keys(wsd.d).forEach(k=>window.data.servers[window.data.servers.findIndex(e=>e.id===wsd.d.id)][k]=wsd.d[k]);
             switchServers(window.data.servers);
             break;
           case 'GUILD_DELETE':
