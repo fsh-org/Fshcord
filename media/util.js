@@ -348,6 +348,14 @@ function getAttachmentFlags(bitfield) {
   }
   return flags;
 }
+function formatBytes(bytes) {
+  bytes = Number(bytes);
+  if (bytes === 0) return '0 Bytes';
+  const k = 1024;
+  const sizes = ['Bytes', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB','RiB','QiB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
 
 // General utility
 function colorToRGB(color) {

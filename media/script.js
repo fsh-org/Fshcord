@@ -252,7 +252,7 @@ function renderMessage(content, author, m) {
     ${m.attachments.length?m.attachments.map(attach=>{
       if (!attach.content_type) attach.content_type=`image/${attach.url.split('?')[0].split('.').slice(-1)[0]}`;
       if (attach.content_type.startsWith('image')&&!attach.width) attach.content_type=`application/${attach.content_type.split('/')[1]}`;
-      return `<${attach.content_type.startsWith('image/')?'img':attach.content_type.startsWith('audio/')?'audio':attach.content_type.startsWith('video/')?'video':'div'} src="${attach.url}" width="${Math.floor(attach.width/2)}" height="${Math.floor(attach.height/2)}" class="message-attach${attach.flags?(getAttachmentFlags(attach.flags).SPOILER?` spoiler"onclick="this.classList.remove('spoiler')`:''):''}" controls>${attach.content_type.startsWith('image/')?'':attach.content_type.startsWith('audio/')?'</audio>':attach.content_type.startsWith('video/')?'</video>':`<a download="${attach.filename}">${attach.filename}</a></div>`}`;
+      return `<${attach.content_type.startsWith('image/')?'img':attach.content_type.startsWith('audio/')?'audio':attach.content_type.startsWith('video/')?'video':'div'} src="${attach.url}" width="${Math.floor(attach.width/2)}" height="${Math.floor(attach.height/2)}" class="message-attach${attach.flags?(getAttachmentFlags(attach.flags).SPOILER?` spoiler"onclick="this.classList.remove('spoiler')`:''):''}" controls>${attach.content_type.startsWith('image/')?'':attach.content_type.startsWith('audio/')?'</audio>':attach.content_type.startsWith('video/')?'</video>':`<a download="${attach.filename}">${attach.filename}</a> · ${formatBytes(attach.size)}</div>`}`;
     }).join(''):''}
     ${m.embeds.length?m.embeds.map(embed=>renderEmbed(embed)).join(''):''}
     ${m.sticker_items?.length?m.sticker_items.map(sticker=>{
@@ -444,8 +444,8 @@ function showChannels(list, server) {
     });
   if (server) {
     // Server banner
-    document.getElementById('channels-server-header').innerHTML = `<span class="name">${server.properties.name}</span>
-${server.properties.banner?`<div><img src="https://cdn.discordapp.com/banners/${server.id}/${server.properties.banner}.webp?size=240"></div>`:''}`;
+    document.getElementById('channels-server-header').innerHTML = `<span class="name">${server.name??server.properties.name}</span>
+${(server.banner??server.properties.banner)?`<div><img src="https://cdn.discordapp.com/banners/${server.id}/${server.banner??server.properties.banner}.webp?size=240"></div>`:''}`;
   }
 }
 function switchChannel(id) {
@@ -470,7 +470,7 @@ function switchChannel(id) {
     Object.keys(cat).forEach(k=>{
       if (k!='') sorted.push(channels.find(cc=>cc.id===k));
       sorted.push(...cat[k]);
-    })
+    });
     showChannels(sorted, id);
     // Load first
     let first = sorted.filter(c=>c.type!==4)[0];
@@ -497,7 +497,7 @@ function showServers(list) {
         content: b.getAttribute('aria-label'),
         placement: 'right',
         maxWidth: 200
-      })
+      });
       // On click
       b.onclick = function(){
         let sid = b.getAttribute('data-id');

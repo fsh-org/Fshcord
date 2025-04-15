@@ -383,9 +383,9 @@ lottie-sticker.message-attach {
 .message-attach.spoiler {
   filter: blur(6px) contrast(1.5) saturate(0.5) grayscale(0.5);
 }
-.message .inner .emoji {
-  width: 18px;
-  height: 18px;
+.message .inner .emoji, .message .message-rich-embed .emoji {
+  width: 20px;
+  height: 20px;
   object-fit: contain;
   margin-bottom: -4px;
 }
