@@ -536,6 +536,8 @@ function showServers(list) {
         maxWidth: 200
       })
     });
+  document.querySelector('#server button[selected]')?.removeAttribute('selected');
+  document.querySelector('#server button[data-id="'+window.data.currentServer+'"]').setAttribute('selected', true);
 }
 function switchServers(list) {
   let ordered = [];
@@ -692,6 +694,9 @@ if (!localStorage.getItem('token')) {
             temp = window.data.servers[window.data.servers.findIndex(e=>e.id===wsd.d.guild_id)];
             temp = temp.channels[temp.channels.findIndex(e=>e.id===wsd.d.id)];
             Object.keys(wsd.d).forEach(k=>temp[k]=wsd.d[k]);
+            if (window.data.currentServer===wsd.d.guild_id) {
+              switchChannel(wsd.d.guild_id);
+            }
             break;
 
           case 'MESSAGE_CREATE':
