@@ -455,15 +455,17 @@ function showChannels(list, server) {
 ${(server.banner??server.properties.banner)?`<div><img src="https://cdn.discordapp.com/banners/${server.id}/${server.banner??server.properties.banner}.webp?size=240"></div>`:''}`;
   }
 }
-function switchChannel(id) {
+function switchChannel(id, loadfirst=true) {
   if (id == 0) {
     // Show channels
     showChannels(window.data.dms);
-    // Select first
-    let first = window.data.dms[0];
-    loading(channelName(first));
-    setTop(channelName(first), first.type);
-    switchMessage(first.id, first.type);
+    if (loadfirst) {
+      // Select first
+      let first = window.data.dms[0];
+      loading(channelName(first));
+      setTop(channelName(first), first.type);
+      switchMessage(first.id, first.type);
+    }
   } else if (id == 1) {
     // User
   } else {
@@ -479,11 +481,13 @@ function switchChannel(id) {
       sorted.push(...cat[k]);
     });
     showChannels(sorted, id);
-    // Load first
-    let first = sorted.filter(c=>c.type!==4)[0];
-    loading(channelName(first));
-    setTop(channelName(first), first.type);
-    switchMessage(first.id, first.type);
+    if (loadfirst) {
+      // Load first
+      let first = sorted.filter(c=>c.type!==4)[0];
+      loading(channelName(first));
+      setTop(channelName(first), first.type);
+      switchMessage(first.id, first.type);
+    }
   }
 }
 
@@ -695,7 +699,7 @@ if (!localStorage.getItem('token')) {
             temp = temp.channels[temp.channels.findIndex(e=>e.id===wsd.d.id)];
             Object.keys(wsd.d).forEach(k=>temp[k]=wsd.d[k]);
             if (window.data.currentServer===wsd.d.guild_id) {
-              switchChannel(wsd.d.guild_id);
+              switchChannel(wsd.d.guild_id, false);
             }
             break;
 
