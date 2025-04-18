@@ -88,7 +88,7 @@ body {
   flex-direction: column;
   align-items: center;
   width: 70px;
-  background: var(--bg-2);
+  background: var(--bg-0);
 }
 #server-list {
   display: flex;
@@ -213,11 +213,8 @@ body {
   flex-direction: column;
   overflow-y: auto;
   width: 15vw;
-  border-right: 2px var(--bg-2) solid;
-  background-color: var(--bg-0);
-}
-#channel::-webkit-scrollbar-track {
-  background-color: var(--bg-0);
+  border-right: 4px var(--bg-2) solid;
+  background-color: var(--bg-1);
 }
 #channel button {
   display: flex;
@@ -605,5 +602,6 @@ blockquote::before {
 
 #users {
   width: 15vw;
-  border-left: 2px var(--bg-2) solid;
+  border-left: 3px var(--bg-2) solid;
+  background-color: var(--bg-0);
 }

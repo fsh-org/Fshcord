@@ -483,7 +483,7 @@ function switchChannel(id) {
 function showServers(list) {
   document.getElementById('server-list').innerHTML = list.map(s=>{
     if (s?.type==='folder') {
-      return `<div aria-label="${s.name??'Folder'}" aria-role="button" class="server-folder" style="--folder-color:${colorToRGB(s.color??0)}">
+      return `<div aria-label="${s.name??'Folder'}" aria-role="button" class="server-folder" style="--folder-color:${colorToRGB(s.color??1579032)}">
   <svg onclick="let op=(this.getAttribute('open')==='true');this.setAttribute('open', !op);this.parentElement.style.height=(!op?'${(s.guilds.length+1)*50+s.guilds.length*10}px':'50px')" open="false"${getIcon('folder', 50).replace('<svg','').replace('viewBox="0 0 256 256"','viewBox="-64 -64 384 384"')}
   ${s.guilds.map(g=>`<button aria-label="${g.properties.name}" data-id="${g.id}" class="server-clicky">${g.properties.icon == null ? g.properties.name.trim().split(/\s+/).map(word=>word[0]??'').join('') : `<img src="https://cdn.discordapp.com/icons/${g.id}/${g.properties.icon}.png?size=64" alt="${g.properties.name}" loading="lazy">`}</button>`).join('')}
 </div>`;
@@ -597,6 +597,17 @@ if (!localStorage.getItem('token')) {
 } else {
   window.data = {};
   window.data.localReport = false;
+
+  window.data.extra_settings = {
+    avatar_deco: true,
+    nameplates: true
+  };
+  try {
+    let s = JSON.parse(localStorage.getItem('extra'));
+    Object.keys(s).forEach(k=>window.data.extra_settings[k]=s[k]);
+  } catch(err) {
+    // Ignore :3
+  }
 
   window.data.ws = { log: false, logUnhandled: false, socket: undefined, d: undefined, session_id: undefined, resume_url: undefined };
 
