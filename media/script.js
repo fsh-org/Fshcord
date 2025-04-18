@@ -700,6 +700,9 @@ if (!localStorage.getItem('token')) {
             Object.keys(wsd.d).forEach(k=>temp[k]=wsd.d[k]);
             if (window.data.currentServer===wsd.d.guild_id) {
               switchChannel(wsd.d.guild_id, false);
+              if (window.data.currentChannel===wsd.d.id) {
+                setTop(channelName(wsd.d), wsd.d.type);
+              }
             }
             break;
 
