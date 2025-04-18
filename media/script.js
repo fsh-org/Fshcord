@@ -619,6 +619,7 @@ if (!localStorage.getItem('token')) {
   window.data.ws = { log: false, logUnhandled: false, socket: undefined, d: undefined, session_id: undefined, resume_url: undefined };
 
   window.data.users = {};
+  window.data.presences = {};
   window.data.servers = [];
   window.data.dms = [];
 
@@ -648,6 +649,14 @@ if (!localStorage.getItem('token')) {
             window.data.ws.resume_url = wsd.d.resume_gateway_url;
             window.data.ws.session_id = wsd.d.session_id;
             init(wsd.d);
+            break;
+          case 'READY_SUPPLEMENTAL':
+            // Resume
+            wsd.d.merged_presences.guilds.forEach(g=>{
+              g.forEach(m=>{
+                window.data.presences[m.user_id] = m;
+              })
+            })
             break;
 
           case 'GUILD_CREATE':
@@ -790,6 +799,10 @@ if (!localStorage.getItem('token')) {
             break;
           case 'USER_SETTINGS_PROTO_UPDATE':
             // For future
+            break;
+
+          case 'PRESENCE_UPDATE':
+            window.data.presences[wsd.d.user.id] = wsd.d
             break;
 
           default:
