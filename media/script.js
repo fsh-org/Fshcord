@@ -686,6 +686,10 @@ if (!localStorage.getItem('token')) {
             window.data.servers[window.data.servers.findIndex(e=>e.id===wsd.d.guild_id)].members = wsd.d.members;
             break;*/
 
+          case 'CHANNEL_UPDATE':
+            data.servers.find(s=>s.id===wsd.d.guild_id).channels.find(c=>c.id===wsd.d.id) = wsd.d;
+            break;
+
           case 'MESSAGE_CREATE':
             if (window.data.messageCache[wsd.d.channel_id]) {
               // Add to cache
