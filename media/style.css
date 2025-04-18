@@ -217,13 +217,15 @@ body {
   background-color: var(--bg-1);
 }
 #channel button {
+  position: relative;
   display: flex;
   gap: 5px;
   align-items: center;
-  position: relative;
+  flex-shrink: 0;
   border: none;
   text-align: left;
-  border-radius: 0.2rem;
+  border-radius: 0.5rem;
+  overflow: hidden;
 }
 #channel button span {
   white-space: nowrap;
@@ -235,11 +237,22 @@ body {
   width: 20px;
   height: 20px;
 }
-#channel button[data-type="1"] .avatar, #channel button[data-type="1"] .avatar img {
+#channel button[data-type="1"] .avatar, #channel button[data-type="1"] .avatar img:not(.decoration) {
   border-radius: 2rem;
 }
 .channel-nsfw {
   position: absolute;
+}
+#channel button:hover {
+  color: var(--text-1);
+  background-color: var(--bg-3);
+}
+#channel button .nameplate {
+  position: absolute;
+  inset: 0px;
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
 }
 
 .avatar {
