@@ -640,6 +640,7 @@ if (!localStorage.getItem('token')) {
   window.data.ws.socket.onmessage = function(event) {
     let wsd = JSON.parse(event.data);
     if (window.data.ws.log) console.log(wsd);
+    let temp;
     switch (wsd.op) {
       case 0: // Just anything
         window.data.ws.d = wsd.s;
@@ -675,7 +676,8 @@ if (!localStorage.getItem('token')) {
               })
             break;
           case 'GUILD_UPDATE':
-            Object.keys(wsd.d).forEach(k=>window.data.servers[window.data.servers.findIndex(e=>e.id===wsd.d.id)][k]=wsd.d[k]);
+            temp = window.data.servers.findIndex(e=>e.id===wsd.d.id);
+            Object.keys(wsd.d).forEach(k=>window.data.servers[temp][k]=wsd.d[k]);
             switchServers(window.data.servers);
             break;
           case 'GUILD_DELETE':
@@ -687,7 +689,9 @@ if (!localStorage.getItem('token')) {
             break;*/
 
           case 'CHANNEL_UPDATE':
-            data.servers.find(s=>s.id===wsd.d.guild_id).channels.find(c=>c.id===wsd.d.id) = wsd.d;
+            temp = window.data.servers[window.data.servers.findIndex(e=>e.id===wsd.d.guild_id)];
+            temp = temp.channels[temp.channels.findIndex(e=>e.id===wsd.d.id)];
+            Object.keys(wsd.d).forEach(k=>temp[k]=wsd.d[k]);
             break;
 
           case 'MESSAGE_CREATE':
