@@ -242,6 +242,12 @@ video -
 }
 function renderMessage(content, author, m) {
   return `<div class="message${m.deleted?' deleted':''}${m.mentions.map(e=>e.id).includes(window.data.user.id)?' mention':''}">
+  ${m.type===19&&m.referenced_message?`<div class="reply-preview">
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 256 256" style="margin-left:20px;flex-shrink:0;"><path d="M0 164H32V240C32 248.837 24.8366 256 16 256V256C7.16344 256 0 248.837 0 240V164Z" fill="#ACACAC"></path><path d="M52 112H240C248.837 112 256 119.163 256 128V128C256 136.837 248.837 144 240 144H52V112Z" fill="#ACACAC"></path><path d="M52 112C45.1713 112 38.4094 113.345 32.1005 115.958C25.7915 118.572 20.0591 122.402 15.2304 127.23C10.4018 132.059 6.57151 137.792 3.95826 144.1C1.34502 150.409 -1.03111e-06 157.171 0 164L31.9854 164C31.9854 161.372 32.5031 158.769 33.5089 156.341C34.5148 153.912 35.989 151.706 37.8476 149.848C39.7061 147.989 41.9125 146.515 44.3408 145.509C46.769 144.503 49.3716 143.985 52 143.985V112Z" fill="#ACACAC"></path></svg>
+    <img src="${getUserAvatar(m.referenced_message.author.id, m.referenced_message.author.avatar)}" width="20" height="20" loading="lazy" aria-hidden="true" onclick="showMinifiedProfile(this, '${m.referenced_message.author.id}')">
+    <span class="name" onclick="showMinifiedProfile(this, '${m.referenced_message.author.id}')">${getUserDisplay(m.referenced_message.author)}</span>
+    <span class="inner">${parseMD(window.data.messageCache[m.message_reference.channel_id].find(nm=>nm.id===m.message_reference.message_id)?.content??m.referenced_message.content??'Could not find referenced message', 0)}</span>
+  </div>`:''}
   ${author.hide?'<div class="avatar" aria-hidden="true"></div>':`<div class="avatar" aria-hidden="true" onclick="showMinifiedProfile(this, '${author.id}')">
     <img src="${getUserAvatar(author.id, author.avatar)}" width="40" height="40" loading="lazy" aria-hidden="true">
     <img src="${getUserDeco(author?.avatar_decoration_data?.asset)}" class="decoration" width="50" height="50" loading="lazy" aria-hidden="true" onerror="this.remove()">
@@ -663,7 +669,10 @@ if (!localStorage.getItem('token')) {
               g.forEach(m=>{
                 window.data.presences[m.user_id] = m;
               })
-            })
+            });
+            wsd.d.merged_presences.friends.forEach(m=>{
+              window.data.presences[m.user_id] = m;
+            });
             break;
 
           case 'GUILD_CREATE':

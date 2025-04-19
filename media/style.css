@@ -302,6 +302,22 @@ main {
 .message:hover {
   background-color: var(--bg-2);
 }
+.reply-preview {
+  position: absolute;
+  top: 0px;
+  display: flex;
+  gap: 5px;
+}
+.reply-preview img {
+  cursor: pointer;
+  border-radius: 2rem;
+}
+.reply-preview .inner {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  width: 30vw;
+  overflow: hidden;
+}
 .message .name {
   cursor: pointer;
   color: var(--text-0);
