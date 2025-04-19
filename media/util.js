@@ -226,9 +226,12 @@ function parseMD(text, extended=2) {
     });
   }
   text = text
+    .replaceAll(/\[.*?\]\((~lt;https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)>|https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*))\)/g, function(match){
+      return reservemd(`<a href="${match.split('](')[1].split(')')[0].replace(/^~lt;|>$/gm, '')}" target="_blank">`)+match.split('](')[0].split('[')[1]+reservemd(`</a>`);
+    })
     .replaceAll(/(~lt;https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)>|https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*))/g, function(match){
       if (match.match(/^~lt;.+?>$/m)) match=match.slice(4,-1);
-      return reservemd(`<a href="${match}">${match}</a>`);
+      return reservemd(`<a href="${match}" target="_blank">${match}</a>`);
     })
     .replaceAll('&', '&amp;')
     .replaceAll('~lt;', '&lt;')
@@ -249,7 +252,8 @@ function parseMD(text, extended=2) {
     .replaceAll(/\~\~.+?\~\~/g, function(match){return '<s>'+match.slice(2,-2)+'</s>'})
     .replaceAll(/\|\|.+?\|\|/g, function(match){return `<span style="cursor:pointer;color:var(--bg-3);border-radius:0.25rem;background-color:var(--bg-3);transition:500ms;" onclick="this.style.color='var(--text-1)';this.style.backgroundColor='var(--bg-0)'">`+match.slice(2,-2)+'</span>'})
     .replaceAll(/\`.+?\`/g, function(match){return '<code>'+match.slice(1,-1)+'</code>'})
-    .replaceAll(/^\> .+?$/gm, function(match){return '<blockquote>'+match.slice(2)+'</blockquote>'});
+    .replaceAll(/^\> .+?$/gm, function(match){return '<blockquote>'+match.slice(2)+'</blockquote>'})
+    .replaceAll(/^\>\>\> ([^¬]|¬)+/gm, function(match){return '<blockquote>'+match.slice(4).split('\n').join('</blockquote>\n<blockquote>')+'</blockquote>'});
   // Extended
   if (extended>0) {
     text = text
