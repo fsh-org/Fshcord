@@ -648,6 +648,22 @@ blockquote::before {
 
 #users {
   width: 15vw;
+  padding: 10px;
   border-left: 3px var(--bg-2) solid;
   background-color: var(--bg-0);
+  box-sizing: border-box;
+  overflow: hidden auto;
+}
+.user .avatar img:not(.decoration) {
+  border-radius: 2rem;
+}
+#users .user {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+}
+#users .user span {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
 }

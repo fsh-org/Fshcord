@@ -41,7 +41,11 @@ async function showMinifiedProfile(element, user) {
   let bound = element.getBoundingClientRect();
   let menu = document.getElementById('usermenu');
   menu.show();
-  menu.style.left = bound.left+bound.width+10+'px';
+  if (bound.left>window.innerWidth/2) {
+    menu.style.left = bound.left-bound.width-10+'px';
+  } else {
+    menu.style.left = bound.left+bound.width+10+'px';
+  }
   menu.style.top = bound.top+'px';
 
   setTimeout(()=>{
@@ -81,6 +85,9 @@ async function showMinifiedProfile(element, user) {
   let menubound = menu.getBoundingClientRect();
   if (window.innerHeight<menubound.bottom) {
     menu.style.top = bound.top-(menubound.bottom-window.innerHeight)+'px';
+  }
+  if (bound.left>window.innerWidth/2) {
+    menu.style.left = menu.style.left.replace('px','')-menubound.width+'px';
   }
 }
 
@@ -382,6 +389,29 @@ function switchMessage(id, type) {
   report(`Unhandled channel type: ${type}`, [id, type]);
 }
 
+/* Members */
+function showMembers(members) {
+  document.getElementById('users').innerHTML = members.map(mem=>`<div class="user" onclick="showMinifiedProfile(this, '${mem.user.id}')">
+  <div class="avatar" aria-hidden="true">
+    <img src="${getUserAvatar(mem.user.id, mem.user.avatar)}" width="40" height="40" loading="lazy" aria-hidden="true">
+    <img src="${getUserDeco(mem.user?.avatar_decoration_data?.asset)}" class="decoration" width="50" height="50" loading="lazy" aria-hidden="true" onerror="this.remove()">
+  </div>
+  <span>${getUserDisplay(mem)}</span>
+</div>`).join('');
+}
+function getMembers(id) {
+  // TODO: Support any server (currently only for servers where user has perms)
+  window.data.ws.socket.send(`{
+  "op": 8,
+  "d": {
+    "guild_id": "${id}",
+    "query": "",
+    "limit": 0
+  }
+}`);
+  window.data.servers[window.data.servers.findIndex(e=>e.id===id)].all_members = true;
+}
+
 /*
 Channel types
 0: GUILD_TEXT -
@@ -427,6 +457,13 @@ function showChannels(list, server) {
     server = window.data.servers.find(e=>e.id===server);
     // Rules
     rules = server.rules_channel_id;
+    // Members
+    if (server.all_members) {
+      showMembers(server.members??[]);
+    } else {
+      showMembers([]);
+      getMembers(server.id);
+    }
   }
   document.getElementById('channel').innerHTML = (server?'<div id="channels-server-header"></div>':'')+list.map(c=>{
     let name = channelName(c);
@@ -701,10 +738,16 @@ if (!localStorage.getItem('token')) {
           case 'GUILD_DELETE':
             window.data.servers = window.data.servers.filter(e=>e.id!==wsd.d.id);
             switchServers(window.data.servers);
-            break;/*
+            break;
           case 'GUILD_MEMBERS_CHUNK':
-            window.data.servers[window.data.servers.findIndex(e=>e.id===wsd.d.guild_id)].members = wsd.d.members;
-            break;*/
+            temp = window.data.servers[window.data.servers.findIndex(e=>e.id===wsd.d.guild_id)];
+            if (!temp.members?.length) temp.members = [];
+            temp.members.push(...wsd.d.members);
+            temp.members = Array.from(new Map(temp.members.map(obj => [obj.user.id, obj])).values());
+            if (window.data.currentServer===wsd.d.guild_id) {
+              showMembers(temp.members);
+            }
+            break;
 
           case 'CHANNEL_UPDATE':
             temp = window.data.servers[window.data.servers.findIndex(e=>e.id===wsd.d.guild_id)];

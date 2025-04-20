@@ -200,7 +200,8 @@ function proxyFetch(url, o) {
     headers: {
       "content-type": "application/json"
     },
-    body: JSON.stringify(opts)
+    body: JSON.stringify(opts),
+    signal: AbortSignal.timeout(10000) // 10s max
   })
 }
 
@@ -318,7 +319,7 @@ function getUser(id) {
   return window.data.users[id];
 }
 function getUserDisplay(obj) {
-  return (obj.global_name ?? obj.username);
+  return obj.nick??obj.global_name??obj.display_name??obj.username??obj.user.global_name??obj.user.display_name??obj.user.username;
 }
 function getUserAvatar(id, hash, size = 64) {
   if (!hash) {
