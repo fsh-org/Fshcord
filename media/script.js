@@ -268,6 +268,9 @@ function renderMessage(content, author, m) {
       return `<img src="https://media.discordapp.net/stickers/${sticker.id}.${['webp','png','png','webp','gif'][sticker.format_type]}?size=160&quality=lossless" width="160" height="160" loading="lazy" class="message-attach">`;
     }).join(''):''}
     ${m.reactions?.length?`<div class="reactions">${m.reactions.map(reaction=>`<button${reaction.me?' class="me"':''}>${reaction.emoji.id?`<img src="https://cdn.discordapp.com/emojis/${reaction.emoji.id}.${reaction.emoji.animated?'gif':'webp'}?size=96" width="16" height="16" loading="lazy">`:twemoji.parse(reaction.emoji.name, twemojiConfig)}${reaction.count}</button>`).join('')}</div>`:''}
+    ${m.thread?`<div class="thread">
+      <span>${m.thread.name} · ${m.thread.message_count} messages</span>
+    </div>`:''}
   </span>
 </div>`;
 }
