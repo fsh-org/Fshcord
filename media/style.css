@@ -302,6 +302,9 @@ main {
 .message:hover {
   background-color: var(--bg-2);
 }
+.message:has(.reply-preview) {
+  padding-top: 25px;
+}
 .reply-preview {
   position: absolute;
   top: 0px;
@@ -313,7 +316,7 @@ main {
   border-radius: 2rem;
 }
 .reply-preview .inner {
-  white-space: nowrap;
+  white-space: nowrap !important;
   text-overflow: ellipsis;
   width: 30vw;
   overflow: hidden;
