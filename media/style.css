@@ -649,22 +649,42 @@ blockquote::before {
 
 #users {
   width: 15vw;
-  padding: 10px;
+  padding: 6px;
   border-left: 3px var(--bg-2) solid;
   background-color: var(--bg-0);
   box-sizing: border-box;
   overflow: hidden auto;
 }
-#users .user .avatar img:not(.decoration) {
-  border-radius: 2rem;
-}
 #users .user {
+  position: relative;
   display: flex;
   gap: 5px;
   align-items: center;
+  width: 100%;
+  padding: 0px;
+  border: none;
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+#users .user:hover {
+  color: var(--text-1);
+  background-color: var(--bg-2);
+}
+#users .user .avatar {
+  z-index: 2;
+}
+#users .user .avatar img:not(.decoration) {
+  border-radius: 2rem;
 }
 #users .user span {
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
+  z-index: 2;
+}
+#users .user .nameplate {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
 }

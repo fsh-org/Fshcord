@@ -395,13 +395,22 @@ function switchMessage(id, type) {
 
 /* Members */
 function showMembers(members) {
-  document.getElementById('users').innerHTML = members.map(mem=>`<div class="user" onclick="showMinifiedProfile(this, '${mem.user.id}')">
+  document.getElementById('users').innerHTML = members.map(mem=>`<button class="user" onclick="showMinifiedProfile(this, '${mem.user.id}')">
+  ${window.data.extra_settings.nameplates&&mem.user.collectibles?.nameplate?`<video class="nameplate" src="https://cdn.discordapp.com/assets/collectibles/${mem.user.collectibles.nameplate.asset}asset.webm" muted loop aria-hidden="true"></video>`:''}
   <div class="avatar" aria-hidden="true">
     <img src="${getUserAvatar(mem.user.id, mem.user.avatar)}" width="40" height="40" loading="lazy" aria-hidden="true">
     ${window.data.extra_settings.avatar_deco?`<img src="${getUserDeco(mem.user?.avatar_decoration_data?.asset)}" class="decoration" width="50" height="50" loading="lazy" aria-hidden="true" onerror="this.remove()">`:''}
   </div>
   <span>${getUserDisplay(mem)}</span>
-</div>`).join('');
+</button>`).join('');
+  Array.from(document.querySelectorAll('#users .user'))
+    .forEach(u=>{
+      let n = u.querySelector('.nameplate');
+      if (n) {
+        u.onmouseover = ()=>{n.play()};
+        u.onmouseleave = ()=>{n.pause();n.currentTime=0};
+      }
+    })
 }
 function getMembers(id) {
   // TODO: Support any server (currently only for servers where user has perms)
@@ -457,6 +466,7 @@ function setTop(text, type) {
 }
 function showChannels(list, server) {
   let rules;
+  showMembers([]);
   if (server) {
     server = window.data.servers.find(e=>e.id===server);
     // Rules
@@ -465,7 +475,6 @@ function showChannels(list, server) {
     if (server.all_members) {
       showMembers(server.members??[]);
     } else {
-      showMembers([]);
       getMembers(server.id);
     }
   }
@@ -495,8 +504,8 @@ function showChannels(list, server) {
       })};
       let n = b.querySelector('.nameplate');
       if (n) {
-        n.onmouseenter = ()=>{n.play()};
-        n.onmouseleave = ()=>{n.pause();n.currentTime=0};
+        b.onmouseenter = ()=>{n.play()};
+        b.onmouseleave = ()=>{n.pause();n.currentTime=0};
       }
     });
   if (server) {
