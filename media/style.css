@@ -226,17 +226,18 @@ body {
   border: none;
   text-align: left;
   border-radius: 0.5rem;
-  overflow: hidden;
 }
 #channel button span {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  z-index: 2;
 }
 #channel button .avatar, #channel button svg {
   flex-shrink: 0;
   width: 20px;
   height: 20px;
+  z-index: 2;
 }
 #channel button[data-type="1"] .avatar, #channel button[data-type="1"] .avatar img:not(.decoration) {
   border-radius: 2rem;
@@ -254,6 +255,7 @@ body {
   width: 100%;
   height: 100%;
   object-fit: fill;
+  border-radius: 0.5rem;
 }
 
 .avatar {
@@ -648,6 +650,9 @@ blockquote::before {
 }
 
 #users {
+  display: flex;
+  gap: 5px;
+  flex-direction: column;
   width: 15vw;
   padding: 6px;
   border-left: 3px var(--bg-2) solid;
@@ -664,7 +669,6 @@ blockquote::before {
   padding: 0px;
   border: none;
   border-radius: 0.5rem;
-  overflow: hidden;
 }
 #users .user:hover {
   color: var(--text-1);
@@ -687,4 +691,5 @@ blockquote::before {
   width: 100%;
   height: 100%;
   object-fit: fill;
+  border-radius: 0.5rem;
 }
