@@ -73,7 +73,7 @@ async function showMinifiedProfile(element, user) {
   menu.innerHTML = `<div>
   <div class="avatar">
     <img src="${getUserAvatar((user.user??user).id, (user.user??user).avatar, 80)}" width="80" height="80" loading="lazy" aria-hidden="true" style="border-radius:5rem">
-    <img src="${getUserDeco((user.user??user)?.avatar_decoration_data?.asset)}" class="decoration" width="100" height="100" loading="lazy" aria-hidden="true" onerror="this.remove()">
+    ${window.data.extra_settings.avatar_deco?`<img src="${getUserDeco((user.user??user)?.avatar_decoration_data?.asset)}" class="decoration" width="100" height="100" loading="lazy" aria-hidden="true" onerror="this.remove()">`:''}
     <div class="badges">
       ${user.user?'':'<img src="/media/icon/limited.svg" width="25" height="25" alt="This profile has limited info" title="This profile has limited info">'}
       ${(user.badges??[]).map(b=>`<a${b.link?` href="${b.link}"`:''} target="_blank" title="${b.description}" aria-hidden="true"><img src="https://cdn.discordapp.com/badge-icons/${b.icon}.png" width="25" height="25" alt="${b.description}" aria-hidden="true"></a>`).join('')}
@@ -261,7 +261,7 @@ function renderMessage(content, author, m) {
   </div>`:''}
   ${author.hide?'<div class="avatar" aria-hidden="true"></div>':`<div class="avatar" aria-hidden="true" onclick="showMinifiedProfile(this, '${author.id}')">
     <img src="${getUserAvatar(author.id, author.avatar)}" width="40" height="40" loading="lazy" aria-hidden="true">
-    <img src="${getUserDeco(author?.avatar_decoration_data?.asset)}" class="decoration" width="50" height="50" loading="lazy" aria-hidden="true" onerror="this.remove()">
+    ${window.data.extra_settings.avatar_deco?`<img src="${getUserDeco(author?.avatar_decoration_data?.asset)}" class="decoration" width="50" height="50" loading="lazy" aria-hidden="true" onerror="this.remove()">`:''}
   </div>`}
   <span>
     ${author.hide?'':`<span><span class="name" onclick="showMinifiedProfile(this, '${author.id}')">${getUserDisplay(author)}</span>${[author.system,m.webhook_id,author.bot].filter(e=>!!e).length?`<span class="tag">${author.system?'SYSTEM':(m.webhook_id?'WEBHOOK':(author.bot?`BOT${getUserFlags(author.flags??author.public_flags).VERIFIED_BOT?' ✔':''}`:''))}</span>`:''}<span class="timestamp">${formatDate(m.timestamp, 'r')}</span>${getUserFlags(author.flags??author.public_flags).SPAMMER?'<span>· Possible spammer</span>':''}</span>`}
@@ -398,7 +398,7 @@ function showMembers(members) {
   document.getElementById('users').innerHTML = members.map(mem=>`<div class="user" onclick="showMinifiedProfile(this, '${mem.user.id}')">
   <div class="avatar" aria-hidden="true">
     <img src="${getUserAvatar(mem.user.id, mem.user.avatar)}" width="40" height="40" loading="lazy" aria-hidden="true">
-    <img src="${getUserDeco(mem.user?.avatar_decoration_data?.asset)}" class="decoration" width="50" height="50" loading="lazy" aria-hidden="true" onerror="this.remove()">
+    ${window.data.extra_settings.avatar_deco?`<img src="${getUserDeco(mem.user?.avatar_decoration_data?.asset)}" class="decoration" width="50" height="50" loading="lazy" aria-hidden="true" onerror="this.remove()">`:''}
   </div>
   <span>${getUserDisplay(mem)}</span>
 </div>`).join('');
