@@ -654,7 +654,7 @@ blockquote::before {
   box-sizing: border-box;
   overflow: hidden auto;
 }
-.user .avatar img:not(.decoration) {
+#users .user .avatar img:not(.decoration) {
   border-radius: 2rem;
 }
 #users .user {

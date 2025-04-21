@@ -135,12 +135,12 @@ const systemMessages = {
   '55': `{getUserDisplay(m.author)} activated HD Splash Potion`
 };
 const dateFormats = {
-	t: {timeStyle: 'short'},
-	T: {timeStyle: 'medium'},
-	d: {dateStyle: 'short'},
-	D: {dateStyle: 'long'},
-	f: {dateStyle: 'long', timeStyle: 'short'},
-	F: {dateStyle: 'full', timeStyle: 'short'}
+  t: {timeStyle: 'short'},
+  T: {timeStyle: 'medium'},
+  d: {dateStyle: 'short'},
+  D: {dateStyle: 'long'},
+  f: {dateStyle: 'long', timeStyle: 'short'},
+  F: {dateStyle: 'full', timeStyle: 'short'}
 };
 function toBinaryString(numString) {
   if (!numString || isNaN(numString)) return "0";

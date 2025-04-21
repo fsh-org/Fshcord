@@ -40,9 +40,10 @@ async function showMinifiedProfile(element, user) {
   // Show modal
   let bound = element.getBoundingClientRect();
   let menu = document.getElementById('usermenu');
+  let menubound = menu.getBoundingClientRect();
   menu.show();
   if (bound.left>window.innerWidth/2) {
-    menu.style.left = bound.left-bound.width-10+'px';
+    menu.style.left = bound.left-menubound.width-10+'px';
   } else {
     menu.style.left = bound.left+bound.width+10+'px';
   }
@@ -82,12 +83,12 @@ async function showMinifiedProfile(element, user) {
   <span>${(user.user??user).username}${user?.user?.discriminator?.length>1?'#'+user.user.discriminator:''}${user?.user_profile?.pronouns?` · ${user.user_profile.pronouns}`:''}</span>
 </div>
 <span class="bio">${user?.user?.bio?parseMD(user.user.bio.trim(), 1):''}</span>`;
-  let menubound = menu.getBoundingClientRect();
+  menubound = menu.getBoundingClientRect();
   if (window.innerHeight<menubound.bottom) {
     menu.style.top = bound.top-(menubound.bottom-window.innerHeight)+'px';
   }
   if (bound.left>window.innerWidth/2) {
-    menu.style.left = menu.style.left.replace('px','')-menubound.width+'px';
+    menu.style.left = bound.left-menubound.width-10+'px';;
   }
 }
 
@@ -929,7 +930,7 @@ if (!localStorage.getItem('token')) {
               },
               compress: false,
               capabilities: (1<<0)+(1<<4)+(1<<5)+(1<<10)+(1<<13) // Lazy notes, dedupe user objects, prioritizied ready payload, client state v2, debounce message reactions
-              // ^ Consideration: 1 << 9	USER_SETTINGS_PROTO
+              // ^ Consideration: 1 << 9  USER_SETTINGS_PROTO
             }
           }));
         }
