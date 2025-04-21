@@ -67,6 +67,7 @@ body {
 }
 #usermenu .bio {
   white-space: break-spaces;
+  word-break: break-word;
 }
 #usermenu .emoji {
   width: 18px;
@@ -593,10 +594,10 @@ lottie-sticker.message-attach {
   margin: 2px 0px;
 }
 blockquote {
-  display: unset;
+  display: inline-block;
   position: relative;
   margin: 0px;
-  padding-left: 15px;
+  padding-left: 10px;
 }
 blockquote::before {
   content: "";
@@ -605,7 +606,7 @@ blockquote::before {
   top: -1px;
   left: 0;
   width: 4px;
-  height: 22px;
+  height: calc(100% + 2px);
   border-radius: 1rem;
   background-color: var(--text-2);
 }

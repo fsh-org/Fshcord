@@ -40,14 +40,18 @@ async function showMinifiedProfile(element, user) {
   // Show modal
   let bound = element.getBoundingClientRect();
   let menu = document.getElementById('usermenu');
-  let menubound = menu.getBoundingClientRect();
+  menu.innerHTML = "Loading user data...";
   menu.show();
+  let menubound = menu.getBoundingClientRect();
   if (bound.left>window.innerWidth/2) {
     menu.style.left = bound.left-menubound.width-10+'px';
   } else {
     menu.style.left = bound.left+bound.width+10+'px';
   }
   menu.style.top = bound.top+'px';
+  if (window.innerHeight<menubound.bottom) {
+    menu.style.top = bound.top-(menubound.bottom-window.innerHeight)+'px';
+  }
 
   setTimeout(()=>{
     userpopupevent = true;
@@ -55,7 +59,6 @@ async function showMinifiedProfile(element, user) {
   }, 0);
 
   // Modal content
-  menu.innerHTML = "Loading user data...";
   if (!getUser(user)?.full) {
     let usr = await proxyFetch(`https://discord.com/api/v10/users/${user}/profile?type=popout&with_mutual_guilds=true&with_mutual_friends=true&with_mutual_friends_count=false${window.data.currentServer!==0?`&guild_id=${window.data.currentServer}`:''}`);
     usr = await usr.json();
