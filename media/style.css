@@ -40,7 +40,7 @@ body {
   border: 5px var(--bg-1) solid;
   background: var(--bg-1);
 }
-.banner {
+#usermenu .banner {
   width: 300px;
   height: 100px;
   margin: -10px 0px 40px -10px;
@@ -48,7 +48,7 @@ body {
   background: var(--color);
   overflow: hidden;
 }
-.banner img {
+#usermenu .banner img {
   width: 300px;
   height: 100px;
   object-fit: cover;

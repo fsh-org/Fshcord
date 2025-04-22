@@ -350,6 +350,8 @@ function showMessages(list, channelType) {
 }
 function switchMessage(id, type) {
   type = Number(type);
+  document.querySelector('main .input-bar').style.display = 'none';
+  document.getElementById('messages').style.flexDirection = '';
   // How??
   if (channelType.invalid.includes(type)) {
     report('User either entered a category or a channel that has not existed for over 3 years?', [id, type])
@@ -360,6 +362,7 @@ function switchMessage(id, type) {
   this.data.currentChannelType = type;
   // Text
   if (channelType.text.includes(type)) {
+    document.querySelector('main .input-bar').style.display = '';
     if (window.data.messageCache[id]) {
       showMessages(window.data.messageCache[id], type);
       return;
@@ -462,7 +465,7 @@ function channelName(c) {
   return name;
 }
 function setTop(text, type) {
-  document.getElementById('top-name').innerHTML = getIcon(type, 20)+text;
+  document.getElementById('top-name').innerHTML = (type==='none'?'':getIcon(type, 20))+text;
 }
 function showChannels(list, server) {
   let rules;
@@ -514,9 +517,34 @@ function showChannels(list, server) {
 ${(server.banner??server.properties.banner)?`<div><img src="https://cdn.discordapp.com/banners/${server.id}/${server.banner??server.properties.banner}.webp?size=240"></div>`:''}`;
   }
 }
+function showUserChannel(id) {
+  let m = document.getElementById('messages');
+  document.querySelector('main .input-bar').style.display = 'none';
+  m.style.flexDirection = 'column';
+  switch(id) {
+    case 'overview':
+      m.innerHTML = `<div>
+  <div>
+    ${getUserBanner(window.data.user.id, window.data.user.banner, window.data.user.banner_color??colorToRGB(window.data.user.accent_color??0))}
+    <div class="avatar">
+      <img src="${getUserAvatar(window.data.user.id, window.data.user.avatar, 80)}" width="80" height="80" loading="lazy" aria-hidden="true" style="border-radius:5rem">
+      ${window.data.extra_settings.avatar_deco?`<img src="${getUserDeco(window.data.user?.avatar_decoration_data?.asset)}" class="decoration" width="100" height="100" loading="lazy" aria-hidden="true" onerror="this.remove()">`:''}
+    </div>
+  </div>
+  <span class="name">${getUserDisplay(window.data.user)}</span>
+</div>`;
+      break;
+    case 'fshcord':
+      m.innerHTML = `<p>Some extra settings not available in normal discord.</p>
+<hr style="width:100%;box-sizing:border-box;">
+<label>Display avatar decorations?: <input type="checkbox"${window.data.extra_settings.avatar_deco?' checked':''}></label>
+<label>Display nameplates?: <input type="checkbox"${window.data.extra_settings.nameplates?' checked':''}></label>`;
+      break;
+  }
+}
 function switchChannel(id, loadfirst=true) {
   if (id == 0) {
-    // Show channels
+    // Show dms
     showChannels(window.data.dms);
     if (loadfirst) {
       // Select first
@@ -527,6 +555,22 @@ function switchChannel(id, loadfirst=true) {
     }
   } else if (id == 1) {
     // User
+    const user_channels = [
+      { name: 'Overview', id: 'overview' },
+      { name: 'Fshcord settings', id: 'fshcord' }
+    ];
+    document.getElementById('channel').innerHTML = user_channels.map(c=>`<button data-id="${c.id}" data-name="${c.name}">
+  <span>${c.name}</span>
+</button>`).join('');
+    Array.from(document.querySelectorAll('#channel button'))
+      .forEach(b=>{
+        b.onclick = function(){
+          setTop(b.getAttribute('data-name'), 'none')
+          showUserChannel(b.getAttribute('data-id'));
+        };
+      });
+    setTop('Overview', 'none')
+    showUserChannel('overview');
   } else {
     let server = window.data.servers.find(e=>e.id===id);
     // Get and sort the channels
