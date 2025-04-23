@@ -289,12 +289,10 @@ function showMessages(list, channelType) {
   document.getElementById('messages').innerHTML = list.map((m,i,a)=>{
     // System
     if (systemMessages[m.type.toString()]) {
-      let text = systemMessages[m.type.toString()].replaceAll(/\{.*?\}/g, function(match){return eval(match)});
+      let text = systemMessages[m.type.toString()]
+        .replaceAll(/\{\{(.*?)\}\}/g, function(_match, g1){return eval(g1)})
+        .replaceAll(/\{(.*?)\}/g, function(_match, g1){return eval(g1)});
       return renderMessage(text, SystemAuthor, m);
-    }
-    // Group DM/Thread add/remove member
-    if ([1,2].includes(m.type)) {
-      return renderMessage(`${getUserDisplay(m.author)} ${m.type===1?'added':'removed'} ${getUserDisplay(m.mentions[0])} ${m.type===1?'to':'from'} the ${channelType===3?'group':'thread'}.`, SystemAuthor, m);
     }
     // Call
     if (m.type===3) {
@@ -535,10 +533,13 @@ function showUserChannel(id) {
 </div>`;
       break;
     case 'fshcord':
+      window.saveExtra = function(){
+        localStorage.setItem('extra', JSON.stringify(window.extra_settings));
+      };
       m.innerHTML = `<p>Some extra settings not available in normal discord.</p>
 <hr style="width:100%;box-sizing:border-box;">
-<label>Display avatar decorations?: <input type="checkbox"${window.data.extra_settings.avatar_deco?' checked':''}></label>
-<label>Display nameplates?: <input type="checkbox"${window.data.extra_settings.nameplates?' checked':''}></label>`;
+<label>Display avatar decorations?: <input type="checkbox"${window.data.extra_settings.avatar_deco?' checked':''} onchange="window.data.extra_settings.avatar_deco=this.checked;saveExtra()"></label>
+<label>Display nameplates?: <input type="checkbox"${window.data.extra_settings.nameplates?' checked':''} onchange="window.data.extra_settings.nameplates=this.checked;saveExtra()"></label>`;
       break;
   }
 }
@@ -569,8 +570,8 @@ function switchChannel(id, loadfirst=true) {
           showUserChannel(b.getAttribute('data-id'));
         };
       });
-    setTop('Overview', 'none')
-    showUserChannel('overview');
+    setTop(user_channels[0].name, 'none')
+    showUserChannel(user_channels[0].id);
   } else {
     let server = window.data.servers.find(e=>e.id===id);
     // Get and sort the channels

@@ -113,9 +113,12 @@ const UnknownAuthor = {
 };
 // {} gets evaluated, m is the message object
 const systemMessages = {
+  '1': `{getUserDisplay(m.author)} added {getUserDisplay(m.mentions[0])} to the {channelType===3?'group':'thread'}.`,
+  '2': `{getUserDisplay(m.author)} removed {getUserDisplay(m.mentions[0])} from the {channelType===3?'group':'thread'}.`,
   '4': `{getUserDisplay(m.author)} changed the {[15,16].includes(channelType) ? "post title" : "channel name"}: {m.content}`,
   '5': `{getUserDisplay(m.author)} changed the channel icon.`,
   '6': `{getUserDisplay(m.author)} pinned a message to this channel.`,
+  '8': `{getUserDisplay(m.author)} just boosted the server{m.content.length?' {{m.content}} times':''}!`,
   '12': `{getUserDisplay(m.author)} has added {m.content} to this channel. Its most important updates will show up here.`,
   '14': `This server has been removed from Server Discovery because it no longer passes all the requirements. Check Server Settings for more details.`,
   '15': `This server is eligible for Server Discovery again and has been automatically relisted!`,
