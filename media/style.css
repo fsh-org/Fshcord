@@ -331,17 +331,20 @@ main {
 .message .name:hover {
   text-decoration: underline;
 }
-.message .timestamp {
-  margin: 0px 5px;
-  font-size: 70%;
-  color: var(--text-2);
-}
 .message .tag {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
   font-size: 75%;
   padding: 0px 2px;
   margin-left: 5px;
   border-radius: 0.25rem;
   background-color: var(--blue-1);
+}
+.message .timestamp {
+  margin: 0px 5px;
+  font-size: 70%;
+  color: var(--text-2);
 }
 .message > .avatar {
   cursor: pointer;

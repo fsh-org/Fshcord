@@ -178,6 +178,11 @@ Message types
 55: HD_STREAMING_UPGRADED
 56: CHAT_WALLPAPER_SET
 57: CHAT_WALLPAPER_REMOVED
+58: REPORT_TO_MOD_DELETED_MESSAGE
+59: REPORT_TO_MOD_TIMEOUT_USER
+60: REPORT_TO_MOD_KICK_USER
+61: REPORT_TO_MOD_BAN_USER
+62: REPORT_TO_MOD_CLOSED_REPORT
 */
 function renderEmbed(embed) {
       /*
@@ -264,7 +269,7 @@ function renderMessage(content, author, m) {
     ${window.data.extra_settings.avatar_deco?`<img src="${getUserDeco(author?.avatar_decoration_data?.asset)}" class="decoration" width="50" height="50" loading="lazy" aria-hidden="true" onerror="this.remove()">`:''}
   </div>`}
   <span>
-    ${author.hide?'':`<span><span class="name" onclick="showMinifiedProfile(this, '${author.id}')">${getUserDisplay(author)}</span>${[author.system,m.webhook_id,author.bot].filter(e=>!!e).length?`<span class="tag">${author.system?'SYSTEM':(m.webhook_id?'WEBHOOK':(author.bot?`BOT${getUserFlags(author.flags??author.public_flags).VERIFIED_BOT?' ✔':''}`:''))}</span>`:''}<span class="timestamp">${formatDate(m.timestamp, 'r')}</span>${getUserFlags(author.flags??author.public_flags).SPAMMER?'<span>· Possible spammer</span>':''}</span>`}
+    ${author.hide?'':`<span><span class="name" onclick="showMinifiedProfile(this, '${author.id}')">${getUserDisplay(author)}</span>${[author.system,m.webhook_id,author.bot].filter(e=>!!e).length?`<span class="tag">${author.system?'SYSTEM':(m.webhook_id?'WEBHOOK':(author.bot?`BOT${getUserFlags(author.flags??author.public_flags).VERIFIED_BOT?' ✔':''}`:''))}</span>`:''}${window.data.extra_settings.tags&&m.author.clan?`<span class="tag"><img src="https://cdn.discordapp.com/clan-badges/${m.author.clan.identity_guild_id}/${m.author.clan.badge}.png?size=16" width="12" height="12" inert aria-hidden="true">${m.author.clan.tag}</span>`:''}<span class="timestamp">${formatDate(m.timestamp, 'r')}</span>${getUserFlags(author.flags??author.public_flags).SPAMMER?'<span>· Possible spammer</span>':''}</span>`}
     <span class="inner">${parseMD(content)}${m.edited_timestamp?'<span class="edited"> (edited)</span>':''}</span>
     ${m.attachments.length?m.attachments.map(attach=>{
       if (!attach.content_type) attach.content_type=`image/${attach.url.split('?')[0].split('.').slice(-1)[0]}`;
@@ -539,7 +544,8 @@ function showUserChannel(id) {
       m.innerHTML = `<p>Some extra settings not available in normal discord.</p>
 <hr style="width:100%;box-sizing:border-box;">
 <label>Display avatar decorations?: <input type="checkbox"${window.data.extra_settings.avatar_deco?' checked':''} onchange="window.data.extra_settings.avatar_deco=this.checked;saveExtra()"></label>
-<label>Display nameplates?: <input type="checkbox"${window.data.extra_settings.nameplates?' checked':''} onchange="window.data.extra_settings.nameplates=this.checked;saveExtra()"></label>`;
+<label>Display nameplates?: <input type="checkbox"${window.data.extra_settings.nameplates?' checked':''} onchange="window.data.extra_settings.nameplates=this.checked;saveExtra()"></label>
+<label>Display tags?: <input type="checkbox"${window.data.extra_settings.tags?' checked':''} onchange="window.data.extra_settings.tags=this.checked;saveExtra()"></label>`;
       break;
   }
 }
@@ -645,7 +651,7 @@ function showServers(list) {
       })
     });
   document.querySelector('#server button[selected]')?.removeAttribute('selected');
-  document.querySelector('#server button[data-id="'+window.data.currentServer+'"]').setAttribute('selected', true);
+  document.querySelector(`#server button[data-id="${window.data.currentServer}"]`).setAttribute('selected', true);
 }
 function switchServers(list) {
   let ordered = [];
@@ -717,7 +723,8 @@ if (!localStorage.getItem('token')) {
 
   window.data.extra_settings = {
     avatar_deco: true,
-    nameplates: true
+    nameplates: true,
+    tags: true
   };
   try {
     let s = JSON.parse(localStorage.getItem('extra'));
