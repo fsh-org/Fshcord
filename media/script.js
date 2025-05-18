@@ -269,7 +269,7 @@ function renderMessage(content, author, m) {
     ${window.data.extra_settings.avatar_deco?`<img src="${getUserDeco(author?.avatar_decoration_data?.asset)}" class="decoration" width="50" height="50" loading="lazy" aria-hidden="true" onerror="this.remove()">`:''}
   </div>`}
   <span>
-    ${author.hide?'':`<span><span class="name" onclick="showMinifiedProfile(this, '${author.id}')">${getUserDisplay(author)}</span>${[author.system,m.webhook_id,author.bot].filter(e=>!!e).length?`<span class="tag">${author.system?'SYSTEM':(m.webhook_id?'WEBHOOK':(author.bot?`BOT${getUserFlags(author.flags??author.public_flags).VERIFIED_BOT?' ✔':''}`:''))}</span>`:''}${window.data.extra_settings.tags&&m.author.clan?`<span class="tag"><img src="https://cdn.discordapp.com/clan-badges/${m.author.clan.identity_guild_id}/${m.author.clan.badge}.png?size=16" width="12" height="12" inert aria-hidden="true">${m.author.clan.tag}</span>`:''}<span class="timestamp">${formatDate(m.timestamp, 'r')}</span>${getUserFlags(author.flags??author.public_flags).SPAMMER?'<span>· Possible spammer</span>':''}</span>`}
+    ${author.hide?'':`<span><span class="name" onclick="showMinifiedProfile(this, '${author.id}')">${getUserDisplay(author)}</span>${[author.system,m.webhook_id,author.bot].filter(e=>!!e).length?`<span class="tag">${author.system?'SYSTEM':(m.webhook_id?'WEBHOOK':(author.bot?`BOT${getUserFlags(author.flags??author.public_flags).VERIFIED_BOT?' ✔':''}`:''))}</span>`:''}${window.data.extra_settings.tags&&m.author.clan?`<span class="tag" style="background-color:var(--bg-3)"><img src="https://cdn.discordapp.com/clan-badges/${m.author.clan.identity_guild_id}/${m.author.clan.badge}.png?size=16" width="12" height="12" inert aria-hidden="true">${m.author.clan.tag}</span>`:''}<span class="timestamp">${formatDate(m.timestamp, 'r')}</span>${getUserFlags(author.flags??author.public_flags).SPAMMER?'<span>· Possible spammer</span>':''}</span>`}
     <span class="inner">${parseMD(content)}${m.edited_timestamp?'<span class="edited"> (edited)</span>':''}</span>
     ${m.attachments.length?m.attachments.map(attach=>{
       if (!attach.content_type) attach.content_type=`image/${attach.url.split('?')[0].split('.').slice(-1)[0]}`;
@@ -290,7 +290,7 @@ function renderMessage(content, author, m) {
   </span>
 </div>`;
 }
-function showMessages(list, channelType) {
+function showMessages(list) {
   document.getElementById('messages').innerHTML = list.map((m,i,a)=>{
     // System
     if (systemMessages[m.type.toString()]) {
@@ -367,10 +367,10 @@ function switchMessage(id, type) {
   if (channelType.text.includes(type)) {
     document.querySelector('main .input-bar').style.display = '';
     if (window.data.messageCache[id]) {
-      showMessages(window.data.messageCache[id], type);
+      showMessages(window.data.messageCache[id]);
       return;
     }
-    showMessages([], type);
+    showMessages([]);
     proxyFetch(`https://discord.com/api/v10/channels/${id}/messages?limit=50`)
       .then(res=>res.json())
       .then(res=>{
@@ -380,7 +380,7 @@ function switchMessage(id, type) {
           return;
         }
         window.data.messageCache[id] = con;
-        showMessages(con, type);
+        showMessages(con);
       })
     return;
   }/*
@@ -543,9 +543,9 @@ function showUserChannel(id) {
       };
       m.innerHTML = `<p>Some extra settings not available in normal discord.</p>
 <hr style="width:100%;box-sizing:border-box;">
-<label>Display avatar decorations?: <input type="checkbox"${window.data.extra_settings.avatar_deco?' checked':''} onchange="window.data.extra_settings.avatar_deco=this.checked;saveExtra()"></label>
-<label>Display nameplates?: <input type="checkbox"${window.data.extra_settings.nameplates?' checked':''} onchange="window.data.extra_settings.nameplates=this.checked;saveExtra()"></label>
-<label>Display tags?: <input type="checkbox"${window.data.extra_settings.tags?' checked':''} onchange="window.data.extra_settings.tags=this.checked;saveExtra()"></label>`;
+<label>Display avatar decorations?: <input name="avatar-deco" type="checkbox"${window.data.extra_settings.avatar_deco?' checked':''} onchange="window.data.extra_settings.avatar_deco=this.checked;saveExtra()"></label>
+<label>Display nameplates?: <input name="nameplate" type="checkbox"${window.data.extra_settings.nameplates?' checked':''} onchange="window.data.extra_settings.nameplates=this.checked;saveExtra()"></label>
+<label>Display tags?: <input name="tag" type="checkbox"${window.data.extra_settings.tags?' checked':''} onchange="window.data.extra_settings.tags=this.checked;saveExtra()"></label>`;
       break;
   }
 }
@@ -833,7 +833,7 @@ if (!localStorage.getItem('token')) {
               // If current, show new
               if (window.data.currentChannel===wsd.d.channel_id) {
                 if (channelType.text.includes(window.data.currentChannelType)) {
-                  showMessages(window.data.messageCache[wsd.d.channel_id], window.data.currentChannelType);
+                  showMessages(window.data.messageCache[wsd.d.channel_id]);
                 }
               }
             }
@@ -845,7 +845,7 @@ if (!localStorage.getItem('token')) {
               // If current, show new
               if (window.data.currentChannel===wsd.d.channel_id) {
                 if (channelType.text.includes(window.data.currentChannelType)) {
-                  showMessages(window.data.messageCache[wsd.d.channel_id], window.data.currentChannelType);
+                  showMessages(window.data.messageCache[wsd.d.channel_id]);
                 }
               }
             }
@@ -857,7 +857,7 @@ if (!localStorage.getItem('token')) {
               // If current, show new
               if (window.data.currentChannel===wsd.d.channel_id) {
                 if (channelType.text.includes(window.data.currentChannelType)) {
-                  showMessages(window.data.messageCache[wsd.d.channel_id], window.data.currentChannelType);
+                  showMessages(window.data.messageCache[wsd.d.channel_id]);
                 }
               }
             }
@@ -896,7 +896,7 @@ if (!localStorage.getItem('token')) {
               // If current, show new
               if (window.data.currentChannel===wsd.d.channel_id) {
                 if (channelType.text.includes(window.data.currentChannelType)) {
-                  showMessages(window.data.messageCache[wsd.d.channel_id], window.data.currentChannelType);
+                  showMessages(window.data.messageCache[wsd.d.channel_id]);
                 }
               }
             }
@@ -925,7 +925,7 @@ if (!localStorage.getItem('token')) {
               // If current, show new
               if (window.data.currentChannel===wsd.d.channel_id) {
                 if (channelType.text.includes(window.data.currentChannelType)) {
-                  showMessages(window.data.messageCache[wsd.d.channel_id], window.data.currentChannelType);
+                  showMessages(window.data.messageCache[wsd.d.channel_id]);
                 }
               }
             }
