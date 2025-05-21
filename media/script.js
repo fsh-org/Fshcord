@@ -494,8 +494,8 @@ function showChannels(list, server) {
   ${c.type===1?`<div class="avatar" aria-hidden="true"><img src="${getUserAvatar(c.recipient_ids[0], getUser(c.recipient_ids[0]).avatar, 32)}" width="20" height="20" loading="lazy" aria-hidden="true">${c.type===1&&window.data.extra_settings.avatar_deco?`<img src="${getUserDeco(getUser(c.recipient_ids[0])?.avatar_decoration_data?.asset)}" class="decoration" width="25" height="25" loading="lazy" aria-hidden="true" onerror="this.remove()">`:''}</div>`:''}
   ${c.type!==1?(rules===c.id?getIcon('rules', 20):getIcon(c.type, 20)):''}
   ${c.nsfw?getIcon('nsfw', 20).replace('>',' class="channel-nsfw">'):''}
-  <span>${name}</span>
-  ${window.extra_settings.tags&&c.type===1?getUserClan(getUser(c.recipient_ids[0]).clan??getUser(c.recipient_ids[0]).user.clan):''}
+  <span class="name">${name}</span>
+  ${window.data.extra_settings.tags&&c.type===1?getUserClan(getUser(c.recipient_ids[0]).clan??getUser(c.recipient_ids[0]).user?.clan, true):''}
 </button>`;
   }).join('');
   Array.from(document.querySelectorAll('#channel button'))

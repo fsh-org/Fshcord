@@ -227,11 +227,19 @@ body {
   text-align: left;
   border-radius: 0.5rem;
 }
-#channel button span {
+#channel button .name {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   z-index: 2;
+}
+#channel button .tag {
+  display: inline-flex;
+  align-items: center;
+  font-size: 75%;
+  padding: 0px 2px;
+  border-radius: 0.25rem;
+  background-color: var(--bg-3);
 }
 #channel button .avatar, #channel button svg {
   flex-shrink: 0;

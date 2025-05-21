@@ -347,9 +347,9 @@ function getUserFlags(bitfield) {
   }
   return flags;
 }
-function getUserClan(clan) {
+function getUserClan(clan, omit=false) {
   if (!clan) return '';
-  return `<span class="tag" style="background-color:var(--bg-3)"><img src="https://cdn.discordapp.com/clan-badges/${clan.identity_guild_id}/${clan.badge}.png?size=16" width="12" height="12" inert aria-hidden="true">${clan.tag}</span>`;
+  return `<span class="tag"${omit?'':' style="background-color:var(--bg-3)"'}><img src="https://cdn.discordapp.com/clan-badges/${clan.identity_guild_id}/${clan.badge}.png?size=16" width="12" height="12" inert aria-hidden="true">${clan.tag}</span>`;
 }
 
 // Attachments
