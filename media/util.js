@@ -240,7 +240,8 @@ function parseMD(text, extended=2) {
     .replaceAll('&', '&amp;')
     .replaceAll('~lt;', '&lt;')
     .replaceAll('~quot;', '&quot;')
-    .replaceAll("'", '&apos;');
+    .replaceAll("'", '&apos;')
+    .replaceAll(/\`([^¬]|¬)+?\`/g, function(match){return reservemd('<code>'+match.slice(1,-1)+'</code>')});
   // Discord
   text = text
     .replaceAll(/&lt;a?:.+?:[0-9]+?>/g, function(match){
@@ -255,9 +256,7 @@ function parseMD(text, extended=2) {
     .replaceAll(/\_.+?\_/g, function(match){return '<i>'+match.slice(1,-1)+'</i>'})
     .replaceAll(/\~\~.+?\~\~/g, function(match){return '<s>'+match.slice(2,-2)+'</s>'})
     .replaceAll(/\|\|.+?\|\|/g, function(match){return `<span style="cursor:pointer;color:var(--bg-3);border-radius:0.25rem;background-color:var(--bg-3);transition:500ms;" onclick="this.style.color='var(--text-1)';this.style.backgroundColor='var(--bg-0)'">`+match.slice(2,-2)+'</span>'})
-    .replaceAll(/\`.+?\`/g, function(match){return '<code>'+match.slice(1,-1)+'</code>'})
-    .replaceAll(/^\> .+?$/gm, function(match){return '<blockquote>'+match.slice(2)+'</blockquote>'})
-    .replaceAll(/^\>\>\> ([^¬]|¬)+/gm, function(match){return '<blockquote>'+match.slice(4).split('\n').join('</blockquote>\n<blockquote>')+'</blockquote>'});
+    .replaceAll(/^\>\>\> ([^¬]|¬)+/gm, function(match){return '> '+match.slice(4).split('\n').join('\n> ')});
   // Extended
   if (extended>0) {
     text = text
@@ -267,11 +266,13 @@ function parseMD(text, extended=2) {
   }
   if (extended>1) {
     text = text
-      .replaceAll(/^### .+?$/gm, function(match){return '<span style="font-size:110%">'+match.slice(4)+'</span>'})
-      .replaceAll(/^## .+?$/gm, function(match){return '<span style="font-size:125%">'+match.slice(3)+'</span>'})
-      .replaceAll(/^# .+?$/gm, function(match){return '<span style="font-size:150%">'+match.slice(2)+'</span>'})
-      .replaceAll(/^-# .+?$/gm, function(match){return '<span style="font-size:80%;color:var(--text-2);">'+match.slice(3)+'</span>'});
+      .replaceAll(/^(> )?### .+?$/gm, function(match){return (match.startsWith('> ')?'> ':'')+'<span style="font-size:110%">'+match.replace(/^> /m, '').slice(4)+'</span>'})
+      .replaceAll(/^(> )?## .+?$/gm, function(match){return (match.startsWith('> ')?'> ':'')+'<span style="font-size:125%">'+match.replace(/^> /m, '').slice(3)+'</span>'})
+      .replaceAll(/^(> )?# .+?$/gm, function(match){return (match.startsWith('> ')?'> ':'')+'<span style="font-size:150%">'+match.replace(/^> /m, '').slice(2)+'</span>'})
+      .replaceAll(/^(> )?-# .+?$/gm, function(match){return (match.startsWith('> ')?'> ':'')+'<span style="font-size:80%;color:var(--text-2);">'+match.replace(/^> /m, '').slice(3)+'</span>'});
   }
+  text = text
+    .replaceAll(/^\> .+?$/gm, function(match){return '<blockquote>'+match.slice(2)+'</blockquote>'});
   // Twemojis
   text = twemoji.parse(text, twemojiConfig);
   // Reserve
