@@ -327,11 +327,13 @@ main {
   border-radius: 2rem;
 }
 .reply-preview .inner {
-  word-break: normal !important;
-  white-space: nowrap !important;
   text-overflow: ellipsis;
   width: 30vw;
   overflow: hidden;
+}
+.reply-preview .inner, .reply-preview .inner * {
+  word-break: normal !important;
+  white-space: nowrap !important;
 }
 .message .name {
   cursor: pointer;
