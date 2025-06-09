@@ -262,7 +262,8 @@ function parseMD(text, extended=2) {
     text = text
       .replaceAll(/&lt;t:[0-9]+?(:[tTdDfFR])?>/gm, function(match){match=match.split(':');match[1]=Number(match[1].replace('>',''))*1000;return `<code title="${formatDate(match[1], 'F')}" style="display:unset"${((match[2]??'f')[0])==='R'?` class="timestamp-relative" data-time="${match[1]}"`:''}>${formatDate(match[1], (match[2]??'f')[0])}</code>`})
       .replaceAll(/^(-|\*) .+?$/gm, function(match){return '<li>'+match.slice(2)+'</li>'})
-      .replaceAll(/(?:^\d+\. .*(?:\r?\n(?=\d+\. ))?)+/gm, function(match){return '<ol>'+match.replaceAll(/^(.+?)$\n?/gm, function(mat){return`<li>${mat.replace(/^\d+. /m,'')}</li>`})+'</ol>'});
+      .replaceAll(/(?:^\d+\. .*(?:\r?\n(?=\d+\. ))?)+/gm, function(match){return '<ol>'+match.replaceAll(/^(.+?)$\n?/gm, function(mat){return`<li>${mat.replace(/^\d+. /m,'')}</li>`})+'</ol>'})
+      .replaceAll(/<\/li>\s+?<li>/g,'</li><li>');
   }
   if (extended>1) {
     text = text

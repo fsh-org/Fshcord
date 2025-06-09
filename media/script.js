@@ -403,7 +403,7 @@ function switchMessage(id, type) {
 function showMembers(members) {
   document.getElementById('users').innerHTML = members.map(mem=>`<button class="user" onclick="showMinifiedProfile(this, '${mem.user.id}')">
   ${window.data.extra_settings.nameplates&&mem.user.collectibles?.nameplate?`<video class="nameplate" src="https://cdn.discordapp.com/assets/collectibles/${mem.user.collectibles.nameplate.asset}asset.webm" muted loop aria-hidden="true"></video>`:''}
-  <div class="avatar" aria-hidden="true">
+  <div class="avatar" aria-hidden="true" style="height:40px">
     <img src="${getUserAvatar(mem.user.id, mem.user.avatar)}" width="40" height="40" loading="lazy" aria-hidden="true">
     ${window.data.extra_settings.avatar_deco?`<img src="${getUserDeco(mem.user?.avatar_decoration_data?.asset)}" class="decoration" width="50" height="50" loading="lazy" aria-hidden="true" onerror="this.remove()">`:''}
   </div>
