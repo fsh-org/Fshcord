@@ -311,7 +311,7 @@ main {
   transition: 250ms;
 }
 .message:hover {
-  background-color: var(--bg-2);
+  backdrop-filter: brightness(1.2);
 }
 .message:has(.reply-preview) {
   padding-top: 25px;
@@ -498,9 +498,6 @@ lottie-sticker.message-attach {
   border-radius: 1rem 0 0 1rem;
   background-color: var(--embed-color);
 }
-.message:hover .message-rich-embed {
-  background-color: var(--bg-1);
-}
 .message-rich-embed a {
   text-decoration: none;
 }
@@ -597,9 +594,6 @@ lottie-sticker.message-attach {
   width: 4px;
   border-radius: 1rem 0 0 1rem;
   background-color: var(--color);
-}
-.message:hover .component.c17 {
-  background-color: var(--bg-1);
 }
 .component.c9 {
   display: flex;
