@@ -69,12 +69,6 @@ body {
   white-space: break-spaces;
   word-break: break-word;
 }
-#usermenu .emoji {
-  width: 18px;
-  height: 18px;
-  object-fit: contain;
-  margin-bottom: -4px;
-}
 
 @keyframes select-enter {
   from {left:-15px}
@@ -280,6 +274,12 @@ main {
   flex-direction: column;
   flex: 1;
 }
+.emoji {
+  width: 1em;
+  height: 1em;
+  object-fit: contain;
+  margin-bottom: -4px;
+}
 .top {
   display: flex;
   align-items: center;
@@ -432,12 +432,6 @@ lottie-sticker.message-attach {
 .message-attach.spoiler {
   filter: blur(6px) contrast(1.5) saturate(0.5) grayscale(0.5);
 }
-.message .inner .emoji, .message .message-rich-embed .emoji {
-  width: 20px;
-  height: 20px;
-  object-fit: contain;
-  margin-bottom: -4px;
-}
 .reactions {
   display: flex;
   gap: 5px;
@@ -580,6 +574,46 @@ lottie-sticker.message-attach {
   aspect-ratio: 16 / 9;
   max-width: 100%;
   max-height: unset;
+}
+.component.c17 {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  width: fit-content;
+  max-width: 75%;
+  margin: 2px;
+  border-radius: 0.5rem;
+  padding: 10px;
+  background: var(--bg-2);
+  transition: background-color 250ms;
+}
+.component.c17::before {
+  content: "";
+  display: inline-block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 4px;
+  border-radius: 1rem 0 0 1rem;
+  background-color: var(--color);
+}
+.message:hover .component.c17 {
+  background-color: var(--bg-1);
+}
+.component.c9 {
+  display: flex;
+  flex-direction: column;
+}
+.component.c10 {
+  word-break: break-word;
+  white-space: break-spaces;
+}
+.component.c14 {
+  flex: 1;
+  padding: 1px;
+  margin: var(--spacing) 0px;
+  background-color: var(--divider);
 }
 .message-poll-result {
   gap: 5px;

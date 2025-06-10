@@ -256,6 +256,41 @@ video -
       return `<span>Unknown embed type: ${embed.type}</span>`;
   }
 }
+/*
+1  Action Row
+2  Button
+3  String Select
+4  Text Input
+5  User Select
+6  Role Select
+7  Mentionable Select
+8  Channel Select
+9  Section -partial accessory
+10 Text Display -
+11 Thumbnail
+12 Media Gallery
+13 File
+14 Separator -
+17 Container -partial spoiler
+*/
+function renderComponentsV2(comp) {
+  if (Array.isArray(comp)) {
+    return comp.map(com=>renderComponentsV2(com)).join('');
+  }
+  switch(comp.type) {
+    case 9:
+      return `<div class="component c9">${renderComponentsV2(comp.components)}</div>`;
+    case 10:
+      return `<span class="component c10">${parseMD(comp.content)}</span>`;
+    case 14:
+      return `<div class="component c14" style="--divider:${comp.divider?'var(--bg-3)':'transparent'};--spacing:${comp.spacing===1?'10px':'20px'}"></div>`;
+    case 17:
+      return `<div class="component c17" style="--color:${comp.accent_color}">${renderComponentsV2(comp.components)}</div>`;
+    default:
+      report(`Unknown component v2 type: ${comp.type}`, comp);
+      return `<span>Unknown component v2 type: ${comp.type}</span>`;
+  }
+}
 function renderMessage(content, author, m) {
   return `<div class="message${m.deleted?' deleted':''}${m.mentions.map(e=>e.id).includes(window.data.user.id)?' mention':''}">
   ${m.type===19&&m.message_reference?`<div class="reply-preview">
@@ -277,6 +312,7 @@ function renderMessage(content, author, m) {
       return `<${attach.content_type.startsWith('image/')?'img':attach.content_type.startsWith('audio/')?'audio':attach.content_type.startsWith('video/')?'video':'div'} src="${attach.url}" width="${Math.floor(attach.width/2)}" height="${Math.floor(attach.height/2)}" class="message-attach${attach.flags?(getAttachmentFlags(attach.flags).SPOILER?` spoiler"onclick="this.classList.remove('spoiler')`:''):''}" controls>${attach.content_type.startsWith('image/')?'':attach.content_type.startsWith('audio/')?'</audio>':attach.content_type.startsWith('video/')?'</video>':`<a download="${attach.filename}">${attach.filename}</a> · ${formatBytes(attach.size)}</div>`}`;
     }).join(''):''}
     ${m.embeds.length?m.embeds.map(embed=>renderEmbed(embed)).join(''):''}
+    ${getMessageFlags(m.flags).IS_COMPONENTS_V2?renderComponentsV2(m.components):''}
     ${m.sticker_items?.length?m.sticker_items.map(sticker=>{
       if (sticker.format_type===3) {
         return `<lottie-sticker class="message-attach" data-id="${sticker.id}"></lottie-sticker>`;
@@ -384,16 +420,16 @@ function switchMessage(id, type) {
       })
     return;
   }/*
+  // Forum
+  if (channelType.forum.includes(type)) {
+    return;
+  }
   // Voice
   if (channelType.voice.includes(type)) {
     return;
   }
   // Store
   if (channelType.store.includes(type)) {
-    return;
-  }
-  // Forum
-  if (channelType.forum.includes(type)) {
     return;
   }*/
   report(`Unhandled channel type: ${type}`, [id, type]);

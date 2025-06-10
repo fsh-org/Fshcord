@@ -42,6 +42,24 @@ const userFlags = {
   COLLABORATOR: 50n,
   RESTRICTED_COLLABORATOR: 51n
 };
+const messageFlags = {
+  CROSSPOSTED: 0n,
+  IS_CROSSPOST: 1n,
+  SUPPRESS_EMBEDS: 2n,
+  SOURCE_MESSAGE_DELETED: 3n,
+  URGENT: 4n,
+  HAS_THREAD: 5n,
+  EPHEMERAL: 6n,
+  LOADING: 7n,
+  FAILED_TO_MENTION_SOME_ROLES_IN_THREAD: 8n,
+  GUILD_FEED_HIDDEN: 9n,
+  SHOULD_SHOW_LINK_NOT_DISCORD_WARNING: 10n,
+  SUPPRESS_NOTIFICATIONS: 12n,
+  IS_VOICE_MESSAGE: 13n,
+  HAS_SNAPSHOT: 14n,
+  IS_COMPONENTS_V2: 15n,
+  SENT_BY_SOCIAL_LAYER_INTEGRATION: 16n
+};
 const attachmentFlags = {
   CLIP: 0n,
   THUMBNAIL: 1n,
@@ -49,14 +67,14 @@ const attachmentFlags = {
   SPOILER: 3n,
   CONTAINS_EXPLICIT_MEDIA: 4n,
   ANIMATED: 5n
-}
+};
 const channelType = {
   invalid: [4,7,8], // These can't be opened or haven't existed for very long
   text: [0,1,3,5,10,11,12], // Add 17 when discord releases lobies (they should be a normal text channel?)
   voice: [2,13],
   store: [6],
   forum: [15,16]
-}
+};
 const SystemAuthor = {
   id: 0,
   avatar: 'system',
@@ -230,10 +248,10 @@ function parseMD(text, extended=2) {
     });
   }
   text = text
-    .replaceAll(/\[.*?\]\((~lt;https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)>|https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*))\)/g, function(match){
+    .replaceAll(/\[.*?\]\((?:~lt;)?https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)>?\)/g, function(match){
       return reservemd(`<a href="${match.split('](')[1].split(')')[0].replace(/^~lt;|>$/gm, '')}" target="_blank">`)+match.split('](')[0].split('[')[1]+reservemd(`</a>`);
     })
-    .replaceAll(/(~lt;https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)>|https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*))/g, function(match){
+    .replaceAll(/(?:~lt;)?https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)>?/g, function(match){
       if (match.match(/^~lt;.+?>$/m)) match=match.slice(4,-1);
       return reservemd(`<a href="${match}" target="_blank">${match}</a>`);
     })
@@ -353,6 +371,16 @@ function getUserClan(clan, omit=false) {
   if (!clan) return '';
   if (!clan.tag) return '';
   return `<span class="tag"${omit?'':' style="background-color:var(--bg-3)"'}><img src="https://cdn.discordapp.com/clan-badges/${clan.identity_guild_id}/${clan.badge}.png?size=16" width="12" height="12" inert aria-hidden="true">${clan.tag}</span>`;
+}
+
+// Messages
+function getMessageFlags(bitfield) {
+  let flags = {};
+  bitfield = BigInt(bitfield);
+  for (const [name, position] of Object.entries(messageFlags)) {
+    flags[name] = (bitfield & (1n << position))>0n;
+  }
+  return flags;
 }
 
 // Attachments
