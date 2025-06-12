@@ -257,8 +257,8 @@ video -
   }
 }
 /*
-1  Action Row
-2  Button
+1  Action Row -
+2  Button -partial a lot of stuff missing
 3  String Select
 4  Text Input
 5  User Select
@@ -273,22 +273,26 @@ video -
 14 Separator -
 17 Container -partial spoiler
 */
-function renderComponentsV2(comp) {
+function renderComponents(comp) {
   if (Array.isArray(comp)) {
-    return comp.map(com=>renderComponentsV2(com)).join('');
+    return comp.map(com=>renderComponents(com)).join('');
   }
   switch(comp.type) {
+    case 1:
+      return `<div class="component c1">${renderComponents(comp.components)}</div>`;
+    case 2:
+      return `${comp.style===5?`<a href="${comp.url}" target="_blank">`:''}<button class="component c2 type-${comp.style}"${comp.disabled?' disabled':''}>${comp.label}</button>${comp.style===5?'</a>':''}`;
     case 9:
-      return `<div class="component c9">${renderComponentsV2(comp.components)}</div>`;
+      return `<div class="component c9">${renderComponents(comp.components)}</div>`;
     case 10:
       return `<span class="component c10">${parseMD(comp.content)}</span>`;
     case 14:
       return `<div class="component c14" style="--divider:${comp.divider?'var(--bg-3)':'transparent'};--spacing:${comp.spacing===1?'10px':'20px'}"></div>`;
     case 17:
-      return `<div class="component c17" style="--color:${comp.accent_color}">${renderComponentsV2(comp.components)}</div>`;
+      return `<div class="component c17" style="--color:${comp.accent_color}">${renderComponents(comp.components)}</div>`;
     default:
-      report(`Unknown component v2 type: ${comp.type}`, comp);
-      return `<span>Unknown component v2 type: ${comp.type}</span>`;
+      report(`Unknown component type: ${comp.type}`, comp);
+      return `<span>Unknown component type: ${comp.type}</span>`;
   }
 }
 function renderMessage(content, author, m) {
@@ -312,7 +316,7 @@ function renderMessage(content, author, m) {
       return `<${attach.content_type.startsWith('image/')?'img':attach.content_type.startsWith('audio/')?'audio':attach.content_type.startsWith('video/')?'video':'div'} src="${attach.url}" width="${Math.floor(attach.width/2)}" height="${Math.floor(attach.height/2)}" class="message-attach${attach.flags?(getAttachmentFlags(attach.flags).SPOILER?` spoiler"onclick="this.classList.remove('spoiler')`:''):''}" controls>${attach.content_type.startsWith('image/')?'':attach.content_type.startsWith('audio/')?'</audio>':attach.content_type.startsWith('video/')?'</video>':`<a download="${attach.filename}">${attach.filename}</a> · ${formatBytes(attach.size)}</div>`}`;
     }).join(''):''}
     ${m.embeds.length?m.embeds.map(embed=>renderEmbed(embed)).join(''):''}
-    ${getMessageFlags(m.flags).IS_COMPONENTS_V2?renderComponentsV2(m.components):''}
+    ${renderComponents(m.components)}
     ${m.sticker_items?.length?m.sticker_items.map(sticker=>{
       if (sticker.format_type===3) {
         return `<lottie-sticker class="message-attach" data-id="${sticker.id}"></lottie-sticker>`;
