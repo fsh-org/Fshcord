@@ -273,6 +273,151 @@ video -
 14 Separator -
 17 Container -partial spoiler
 */
+/*
+{
+  "type": 3,
+  "placeholder": "Select a category",
+  "options": [
+    {
+      "value": "search",
+      "label": "Search commands",
+      "emoji": {
+        "name": "search",
+        "id": "1275454891208347768"
+      },
+      "description": "Search for a command"
+    },
+    {
+      "value": "main",
+      "label": "Main",
+      "emoji": {
+        "name": "main",
+        "id": "1275530451859017819"
+      },
+      "description": "Main commands of fsh"
+    },
+    {
+      "value": "fun",
+      "label": "Fun",
+      "emoji": {
+        "name": "fun",
+        "id": "1275462254804074496"
+      },
+      "description": "Fun and random commands"
+    },
+    {
+      "value": "utility",
+      "label": "Utility",
+      "emoji": {
+        "name": "utility",
+        "id": "1275729924212392038"
+      },
+      "description": "Useful commands"
+    },
+    {
+      "value": "economy",
+      "label": "Economy",
+      "emoji": {
+        "name": "economy",
+        "id": "1275818163346604114"
+      },
+      "description": "Commands for Fsh economy"
+    },
+    {
+      "value": "music",
+      "label": "Music",
+      "emoji": {
+        "name": "music",
+        "id": "1275462883097972786"
+      },
+      "description": "VC music controls"
+    },
+    {
+      "value": "admin",
+      "label": "Moderation",
+      "emoji": {
+        "name": "admin",
+        "id": "1275728449050382458"
+      },
+      "description": "Admin only commands"
+    },
+    {
+      "value": "context",
+      "label": "Context menus",
+      "emoji": {
+        "name": "context",
+        "id": "1275518446972698645"
+      },
+      "description": "Context menu commands (right-click)"
+    }
+  ],
+  "min_values": 1,
+  "max_values": 1,
+  "id": 2,
+  "custom_id": "help%816691475844694047%"
+},
+{
+  "type": 2,
+  "style": 5,
+  "emoji": {
+    "name": "website",
+    "id": "1130517362668482560"
+  }
+},
+{
+  "type": 2,
+  "style": 5,
+  "emoji": {
+    "name": "link",
+    "id": "1132686533569286195"
+  }
+},
+{
+  "type": 2,
+  "style": 5,
+  "emoji": {
+    "name": "discord",
+    "id": "1312113437568008203"
+  }
+}
+[
+  {
+    "type": 2,
+    "id": 2,
+    "custom_id": "primary",
+    "style": 1,
+    "label": "Primary"
+  },
+  {
+    "type": 2,
+    "id": 3,
+    "custom_id": "secondary",
+    "style": 2,
+    "label": "Secondary"
+  },
+  {
+    "type": 2,
+    "id": 4,
+    "custom_id": "success",
+    "style": 3,
+    "label": "Success"
+  },
+  {
+    "type": 2,
+    "id": 5,
+    "custom_id": "danger",
+    "style": 4,
+    "label": "Danger"
+  },
+  {
+    "type": 2,
+    "id": 6,
+    "style": 5,
+    "label": "Link",
+    "url": "https://discord.js.org"
+  }
+]
+*/
 function renderComponents(comp) {
   if (Array.isArray(comp)) {
     return comp.map(com=>renderComponents(com)).join('');
@@ -281,7 +426,7 @@ function renderComponents(comp) {
     case 1:
       return `<div class="component c1">${renderComponents(comp.components)}</div>`;
     case 2:
-      return `${comp.style===5?`<a href="${comp.url}" target="_blank">`:''}<button class="component c2 type-${comp.style}"${comp.disabled?' disabled':''}>${comp.label}</button>${comp.style===5?'</a>':''}`;
+      return `${comp.style===5?`<a href="${comp.url}" target="_blank">`:''}<button class="component c2 style-${comp.style}"${comp.disabled?' disabled':''}>${comp.label}</button>${comp.style===5?'</a>':''}`;
     case 9:
       return `<div class="component c9">${renderComponents(comp.components)}</div>`;
     case 10:

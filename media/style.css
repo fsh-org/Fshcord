@@ -572,6 +572,33 @@ lottie-sticker.message-attach {
   max-width: 100%;
   max-height: unset;
 }
+.component.c1 {
+  display: flex;
+  gap: 5px;
+}
+.component.c2 {
+  padding: 8px;
+  border: none;
+}
+.component.c2:hover {
+  color: var(--text-1);
+  backdrop-filter: brightness(0.75);
+}
+.component.c2.style-1 {
+  background: var(--blue-1);
+}
+.component.c2.style-2 {
+  background: var(--black-1);
+}
+.component.c2.style-3 {
+  background: var(--green-2);
+}
+.component.c2.style-4 {
+  background: var(--red-2);
+}
+.component.c2.style-5 {
+  background: var(--black-1);
+}
 .component.c17 {
   display: flex;
   flex-direction: column;
