@@ -258,7 +258,7 @@ video -
 }
 /*
 1  Action Row -
-2  Button -partial a lot of stuff missing
+2  Button -partial style6, interaction
 3  String Select
 4  Text Input
 5  User Select
@@ -271,6 +271,7 @@ video -
 12 Media Gallery
 13 File
 14 Separator -
+16 Content Inventory Entry
 17 Container -partial spoiler
 */
 /*
@@ -355,86 +356,45 @@ video -
   "max_values": 1,
   "id": 2,
   "custom_id": "help%816691475844694047%"
-},
-{
-  "type": 2,
-  "style": 5,
-  "emoji": {
-    "name": "website",
-    "id": "1130517362668482560"
-  }
-},
-{
-  "type": 2,
-  "style": 5,
-  "emoji": {
-    "name": "link",
-    "id": "1132686533569286195"
-  }
-},
-{
-  "type": 2,
-  "style": 5,
-  "emoji": {
-    "name": "discord",
-    "id": "1312113437568008203"
-  }
 }
-[
-  {
-    "type": 2,
-    "id": 2,
-    "custom_id": "primary",
-    "style": 1,
-    "label": "Primary"
-  },
-  {
-    "type": 2,
-    "id": 3,
-    "custom_id": "secondary",
-    "style": 2,
-    "label": "Secondary"
-  },
-  {
-    "type": 2,
-    "id": 4,
-    "custom_id": "success",
-    "style": 3,
-    "label": "Success"
-  },
-  {
-    "type": 2,
-    "id": 5,
-    "custom_id": "danger",
-    "style": 4,
-    "label": "Danger"
-  },
-  {
-    "type": 2,
-    "id": 6,
-    "style": 5,
-    "label": "Link",
-    "url": "https://discord.js.org"
-  }
-]
 */
-function renderComponents(comp) {
+function componentInteraction(type, cid, data) {
+  proxyFetch('https://discord.com/api/v10/interactions', {
+    method: 'POST',
+    body: JSON.stringify({
+      type: 3, // Message component
+      application_id: data.app,
+      message_id: data.id,
+      message_flags: data.flags,
+      channel_id: window.data.currentChannel,
+      guild_id: window.data.currentServer,
+      session_id: window.data.ws.session_id,
+      data: {
+        component_type: type,
+        custom_id: cid
+      }
+    })
+  })
+}
+function renderComponents(comp, data) {
   if (Array.isArray(comp)) {
-    return comp.map(com=>renderComponents(com)).join('');
+    return comp.map(com=>renderComponents(com, data)).join('');
   }
   switch(comp.type) {
     case 1:
-      return `<div class="component c1">${renderComponents(comp.components)}</div>`;
+      return `<div class="component c1">${renderComponents(comp.components, data)}</div>`;
     case 2:
-      return `${comp.style===5?`<a href="${comp.url}" target="_blank">`:''}<button class="component c2 style-${comp.style}"${comp.disabled?' disabled':''}>${comp.label}</button>${comp.style===5?'</a>':''}`;
+      return `${comp.style===5?`<a href="${comp.url}" target="_blank">`:''}
+<button class="component c2 style-${comp.style}" ${comp.disabled?'disabled':(comp.style!==5?`onclick="componentInteraction(2, '${comp.custom_id}', ${JSON.stringify(data).replaceAll('"','\\"')})"`:'')}>${comp.emoji?`<img src="https://cdn.discordapp.com/emojis/${comp.emoji.id}.webp?size=96" width="16" height="16" loading="lazy" onerror="this.remove()">`:''}${comp.label}${comp.style===5?'<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 256 256"><path d="M109.25 0C119.605 0 128 8.39466 128 18.75V18.75C128 29.1053 119.605 37.5 109.25 37.5H57.5C46.4543 37.5 37.5 46.4543 37.5 57.5V198.5C37.5 209.546 46.4543 218.5 57.5 218.5H198.5C209.546 218.5 218.5 209.546 218.5 198.5V146.75C218.5 136.395 226.895 128 237.25 128V128C247.605 128 256 136.395 256 146.75V226C256 242.569 242.569 256 226 256H30C13.4315 256 0 242.569 0 226V30C0 13.4315 13.4315 0 30 0H109.25Z"></path><path d="M156 18.75C156 8.39466 164.395 0 174.75 0H236C247.046 0 256 8.95431 256 20V81.25C256 91.6053 247.605 100 237.25 100V100C226.895 100 218.5 91.6053 218.5 81.25V57.5C218.5 46.4543 209.546 37.5 198.5 37.5H174.75C164.395 37.5 156 29.1053 156 18.75V18.75Z"></path><path d="M114.742 114.742C107.419 122.064 107.419 133.936 114.742 141.258C122.064 148.581 133.936 148.581 141.258 141.258L114.742 114.742ZM235 21L221.742 7.74175L114.742 114.742L128 128L141.258 141.258L248.258 34.2583L235 21Z"></path></svg>':''}</button>
+${comp.style===5?'</a>':''}`;
     case 9:
-      return `<div class="component c9">${renderComponents(comp.components)}</div>`;
+      return `<div class="component c9">${renderComponents(comp.components, data)}</div>`;
     case 10:
       return `<span class="component c10">${parseMD(comp.content)}</span>`;
     case 14:
       return `<div class="component c14" style="--divider:${comp.divider?'var(--bg-3)':'transparent'};--spacing:${comp.spacing===1?'10px':'20px'}"></div>`;
     case 17:
-      return `<div class="component c17" style="--color:${comp.accent_color}">${renderComponents(comp.components)}</div>`;
+      return `<div class="component c17" style="--color:${comp.accent_color}">${renderComponents(comp.components, data)}</div>`;
     default:
       report(`Unknown component type: ${comp.type}`, comp);
       return `<span>Unknown component type: ${comp.type}</span>`;
@@ -461,7 +421,7 @@ function renderMessage(content, author, m) {
       return `<${attach.content_type.startsWith('image/')?'img':attach.content_type.startsWith('audio/')?'audio':attach.content_type.startsWith('video/')?'video':'div'} src="${attach.url}" width="${Math.floor(attach.width/2)}" height="${Math.floor(attach.height/2)}" class="message-attach${attach.flags?(getAttachmentFlags(attach.flags).SPOILER?` spoiler"onclick="this.classList.remove('spoiler')`:''):''}" controls>${attach.content_type.startsWith('image/')?'':attach.content_type.startsWith('audio/')?'</audio>':attach.content_type.startsWith('video/')?'</video>':`<a download="${attach.filename}">${attach.filename}</a> · ${formatBytes(attach.size)}</div>`}`;
     }).join(''):''}
     ${m.embeds.length?m.embeds.map(embed=>renderEmbed(embed)).join(''):''}
-    ${renderComponents(m.components)}
+    ${renderComponents(m.components, { id: m.id, app: author.id, flags: m.flags })}
     ${m.sticker_items?.length?m.sticker_items.map(sticker=>{
       if (sticker.format_type===3) {
         return `<lottie-sticker class="message-attach" data-id="${sticker.id}"></lottie-sticker>`;

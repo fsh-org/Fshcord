@@ -66,11 +66,12 @@ const attachmentFlags = {
   REMIX: 2n,
   SPOILER: 3n,
   CONTAINS_EXPLICIT_MEDIA: 4n,
-  ANIMATED: 5n
+  ANIMATED: 5n,
+  CONTAINS_GORE_CONTENT: 6n
 };
 const channelType = {
   invalid: [4,7,8], // These can't be opened or haven't existed for very long
-  text: [0,1,3,5,10,11,12], // Add 17 when discord releases lobies (they should be a normal text channel?)
+  text: [0,1,3,5,9,10,11,12], // Add 17 when discord releases lobies (they should be a normal text channel?)
   voice: [2,13],
   store: [6],
   forum: [15,16]
@@ -192,18 +193,18 @@ function proxyFetch(url, o) {
   let opts = {
     method: "GET",
     headers: {
-      accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
-      "accept-language": "en;q=1.0",
-      authorization: localStorage.getItem('token'),
-      "sec-ch-ua": '"Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"',
-      "sec-ch-ua-mobile": "?0 ",
-      "sec-ch-ua-platform": '"Windows"',
-      "sec-fetch-dest": "document",
-      "sec-fetch-mode": "navigate",
-      "sec-fetch-site": "none",
-      "sec-fetch-user": "?1",
-      "sec-gpc": "1",
-      "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
+      'accept': '*/*',
+      'accept-language': 'en;q=1.0',
+      'authorization': localStorage.getItem('token'),
+      'pragma': 'no-cache',
+      'priority': 'u=1, i',
+      'sec-ch-ua': '"Google Chrome";v="137", "Chromium";v="137", "Not/A)Brand";v="24"',
+      'sec-ch-ua-mobile': '?0',
+      'sec-ch-ua-platform': '"Windows"',
+      'sec-fetch-dest': 'empty',
+      'sec-fetch-mode': 'cors',
+      'sec-fetch-site': 'same-origin',
+      'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36'
     }
   };
   if (o?.method) opts.method=o.method;
@@ -259,6 +260,9 @@ function parseMD(text, extended=2) {
     .replaceAll('~lt;', '&lt;')
     .replaceAll('~quot;', '&quot;')
     .replaceAll("'", '&apos;')
+    .replaceAll('\\*', '&ast;')
+    .replaceAll('\\_', '&lowbar;')
+    .replaceAll('\\~', '&tilde;')
     .replaceAll(/\`([^¬]|¬)+?\`/g, function(match){return reservemd('<code>'+match.slice(1,-1)+'</code>')});
   // Discord
   text = text
@@ -467,6 +471,7 @@ function loading(text) {
 }
 let lastReport = '';
 function report(text, obj) {
+  window.data.localReport = true; // TODO: Fix tel
   if (window.data.localReport) {
     console.log(text, obj);
   } else {

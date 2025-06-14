@@ -576,13 +576,24 @@ lottie-sticker.message-attach {
   display: flex;
   gap: 5px;
 }
+a:has(.component.c2) {
+  text-decoration: none;
+}
 .component.c2 {
+  display: flex;
+  gap: 5px;
   padding: 8px;
   border: none;
 }
 .component.c2:hover {
   color: var(--text-1);
   backdrop-filter: brightness(0.75);
+}
+.component.c2[disabled] {
+  backdrop-filter: opacity(0.5);
+}
+.component.c2[disabled]:hover {
+  color: var(--text-3);
 }
 .component.c2.style-1 {
   background: var(--blue-1);
@@ -598,6 +609,9 @@ lottie-sticker.message-attach {
 }
 .component.c2.style-5 {
   background: var(--black-1);
+}
+.component.c2 img {
+  object-fit: contain;
 }
 .component.c17 {
   display: flex;
