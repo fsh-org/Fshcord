@@ -611,7 +611,12 @@ a:has(.component.c2) {
   background: var(--black-1);
 }
 .component.c2 img {
+  width: 16px;
+  height: 16px;
   object-fit: contain;
+}
+.component.c2[disabled] img {
+  opacity: 0.5;
 }
 .component.c17 {
   display: flex;
