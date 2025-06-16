@@ -717,24 +717,24 @@ blockquote::before {
 
 .input-bar {
   display: flex;
-  height: 30px;
   margin: 5px 10px;
   padding-left: 5px;
-  border-radius: 2rem;
+  border-radius: 1rem;
   background-color: var(--bg-2);
   box-sizing: border-box;
 }
-.input-bar input {
+.input-bar textarea {
   flex: 1;
   margin: 0px;
+  padding: 8px;
   border: none;
-  border-radius: 2rem;
+  border-radius: 1rem;
+  resize: none;
 }
 .input-bar button {
   height: 100%;
   border: none;
   border-radius: 1rem;
-  aspect-ratio: 1/1;
 }
 
 #users {

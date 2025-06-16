@@ -95,26 +95,43 @@ async function showMinifiedProfile(element, user) {
   }
 }
 
+const MessageField = document.getElementById('message-input');
+let CurrentlySending = false;
 function sendMessage() {
+  if (CurrentlySending) return;
+  CurrentlySending = true;
   proxyFetch(`https://discord.com/api/v10/channels/${window.data.currentChannel}/messages`, {
     method: 'POST',
     body: JSON.stringify({
-      content: document.getElementById('message-input').value
-    })
+      content: MessageField.value
+    }),
+    signal: AbortSignal.timeout(10000) // 10s
   })
     .then(res=>res.json())
     .then(res=>{
-      document.getElementById('message-input').value = '';
+      CurrentlySending = false;
+      MessageField.value = '';
+      MessageField.setAttribute('rows', 1);
       window.data.channelTyping[window.data.currentChannel] = 0;
     })
+    .catch(err=>{
+      CurrentlySending = false;
+    });
 }
-document.getElementById('message-input').onkeyup = function(event){
-  if (event.key==='Enter') sendMessage();
+MessageField.onkeyup = MessageField.onkeydown = function(evt){
+  if (evt.key==='Enter'&&!evt.shiftKey) {
+    evt.preventDefault();
+    sendMessage();
+    return;
+  }
   let last = window.data.channelTyping[window.data.currentChannel] ?? 0;
   if (Date.now() > last+(10 * 1000)) {
     window.data.channelTyping[window.data.currentChannel] = Date.now();
     proxyFetch(`https://discord.com/api/v10/channels/${window.data.currentChannel}/typing`, { method: 'POST' })
   }
+};
+MessageField.oninput = function(evt){
+  evt.target.setAttribute('rows', Math.min(Math.max(evt.target.value.split('\n').length, 1), 15));
 };
 document.getElementById('message-send').onclick = sendMessage;
 
