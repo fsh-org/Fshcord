@@ -337,7 +337,7 @@ main {
 }
 .message .name {
   cursor: pointer;
-  color: var(--text-0);
+  color: var(--rc, var(--text-0));
 }
 .message .name:hover {
   text-decoration: underline;
@@ -748,6 +748,10 @@ blockquote::before {
   box-sizing: border-box;
   overflow: hidden auto;
 }
+#users summary {
+  font-size: 80%;
+  color: var(--rc);
+}
 #users .user {
   position: relative;
   display: flex;
@@ -769,6 +773,7 @@ blockquote::before {
   border-radius: 2rem;
 }
 #users .user span {
+  color: var(--rc);
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;

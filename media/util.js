@@ -376,6 +376,26 @@ function getUserClan(clan, omit=false) {
   if (!clan.tag) return '';
   return `<span class="tag"${omit?'':' style="background-color:var(--bg-3)"'}><img src="https://cdn.discordapp.com/clan-badges/${clan.identity_guild_id}/${clan.badge}.png?size=16" width="12" height="12" inert aria-hidden="true">${clan.tag}</span>`;
 }
+let UserColorCache = {};
+function getUserColor(server, mem) {
+  if (!mem?.roles) return '';
+  let id = mem.id ?? mem.user.id;
+  if (UserColorCache[server]) {
+    if (UserColorCache[server][id]) {
+      return UserColorCache[server][id];
+    } else {
+      let c = colorToRGB(UserColorCache[server]._roles.filter(rol=>mem.roles.includes(rol.id))[0].color);
+      UserColorCache[server][id] = c;
+      return c;
+    }
+  } else {
+    UserColorCache[server] = {};
+    UserColorCache[server]._roles = window.data.servers
+      .find(ser=>ser.id===server).roles
+      .toSorted((a,b)=>b.position-a.position);
+    return getUserColor(server, mem);
+  }
+}
 
 // Messages
 function getMessageFlags(bitfield) {

@@ -438,7 +438,7 @@ function renderMessage(content, author, m) {
     ${window.data.extra_settings.avatar_deco?`<img src="${getUserDeco(author?.avatar_decoration_data?.asset)}" class="decoration" width="50" height="50" loading="lazy" aria-hidden="true" onerror="this.remove()">`:''}
   </div>`}
   <span>
-    ${author.hide?'':`<span><span class="name" onclick="showMinifiedProfile(this, '${author.id}')">${getUserDisplay(author)}</span>${[author.system,m.webhook_id,author.bot].filter(e=>!!e).length?`<span class="tag">${author.system?'SYSTEM':(m.webhook_id?'WEBHOOK':(author.bot?`BOT${getUserFlags(author.flags??author.public_flags).VERIFIED_BOT?' ✔':''}`:''))}</span>`:''}${window.data.extra_settings.tags&&m.author.clan?getUserClan(m.author.clan):''}<span class="timestamp">${formatDate(m.timestamp, 'r')}</span>${getUserFlags(author.flags??author.public_flags).SPAMMER?'<span>· Possible spammer</span>':''}</span>`}
+    ${author.hide?'':`<span><span class="name" onclick="showMinifiedProfile(this, '${author.id}')"${window.data.currentServer!=='0'?` style="--rc:${getUserColor(window.data.currentServer, data.servers.find(e=>e.id===window.data.currentServer).members.find(mem=>mem.user.id===author.id))}"`:''}>${getUserDisplay(author)}</span>${[author.system,m.webhook_id,author.bot].filter(e=>!!e).length?`<span class="tag">${author.system?'SYSTEM':(m.webhook_id?'WEBHOOK':(author.bot?`BOT${getUserFlags(author.flags??author.public_flags).VERIFIED_BOT?' ✔':''}`:''))}</span>`:''}${window.data.extra_settings.tags&&m.author.clan?getUserClan(m.author.clan):''}<span class="timestamp">${formatDate(m.timestamp, 'r')}</span>${getUserFlags(author.flags??author.public_flags).SPAMMER?'<span>· Possible spammer</span>':''}</span>`}
     <span class="inner">${parseMD(content)}${m.edited_timestamp?'<span class="edited"> (edited)</span>':''}</span>
     ${m.attachments.length?m.attachments.map(attach=>{
       if (!attach.content_type) attach.content_type=`image/${attach.url.split('?')[0].split('.').slice(-1)[0]}`;
@@ -571,14 +571,38 @@ function switchMessage(id, type) {
 
 /* Members */
 function showMembers(members) {
-  document.getElementById('users').innerHTML = members.map(mem=>`<button class="user" onclick="showMinifiedProfile(this, '${mem.user.id}')">
+  if (window.data.currentServer==='0') {
+    document.getElementById('users').innerText = '';
+    document.getElementById('users').style.display = 'none';
+    return;
+  }
+  document.getElementById('users').style.display = '';
+  let roles = window.data.servers
+    .find(server=>server.id===window.data.currentServer).roles
+    .filter(role=>role.hoist)
+    .toSorted((a,b)=>b.position-a.position);
+  let sections = {};
+  roles.forEach(role=>sections[role.id]=[]);
+  members.forEach(mem=>{
+    for (let i = 0; i<roles.length; i++) {
+      if (mem.roles.includes(roles[i].id)) {
+        sections[roles[i].id].push(mem);
+        return;
+      }
+    }
+  });
+  document.getElementById('users').innerHTML = Object.keys(sections).map(sec=>{
+    let cat = roles.find(rol=>rol.id===sec);
+    if (sections[sec].length<1) return '';
+    return `<details open><summary style="--rc:${colorToRGB(cat.color)}">${cat.name} — ${sections[sec].length}</summary>` + sections[sec].map(mem=>`<button class="user" onclick="showMinifiedProfile(this, '${mem.user.id}')">
   ${window.data.extra_settings.nameplates&&mem.user.collectibles?.nameplate?`<video class="nameplate" src="https://cdn.discordapp.com/assets/collectibles/${mem.user.collectibles.nameplate.asset}asset.webm" muted loop aria-hidden="true"></video>`:''}
   <div class="avatar" aria-hidden="true" style="height:40px">
     <img src="${getUserAvatar(mem.user.id, mem.user.avatar)}" width="40" height="40" loading="lazy" aria-hidden="true">
     ${window.data.extra_settings.avatar_deco?`<img src="${getUserDeco(mem.user?.avatar_decoration_data?.asset)}" class="decoration" width="50" height="50" loading="lazy" aria-hidden="true" onerror="this.remove()">`:''}
   </div>
-  <span>${getUserDisplay(mem)}</span>
-</button>`).join('');
+  <span style="--rc:${getUserColor(window.data.currentServer, mem)}">${getUserDisplay(mem)}</span>
+</button>`).join('') + '</details>'
+  }).join('');
   Array.from(document.querySelectorAll('#users .user'))
     .forEach(u=>{
       let n = u.querySelector('.nameplate');
