@@ -60,7 +60,7 @@ async function showMinifiedProfile(element, user) {
 
   // Modal content
   if (!getUser(user)?.full) {
-    let usr = await proxyFetch(`https://discord.com/api/v10/users/${user}/profile?type=popout&with_mutual_guilds=true&with_mutual_friends=true&with_mutual_friends_count=false${window.data.currentServer!==0?`&guild_id=${window.data.currentServer}`:''}`);
+    let usr = await proxyFetch(`https://discord.com/api/v10/users/${user}/profile?type=popout&with_mutual_guilds=true&with_mutual_friends=true&with_mutual_friends_count=false${window.data.currentServer!=="0"?`&guild_id=${window.data.currentServer}`:''}`);
     usr = await usr.json();
     if (JSON.parse(usr.content).code !== 10013) {
       window.data.users[user] = JSON.parse(usr.content);
@@ -938,8 +938,8 @@ if (!localStorage.getItem('token')) {
   window.data.messageCache = {};
   window.data.channelTyping = {};
 
-  window.data.currentServer = 0;
-  window.data.currentChannel = 0;
+  window.data.currentServer = "0";
+  window.data.currentChannel = "0";
   window.data.currentChannelType = 0;
 
   loading('gateway');
