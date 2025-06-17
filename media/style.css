@@ -379,7 +379,7 @@ main {
   color: var(--text-2);
   font-size: 60%;
 }
-.message.mention::before {
+.message.mention::before, .message.ephemeral::before {
   display: block;
   content: "";
   position: absolute;
@@ -392,7 +392,7 @@ main {
   box-sizing: border-box;
   z-index: -10;
 }
-.message.mention::after {
+.message.mention::after, .message.ephemeral::after {
   display: block;
   content: "";
   position: absolute;
