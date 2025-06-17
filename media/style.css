@@ -485,7 +485,6 @@ lottie-sticker.message-attach {
   padding: 10px;
   white-space: normal;
   background-color: var(--bg-2);
-  transition: background-color 250ms;
 }
 .message-rich-embed::before {
   content: "";

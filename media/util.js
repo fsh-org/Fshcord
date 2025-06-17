@@ -297,6 +297,12 @@ function parseMD(text, extended=2) {
   text = text
     .replaceAll(/^\> .+?$/gm, function(match){return '<blockquote>'+match.slice(2)+'</blockquote>'});
   // Twemojis
+  text = text
+    .replaceAll(/:[a-zA-Z0-9:_-]+?:/g, function(match){
+      if (!emoji_colons[match.toLowerCase()]) return match;
+      match = emoji_colons[match.toLowerCase()];
+      return Array.from(match.matchAll(/.{6}/g)).map(part=>String.fromCodePoint(parseInt(part[0],16))).join('')
+    });
   text = twemoji.parse(text, twemojiConfig);
   // Reserve
   text = text.replaceAll(/¬r[0-9]{16}¬r/g, function(match){
@@ -392,6 +398,7 @@ function getUserColor(server, mem) {
     UserColorCache[server] = {};
     UserColorCache[server]._roles = window.data.servers
       .find(ser=>ser.id===server).roles
+      .filter(rol=>rol.color!==0)
       .toSorted((a,b)=>b.position-a.position);
     return getUserColor(server, mem);
   }
