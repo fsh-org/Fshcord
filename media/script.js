@@ -594,7 +594,7 @@ function showMembers(members) {
   document.getElementById('users').innerHTML = Object.keys(sections).map(sec=>{
     let cat = roles.find(rol=>rol.id===sec);
     if (sections[sec].length<1) return '';
-    return `<details open><summary style="--rc:${colorToRGB(cat.color)}">${cat.name} — ${sections[sec].length}</summary>` + sections[sec].map(mem=>`<button class="user" onclick="showMinifiedProfile(this, '${mem.user.id}')">
+    return `<details open><summary style="--rc:${colorToRGB(cat.color)}">${cat.name} — ${sections[sec].length}</summary>` + sections[sec].toSorted((a,b)=>getUserDisplay(a).localeCompare(getUserDisplay(b), undefined, { sensitivity: 'accent' })).map(mem=>`<button class="user" onclick="showMinifiedProfile(this, '${mem.user.id}')">
   ${window.data.extra_settings.nameplates&&mem.user.collectibles?.nameplate?`<video class="nameplate" src="https://cdn.discordapp.com/assets/collectibles/${mem.user.collectibles.nameplate.asset}asset.webm" muted loop aria-hidden="true"></video>`:''}
   <div class="avatar" aria-hidden="true" style="height:40px">
     <img src="${getUserAvatar(mem.user.id, mem.user.avatar)}" width="40" height="40" loading="lazy" aria-hidden="true">
