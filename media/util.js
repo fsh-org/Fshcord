@@ -299,8 +299,8 @@ function parseMD(text, extended=2) {
   // Twemojis
   text = text
     .replaceAll(/:[a-zA-Z0-9:_-]+?:/g, function(match){
-      if (!emoji_colons[match.toLowerCase()]) return match;
-      match = emoji_colons[match.toLowerCase()];
+      if (!window.emoji_colons[match.toLowerCase()]) return match;
+      match = window.emoji_colons[match.toLowerCase()];
       return Array.from(match.matchAll(/.{6}/g)).map(part=>String.fromCodePoint(parseInt(part[0],16))).join('')
     });
   text = twemoji.parse(text, twemojiConfig);
