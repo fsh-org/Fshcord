@@ -433,6 +433,9 @@ function formatBytes(bytes) {
 }
 
 // General utility
+Object.prototype.merge = (a,b)=>{
+  Object.keys(b).forEach(k=>a[k]=b[k]);
+}
 function colorToRGB(color) {
   return `#${color.toString(16).padStart(6, '0')}`;
 }
@@ -483,9 +486,9 @@ function formatDate(date, format='f') {
 }
 
 // Other
-function loading(text) {
+function loading(text, empty=false) {
   Toastify({
-    text: 'Loading '+text,
+    text: (empty?'':'Loading ')+text,
     duration: 2000,
     close: true,
     gravity: 'bottom',

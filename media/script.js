@@ -1,3 +1,37 @@
+if (!localStorage.getItem('token')) {
+  window.location.replace('/login');
+}
+
+// Main
+window.data = {};
+window.data.localReport = false;
+
+// Extra settings
+window.data.extra_settings = {
+  avatar_deco: true,
+  nameplates: true,
+  tags: true
+};
+try {
+  let s = JSON.parse(localStorage.getItem('extra'));
+  Object.keys(s).forEach(k=>window.data.extra_settings[k]=s[k]);
+} catch(err) {
+  // Ignore :3
+}
+
+window.data.users = {};
+window.data.presences = {};
+window.data.servers = [];
+window.data.dms = [];
+
+window.data.messageCache = {};
+window.data.channelTyping = {};
+
+window.data.currentServer = "0";
+window.data.currentChannel = "0";
+window.data.currentChannelType = 0;
+
+// Menus
 function showContextMenu(event, type, data) {
   event.preventDefault();
   let menu = document.getElementById('contextmenu');
@@ -438,7 +472,7 @@ function renderMessage(content, author, m) {
     ${window.data.extra_settings.avatar_deco?`<img src="${getUserDeco(author?.avatar_decoration_data?.asset)}" class="decoration" width="50" height="50" loading="lazy" aria-hidden="true" onerror="this.remove()">`:''}
   </div>`}
   <span>
-    ${author.hide?'':`<span><span class="name" onclick="showMinifiedProfile(this, '${author.id}')"${window.data.currentServer!=='0'?` style="--rc:${getUserColor(window.data.currentServer, data.servers.find(e=>e.id===window.data.currentServer).members.find(mem=>mem.user.id===author.id))}"`:''}>${getUserDisplay(author)}</span>${[author.system,m.webhook_id,author.bot].filter(e=>!!e).length?`<span class="tag">${author.system?'SYSTEM':(m.webhook_id?'WEBHOOK':(author.bot?`BOT${getUserFlags(author.flags??author.public_flags).VERIFIED_BOT?' ✔':''}`:''))}</span>`:''}${window.data.extra_settings.tags&&m.author.clan?getUserClan(m.author.clan):''}<span class="timestamp">${formatDate(m.timestamp, 'r')}</span>${getUserFlags(author.flags??author.public_flags).SPAMMER?'<span>· Possible spammer</span>':''}</span>`}
+    ${author.hide?'':`<span><span class="name" onclick="showMinifiedProfile(this, '${author.id}')"${window.data.currentServer!=='0'?` style="--rc:${getUserColor(window.data.currentServer, data.servers.find(e=>e.id===window.data.currentServer).members?.find(mem=>mem.user.id===author.id))}"`:''}>${getUserDisplay(author)}</span>${[author.system,m.webhook_id,author.bot].filter(e=>!!e).length?`<span class="tag">${author.system?'SYSTEM':(m.webhook_id?'WEBHOOK':(author.bot?`BOT${getUserFlags(author.flags??author.public_flags).VERIFIED_BOT?' ✔':''}`:''))}</span>`:''}${window.data.extra_settings.tags&&m.author.clan?getUserClan(m.author.clan):''}<span class="timestamp">${formatDate(m.timestamp, 'r')}</span>${getUserFlags(author.flags??author.public_flags).SPAMMER?'<span>· Possible spammer</span>':''}</span>`}
     <span class="inner">${parseMD(content)}${m.edited_timestamp?'<span class="edited"> (edited)</span>':''}</span>
     ${m.attachments.length?m.attachments.map(attach=>{
       if (!attach.content_type) attach.content_type=`image/${attach.url.split('?')[0].split('.').slice(-1)[0]}`;
@@ -712,8 +746,8 @@ function showChannels(list, server) {
     });
   if (server) {
     // Server banner
-    document.getElementById('channels-server-header').innerHTML = `<span class="name">${server.name??server.properties.name}</span>
-${(server.banner??server.properties.banner)?`<div><img src="https://cdn.discordapp.com/banners/${server.id}/${server.banner??server.properties.banner}.webp?size=240"></div>`:''}`;
+    document.getElementById('channels-server-header').innerHTML = `<span class="name">${server.properties.name??server.name}</span>
+${(server.properties.banner??server.banner)?`<div><img src="https://cdn.discordapp.com/banners/${server.id}/${server.properties.banner??server.banner}.webp?size=240"></div>`:''}`;
   }
 }
 function showUserChannel(id) {
@@ -802,10 +836,10 @@ function showServers(list) {
     if (s?.type==='folder') {
       return `<div aria-label="${s.name??'Folder'}" aria-role="button" class="server-folder" style="--folder-color:${colorToRGB(s.color??1579032)}">
   <svg onclick="let op=(this.getAttribute('open')==='true');this.setAttribute('open', !op);this.parentElement.style.height=(!op?'${(s.guilds.length+1)*50+s.guilds.length*10}px':'50px')" open="false"${getIcon('folder', 50).replace('<svg','').replace('viewBox="0 0 256 256"','viewBox="-64 -64 384 384"')}
-  ${s.guilds.map(g=>`<button aria-label="${g.properties.name}" data-id="${g.id}" class="server-clicky">${g.properties.icon == null ? g.properties.name.trim().split(/\s+/).map(word=>word[0]??'').join('') : `<img src="https://cdn.discordapp.com/icons/${g.id}/${g.properties.icon}.png?size=64" alt="${g.properties.name}" loading="lazy">`}</button>`).join('')}
+  ${s.guilds.map(g=>`<button aria-label="${g.properties?.name??g.name}" data-id="${g.id}" class="server-clicky">${(g.properties?.icon??g.icon) == null ? (g.properties?.name??g.name).trim().split(/\s+/).map(word=>word[0]??'').join('') : `<img src="https://cdn.discordapp.com/icons/${g.id}/${g.properties?.icon??g.icon}.png?size=64" alt="${g.properties?.name??g.name}" loading="lazy">`}</button>`).join('')}
 </div>`;
     }
-    return `<button aria-label="${s.name??s?.properties?.name??'Server'}" data-id="${s.id}" class="server-clicky">${(s.icon??s?.properties?.icon??null) == null ? (s.name??s?.properties?.name??'Server').trim().split(/\s+/).map(word=>word[0]??'').join('') : `<img src="https://cdn.discordapp.com/icons/${s.id}/${s.icon??s.properties.icon}.png?size=64" alt="${s.name??s?.properties?.name??'Server'}" loading="lazy">`}</button>`;
+    return `<button aria-label="${s.properties?.name??s.name??'Server'}" data-id="${s.id}" class="server-clicky">${(s.properties?.icon??s.icon??null) == null ? (s.properties?.name??s.name??'Server').trim().split(/\s+/).map(word=>word[0]??'').join('') : `<img src="https://cdn.discordapp.com/icons/${s.id}/${s.properties?.icon??s.icon}.png?size=64" alt="${s.properties?.name??s.name??'Server'}" loading="lazy">`}</button>`;
   }).join('');
   Array.from(document.querySelectorAll('#server button'))
     .forEach(b=>{
@@ -849,14 +883,14 @@ function showServers(list) {
   document.querySelector('#server button[selected]')?.removeAttribute('selected');
   document.querySelector(`#server button[data-id="${window.data.currentServer}"]`).setAttribute('selected', true);
 }
-function switchServers(list) {
+function switchServers() {
   let ordered = [];
   window.data.settings.guild_folders.forEach(f => {
     if (f.guild_ids.length<2) {
-      let g = list.find(s=>s.id===f.guild_ids[0]);
+      let g = window.data.servers.find(s=>s.id===f.guild_ids[0]);
       if (g) ordered.push(g);
     } else {
-      let gs = f.guild_ids.map(g=>list.find(s=>s.id===g)).filter(e=>!!e);
+      let gs = f.guild_ids.map(g=>window.data.servers.find(s=>s.id===g)).filter(e=>!!e);
       ordered.push({
         type: 'folder',
         id: f.id,
@@ -867,403 +901,4 @@ function switchServers(list) {
     }
   });
   showServers(ordered);
-}
-
-/* Gateway ops
-0 DISPATCH
-1 HEARTBEAT
-2 IDENTIFY
-3 PRESENCE_UPDATE
-4 VOICE_STATE_UPDATE
-5 VOICE_SERVER_PING
-6 RESUME
-7 RECONNECT
-8 REQUEST_GUILD_MEMBERS
-9 INVALID_SESSION
-10 HELLO
-11 HEARTBEAT_ACK
-12 ?
-13 CALL_CONNECT
-14 GUILD_SUBSCRIPTIONS
-15 ?
-16 ?
-17 ?
-18 STREAM_CREATE
-19 STREAM_DELETE
-20 STREAM_WATCH
-21 STREAM_PING
-22 STREAM_SET_PAUSED
-23 ?
-24 REQUEST_GUILD_APPLICATION_COMMANDS
-25 ?
-26 ?
-27 ?
-28 REQUEST_FORUM_UNREADS
-29 REMOTE_COMMAND
-30 GET_DELETED_ENTITY_IDS_NOT_MATCHING_HASH
-31 REQUEST_SOUNDBOARD_SOUNDS
-32 ?
-33 ?
-34 REQUEST_LAST_MESSAGES
-35 SEARCH_RECENT_MEMBERS
-36 REQUEST_CHANNEL_STATUSES
-37 GUILD_SUBSCRIPTIONS_BULK
-38 GUILD_CHANNELS_RESYNC
-39 REQUEST_CHANNEL_MEMBER_COUNT
-*/
-if (!localStorage.getItem('token')) {
-  location.href = '/login';
-} else {
-  window.data = {};
-  window.data.localReport = false;
-
-  window.data.extra_settings = {
-    avatar_deco: true,
-    nameplates: true,
-    tags: true
-  };
-  try {
-    let s = JSON.parse(localStorage.getItem('extra'));
-    Object.keys(s).forEach(k=>window.data.extra_settings[k]=s[k]);
-  } catch(err) {
-    // Ignore :3
-  }
-
-  window.data.ws = { log: false, logUnhandled: false, socket: undefined, d: undefined, session_id: undefined, resume_url: undefined };
-
-  window.data.users = {};
-  window.data.presences = {};
-  window.data.servers = [];
-  window.data.dms = [];
-
-  window.data.messageCache = {};
-  window.data.channelTyping = {};
-
-  window.data.currentServer = "0";
-  window.data.currentChannel = "0";
-  window.data.currentChannelType = 0;
-
-  loading('gateway');
-  let ws = new WebSocket('wss://gateway.discord.gg/?v=10&encoding=json');
-  let nws;
-  window.data.ws.socket = ws;
-  function wsheartbeat() {
-    window.data.ws.socket.send(`{"op":1,"d":${window.data.ws.d}}`);
-  }
-  window.data.ws.socket.onmessage = function(event) {
-    let wsd = JSON.parse(event.data);
-    if (window.data.ws.log) console.log(wsd);
-    let temp;
-    switch (wsd.op) {
-      case 0: // Just anything
-        window.data.ws.d = wsd.s;
-        switch (wsd.t) {
-          case 'READY':
-            // Resume
-            window.data.ws.resume_url = wsd.d.resume_gateway_url;
-            window.data.ws.session_id = wsd.d.session_id;
-            init(wsd.d);
-            break;
-          case 'READY_SUPPLEMENTAL':
-            // Resume
-            wsd.d.merged_presences.guilds.forEach(g=>{
-              g.forEach(m=>{
-                window.data.presences[m.user_id] = m;
-              })
-            });
-            wsd.d.merged_presences.friends.forEach(m=>{
-              window.data.presences[m.user_id] = m;
-            });
-            break;
-
-          case 'GUILD_CREATE':
-            proxyFetch(`https://discord.com/api/v10/guilds/${wsd.d.id}`)
-              .then(res=>res.json())
-              .then(res=>{
-                let con = JSON.parse(res.content);
-                window.data.servers.push(con);
-                window.data.settings.guild_folders.unshift({
-                  id: null,
-                  name: null,
-                  color: null,
-                  guild_ids: [con.id]
-                });
-                switchServers(window.data.servers);
-              })
-            break;
-          case 'GUILD_UPDATE':
-            temp = window.data.servers.findIndex(e=>e.id===wsd.d.id);
-            Object.keys(wsd.d).forEach(k=>window.data.servers[temp][k]=wsd.d[k]);
-            switchServers(window.data.servers);
-            break;
-          case 'GUILD_DELETE':
-            window.data.servers = window.data.servers.filter(e=>e.id!==wsd.d.id);
-            switchServers(window.data.servers);
-            break;
-          case 'GUILD_MEMBERS_CHUNK':
-            temp = window.data.servers[window.data.servers.findIndex(e=>e.id===wsd.d.guild_id)];
-            if (!temp.members?.length) temp.members = [];
-            temp.members.push(...wsd.d.members);
-            temp.members = Array.from(new Map(temp.members.map(obj => [obj.user.id, obj])).values());
-            if (window.data.currentServer===wsd.d.guild_id) {
-              showMembers(temp.members);
-            }
-            break;
-
-          case 'CHANNEL_UPDATE':
-            temp = window.data.servers[window.data.servers.findIndex(e=>e.id===wsd.d.guild_id)];
-            temp = temp.channels[temp.channels.findIndex(e=>e.id===wsd.d.id)];
-            Object.keys(wsd.d).forEach(k=>temp[k]=wsd.d[k]);
-            if (window.data.currentServer===wsd.d.guild_id) {
-              switchChannel(wsd.d.guild_id, false);
-              if (window.data.currentChannel===wsd.d.id) {
-                setTop(channelName(wsd.d), wsd.d.type);
-              }
-            }
-            break;
-
-          case 'MESSAGE_CREATE':
-            if (window.data.messageCache[wsd.d.channel_id]) {
-              // Add to cache
-              window.data.messageCache[wsd.d.channel_id].unshift(wsd.d);
-              // If current, show new
-              if (window.data.currentChannel===wsd.d.channel_id) {
-                if (channelType.text.includes(window.data.currentChannelType)) {
-                  showMessages(window.data.messageCache[wsd.d.channel_id]);
-                }
-              }
-            }
-            break;
-          case 'MESSAGE_UPDATE':
-            if (window.data.messageCache[wsd.d.channel_id]) {
-              let message = window.data.messageCache[wsd.d.channel_id].find(m=>m.id===wsd.d.id);
-              Object.keys(wsd.d).forEach(k=>message[k]=wsd.d[k]);
-              // If current, show new
-              if (window.data.currentChannel===wsd.d.channel_id) {
-                if (channelType.text.includes(window.data.currentChannelType)) {
-                  showMessages(window.data.messageCache[wsd.d.channel_id]);
-                }
-              }
-            }
-            break;
-          case 'MESSAGE_DELETE':
-            if (window.data.messageCache[wsd.d.channel_id]) {
-              let message = window.data.messageCache[wsd.d.channel_id].find(m=>m.id===wsd.d.id);
-              message.deleted = true;
-              // If current, show new
-              if (window.data.currentChannel===wsd.d.channel_id) {
-                if (channelType.text.includes(window.data.currentChannelType)) {
-                  showMessages(window.data.messageCache[wsd.d.channel_id]);
-                }
-              }
-            }
-            break;
-          case 'MESSAGE_REACTION_ADD':
-            if (window.data.messageCache[wsd.d.channel_id]) {
-              let message = window.data.messageCache[wsd.d.channel_id].find(m=>m.id===wsd.d.message_id);
-              let same = message.reactions.find(r=>r.emoji.id==wsd.d.emoji.id&&r.emoji.name===wsd.d.emoji.name);
-              if (same) {
-                // Count up
-                same.count += 1;
-                if (wsd.d.type===0) {
-                  same.count_details.normal += 1;
-                } else {
-                  same.count_details.burst += 1;
-                }
-                // If user set me :3
-                if (wsd.d.user_id===window.data.user.id) {
-                  same.me = true;
-                  same.me_burst = (wsd.d.type===1);
-                }
-              } else {
-                // New reaction
-                message.reactions.push({
-                  count: 1,
-                  count_details: {
-                    normal: wsd.d.type^1,
-                    burst: wsd.d.type
-                  },
-                  emoji: wsd.d.emoji,
-                  burst_colors: [],
-                  me: (wsd.d.user_id===window.data.user.id),
-                  me_burst: (wsd.d.type===1)&&(wsd.d.user_id===window.data.user.id)
-                })
-              }
-              // If current, show new
-              if (window.data.currentChannel===wsd.d.channel_id) {
-                if (channelType.text.includes(window.data.currentChannelType)) {
-                  showMessages(window.data.messageCache[wsd.d.channel_id]);
-                }
-              }
-            }
-            break;
-          case 'MESSAGE_REACTION_REMOVE':
-            if (window.data.messageCache[wsd.d.channel_id]) {
-              let message = window.data.messageCache[wsd.d.channel_id].find(m=>m.id===wsd.d.message_id);
-              let same = message.reactions.find(r=>r.emoji.id==wsd.d.emoji.id&&r.emoji.name===wsd.d.emoji.name);
-              if (same) {
-                // Count down
-                same.count -= 1;
-                if (wsd.d.type===0) {
-                  same.count_details.normal -= 1;
-                } else {
-                  same.count_details.burst -= 1;
-                }
-                if (wsd.d.user_id===window.data.user.id) {
-                  same.me = false;
-                  same.me_burst = false;
-                }
-                // If count 0 remove
-                if (same.count<1) {
-                  message.reactions = message.reactions.filter(r=>r.emoji.id!=wsd.d.emoji.id||r.emoji.name!==wsd.d.emoji.name);
-                }
-              }
-              // If current, show new
-              if (window.data.currentChannel===wsd.d.channel_id) {
-                if (channelType.text.includes(window.data.currentChannelType)) {
-                  showMessages(window.data.messageCache[wsd.d.channel_id]);
-                }
-              }
-            }
-            break;
-
-          case 'USER_SETTINGS_UPDATE':
-            Object.entries(wsd.d).forEach((k,v)=>{
-              window.data.settings[k] = v;
-            });
-            if (wsd.d.guild_folders) switchServers(window.data.servers);
-            break;
-          case 'USER_SETTINGS_PROTO_UPDATE':
-            // For future
-            break;
-
-          case 'PRESENCE_UPDATE':
-            window.data.presences[wsd.d.user.id] = wsd.d
-            break;
-
-          default:
-            if (window.data.ws.logUnhandled) console.log(wsd);
-            break;
-        }
-        break;
-      case 1: // Heartbeat
-        wsheartbeat();
-        break;
-      case 7: // About to disconect
-        window.data.ws.socket.onclose = function() {
-          nws = new WebSocket(window.data.ws.resume_url);
-          nws.onmessage = window.data.ws.socket.onmessage;
-          window.data.ws.socket = nws;
-        }
-        break;
-      case 9: // Invalid session
-        window.data.ws.resume_url = undefined;
-        window.data.ws.session_id = undefined;
-        nws = new WebSocket('wss://gateway.discord.gg/?v=10&encoding=json');
-        nws.onmessage = window.data.ws.socket.onmessage;
-        window.data.ws.socket = nws;
-        break;
-      case 10: // Hewwo
-        window.data.ws.heartbeat_interval = wsd.d.heartbeat_interval;
-        // Have we been here before?
-        if (window.data.ws.session_id) {
-          // Resume
-          window.data.ws.socket.send(JSON.stringify({
-            op: 6,
-            d: {
-              token: localStorage.getItem('token'),
-              session_id: window.data.ws.session_id,
-              seq: window.data.ws.d
-            }
-          }));
-        } else {
-          // Auth
-          window.data.ws.d = wsd.s;
-          wsheartbeat();
-          window.data.ws.socket.send(JSON.stringify({
-            op: 2,
-            d: {
-              token: localStorage.getItem('token'),
-              properties: {
-                os: "windows",
-                browser: "chrome"
-              },
-              compress: false,
-              capabilities: (1<<0)+(1<<4)+(1<<5)+(1<<10)+(1<<13) // Lazy notes, dedupe user objects, prioritizied ready payload, client state v2, debounce message reactions
-              // ^ Consideration: 1 << 9  USER_SETTINGS_PROTO
-            }
-          }));
-        }
-        break;
-      case 11: // Heartbeat ACK
-        // Wait and heartbeat
-        setTimeout(wsheartbeat, window.data.ws.heartbeat_interval);
-        break;
-      default:
-        report('Unknown gateway op: '+wsd.op, wsd)
-    }
-  }
-
-  async function init(d) {
-    // User
-    window.data.user = d.user;
-    document.querySelector('#account img').src = getUserAvatar(d.user.id, d.user.avatar, 80);
-    window.data.settings = d.user_settings; // TODO: Switch to new settings system
-
-    // User relationships
-    window.data.relationships = {};
-    d.relationships.forEach(r=>{
-      window.data.relationships[r.id??r.user_id] = {
-        nick: r.nickname,
-
-        friend: (r.type===1),
-        ignored: r.user_ignored,
-        blocked: (r.type===2),
-        implicit: (r.type===5),
-        suggestion: (r.type===6), // Deprecated
-
-        in_req: (r.type===3),
-        out_req: (r.type===4),
-        spam_req: r.is_spam_request??false,
-        stranger_req: r.stranger_request??false,
-
-        since: r.since??null
-      };
-    });
-
-    // Users
-    d.users.forEach(u=>window.data.users[u.id]=u);
-    window.data.users[d.user.id] = d.user;
-    window.data.users['0'] = SystemAuthor;
-    window.data.users['1'] = UnknownAuthor;
-
-    // DMs
-    window.data.dms = d.private_channels;
-    window.data.dms.sort((a,b)=>b.last_message_id-a.last_message_id);
-
-    // Servers
-    window.data.servers = d.guilds;
-    await fetchIcon('folder');
-    switchServers(d.guilds);
-
-    // Channels
-    window.data.channelRead = d.read_state;
-
-    loading('icons')
-    await Promise.allSettled([
-      fetchIcon(0),
-      fetchIcon(1),
-      fetchIcon(2),
-      fetchIcon(3),
-      fetchIcon(5),
-      fetchIcon(13),
-      fetchIcon(15),
-      fetchIcon(16),
-      fetchIcon('rules'),
-      fetchIcon('nsfw')
-    ]);
-
-    loading('DMs');
-    switchChannel(0);
-  }
 }
