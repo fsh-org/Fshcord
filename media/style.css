@@ -453,6 +453,7 @@ lottie-sticker.message-attach {
 .reactions button img {
   width: 16px;
   height: 16px;
+  margin: 0px;
 }
 .reactions button:hover {
   color: var(--text-0);

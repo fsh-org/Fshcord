@@ -38,7 +38,7 @@ loading('gateway');
 function wsstart(url) {
   let ws = new WebSocket(url);
   window.data.ws.socket = ws;
-  ws.onmessage = (evt)=>{wsmessage(evt.data)};
+  ws.onmessage = (evt)=>{wsmessage(JSON.parse(evt.data))};
   ws.onclose = ()=>{
     ws.onmessage = ()=>{};
     ws.onclose = ()=>{};
