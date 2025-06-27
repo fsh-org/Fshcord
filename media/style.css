@@ -379,6 +379,16 @@ main {
   color: var(--text-2);
   font-size: 60%;
 }
+.message .inner .user, .message .inner .role, .message .inner .channel {
+  cursor: pointer;
+  padding: 0px 2px;
+  margin: 0px;
+  border-radius: 0.25rem;
+  background-color: color-mix(in srgb, var(--blue-1) 50%, transparent);
+}
+.message .inner .role {
+  cursor: auto;
+}
 .message.mention::before, .message.ephemeral::before {
   display: block;
   content: "";

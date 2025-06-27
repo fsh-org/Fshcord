@@ -234,6 +234,7 @@ Message types
 60: REPORT_TO_MOD_KICK_USER
 61: REPORT_TO_MOD_BAN_USER
 62: REPORT_TO_MOD_CLOSED_REPORT
+63: EMOJI_ADDED
 */
 function renderEmbed(embed) {
       /*
@@ -540,7 +541,7 @@ function showMessages(list) {
       if ((new Date(m.timestamp).getTime()-new Date(a[i+1].timestamp).getTime())>(8*60*1000)) auth.hide = false;
     }
     if ([19,20].includes(m.type)) auth.hide = false;
-    return renderMessage(m.content, auth, m)
+    return renderMessage(m.content, auth, m);
   }).join('');
   // Lottie stickers
   Array.from(document.querySelectorAll('lottie-sticker.message-attach'))
@@ -612,10 +613,14 @@ function showMembers(members) {
     return;
   }
   document.getElementById('users').style.display = '';
-  let roles = window.data.servers
-    .find(server=>server.id===window.data.currentServer).roles
+  let serverroles = window.data.servers
+    .find(server=>server.id===window.data.currentServer).roles;
+  let roles = serverroles
     .filter(role=>role.hoist)
     .toSorted((a,b)=>b.position-a.position);
+  let online = serverroles.find(r=>r.position===0);
+  online.name = 'Online';
+  roles.push(online);
   let sections = {};
   roles.forEach(role=>sections[role.id]=[]);
   members.forEach(mem=>{
@@ -625,11 +630,12 @@ function showMembers(members) {
         return;
       }
     }
+    sections[online.id].push(mem);
   });
   document.getElementById('users').innerHTML = Object.keys(sections).map(sec=>{
     let cat = roles.find(rol=>rol.id===sec);
     if (sections[sec].length<1) return '';
-    return `<details open><summary style="--rc:${colorToRGB(cat.color)}">${cat.name} — ${sections[sec].length}</summary>` + sections[sec].toSorted((a,b)=>getUserDisplay(a).localeCompare(getUserDisplay(b), undefined, { sensitivity: 'accent' })).map(mem=>`<button class="user" onclick="showMinifiedProfile(this, '${mem.user.id}')">
+    return `<details open><summary style="--rc:${colorToRGB(cat.color===0?10070709:cat.color)}">${cat.name} — ${sections[sec].length}</summary>` + sections[sec].toSorted((a,b)=>getUserDisplay(a).localeCompare(getUserDisplay(b), undefined, { sensitivity: 'accent' })).map(mem=>`<button class="user" onclick="showMinifiedProfile(this, '${mem.user.id}')">
   ${window.data.extra_settings.nameplates&&mem.user.collectibles?.nameplate?`<video class="nameplate" src="https://cdn.discordapp.com/assets/collectibles/${mem.user.collectibles.nameplate.asset}asset.webm" muted loop aria-hidden="true"></video>`:''}
   <div class="avatar" aria-hidden="true" style="height:40px">
     <img src="${getUserAvatar(mem.user.id, mem.user.avatar)}" width="40" height="40" loading="lazy" aria-hidden="true">

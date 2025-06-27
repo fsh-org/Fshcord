@@ -286,6 +286,14 @@ function parseMD(text, extended=2) {
       .replaceAll(/^(-|\*) .+?$/gm, function(match){return '<li>'+match.slice(2)+'</li>'})
       .replaceAll(/(?:^\d+\. .*(?:\r?\n(?=\d+\. ))?)+/gm, function(match){return '<ol>'+match.replaceAll(/^(.+?)$\n?/gm, function(mat){return`<li>${mat.replace(/^\d+. /m,'')}</li>`})+'</ol>'})
       .replaceAll(/<\/li>\s+?<li>/g,'</li><li>');
+    // Discord
+    text = text
+      //.replaceAll(/(?:&lt;)@\!?[0-9]+?>/gm, function(match){return '<span class="user">@'+getUserDisplay(data.users[match.replaceAll(/^(?:&lt;)@|>$/gm,'')])+'</span>'})
+      .replaceAll(/(?:&lt;)@(?:&amp;)[0-9]+?>/gm, function(match){return '<span class="role">@'+window.data.servers.find(s=>s.id===window.data.currentServer).roles.find(r=>r.id===match.replaceAll(/^(?:&lt;)@(?:&amp;)|>$/gm,'')).name+'</span>'})
+      .replaceAll(/(?:&lt;)#[0-9]+?>/gm, function(match){
+        let channel = window.data.servers.find(s=>s.id===window.data.currentServer).channels.find(c=>c.id===match.replaceAll(/^(?:&lt;)#|>$/gm,''));
+        return `<span class="channel" onclick="loading('${channel.name}');setTop('${channel.name}',${channel.type});switchMessage('${channel.id}',${channel.type})">#${channel.name}</span>`;
+      });
   }
   if (extended>1) {
     text = text
@@ -390,7 +398,9 @@ function getUserColor(server, mem) {
     if (UserColorCache[server][id]) {
       return UserColorCache[server][id];
     } else {
-      let c = colorToRGB(UserColorCache[server]._roles.filter(rol=>mem.roles.includes(rol.id))[0].color);
+      let c = UserColorCache[server]._roles.filter(rol=>mem.roles.includes(rol.id));
+      if (!c[0]) c = [{ color: 10070709 }];
+      c = colorToRGB(c[0].color);
       UserColorCache[server][id] = c;
       return c;
     }
