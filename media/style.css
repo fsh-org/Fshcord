@@ -381,10 +381,11 @@ main {
 }
 .message .inner .user, .message .inner .role, .message .inner .channel {
   cursor: pointer;
+  color: var(--mcol);
   padding: 0px 2px;
   margin: 0px;
   border-radius: 0.25rem;
-  background-color: color-mix(in srgb, var(--blue-1) 50%, transparent);
+  background-color: color-mix(in srgb, var(--mcol, var(--blue-1)) 33%, transparent);
 }
 .message .inner .role {
   cursor: auto;

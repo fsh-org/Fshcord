@@ -289,9 +289,14 @@ function parseMD(text, extended=2) {
     // Discord
     text = text
       //.replaceAll(/(?:&lt;)@\!?[0-9]+?>/gm, function(match){return '<span class="user">@'+getUserDisplay(data.users[match.replaceAll(/^(?:&lt;)@|>$/gm,'')])+'</span>'})
-      .replaceAll(/(?:&lt;)@(?:&amp;)[0-9]+?>/gm, function(match){return '<span class="role">@'+window.data.servers.find(s=>s.id===window.data.currentServer).roles.find(r=>r.id===match.replaceAll(/^(?:&lt;)@(?:&amp;)|>$/gm,'')).name+'</span>'})
+      .replaceAll(/(?:&lt;)@(?:&amp;)[0-9]+?>/gm, function(match){
+        let role = window.data.servers.find(s=>s.id===window.data.currentServer).roles.find(r=>r.id===match.replaceAll(/^(?:&lt;)@(?:&amp;)|>$/gm,''));
+        if (!role) return `<span class="role">@Unknown Role</span>`;
+        return `<span class="role" style="--mcol:${colorToRGB(role.color===0?10070709:role.color)}">@${role.name}</span>`;
+      })
       .replaceAll(/(?:&lt;)#[0-9]+?>/gm, function(match){
         let channel = window.data.servers.find(s=>s.id===window.data.currentServer).channels.find(c=>c.id===match.replaceAll(/^(?:&lt;)#|>$/gm,''));
+        if (!channel) return `<span class="channel">#Unknown Channel</span>`;
         return `<span class="channel" onclick="loading('${channel.name}');setTop('${channel.name}',${channel.type});switchMessage('${channel.id}',${channel.type})">#${channel.name}</span>`;
       });
   }
