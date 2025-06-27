@@ -583,6 +583,37 @@ lottie-sticker.message-attach {
   max-width: 100%;
   max-height: unset;
 }
+.server-invite {
+  width: fit-content;
+  border-radius: 0.5rem;
+  background-color: var(--bg-2);
+  overflow: hidden;
+}
+.server-invite > .banner {
+  width: 100%;
+  height: 100px;
+  object-fit: cover;
+}
+.server-invite > div {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 10px;
+}
+.server-invite > div > img {
+  border-radius: 1rem;
+}
+.server-invite > div > span {
+  display: flex;
+  flex-direction: column;
+}
+.server-invite > button {
+  width: calc(100% - 20px);
+  margin: 0px 10px 10px;
+  border: none;
+  font-size: 100%;
+  background: color-mix(in oklab, var(--green-2) 75%, var(--bg-0) 25%);
+}
 .component.c1 {
   display: flex;
   gap: 5px;

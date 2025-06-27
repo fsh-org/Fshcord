@@ -303,6 +303,33 @@ video -
   ${embed.image&&embed.type!=='video'?`<img src="${embed.image.proxy_url}" class="message-attach big" style="max-width:100%;margin-top:${embed.thumbnail?(c>2?'0':(c>1?'15':'40')):'0'}px">`:''}
   ${embed?.footer?.text||embed.timestamp?`<span class="footer">${embed?.footer?.text?`<span class="text">${embed.footer.proxy_icon_url?`<img src="${embed.footer.proxy_icon_url}">`:''}${embed.footer.text}</span>`:''}${embed?.footer?.text&&embed.timestamp?'<span class="dot"></span>':''}${embed.timestamp?`<span>${formatDate(embed.timestamp)}</span>`:''}</span>`:''}
 </div>`;
+    // Custom Internal
+    case 'invite':
+      let id = Math.floor(Math.random()*0xFFFFFFFF).toString(16);
+      getInvite(embed.link)
+        .then(res=>{
+          if (res.code===10006) {
+            document.getElementById('si-'+id).innerHTML = `Unknown invite ${embed.link}`;
+            return;
+          }
+          if (res.type!==0) {
+            report(`Unhandeled invite type ${res.type}`, res);
+            document.getElementById('si-'+id).innerHTML = `Unhandeled invite type ${res.type}`;
+            return;
+          }
+          document.getElementById('si-'+id).innerHTML = `<img class="banner" src="${res.guild.splash?`https://cdn.discordapp.com/splashes/${res.guild.id}/${res.guild.splash}.jpg?size=480`:(res.guild.splash?`https://cdn.discordapp.com/banners/${res.guild.id}/${res.guild.banner}.jpg?size=480`:'')}">
+<div>
+  <img src="https://cdn.discordapp.com/icons/${res.guild.id}/${res.guild.icon}.png?size=64">
+  <span>
+    <span>${res.guild.name}</span>
+    <span>${res.profile.online_count} online &nbsp; ${res.profile.member_count} members</span>
+  </span>
+</div>
+<button disabled>Join</button>`;
+        })
+      return `<div class="server-invite" id="si-${id}">
+  Loading invite "${embed.link}"
+</div>`;
     default:
       report(`Unknown embed type: ${embed.type}`, embed);
       return `<span>Unknown embed type: ${embed.type}</span>`;
@@ -498,6 +525,18 @@ function renderMessage(content, author, m) {
 }
 function showMessages(list) {
   document.getElementById('messages').innerHTML = list.map((m,i,a)=>{
+    if ((/(^|\s|https?:\/\/|localhost:)discord.gg\/[a-zA-Z0-9]+/m).test(m.content)) {
+      if (!m.embeds.filter(em=>em.type==='invite')[0]) {
+        Array.from(m.content.matchAll(/(^|\s|https?:\/\/|localhost:)discord.gg\/[a-zA-Z0-9]+/gm))
+          .map(invite=>invite[0].split('//').slice(-1)[0].split('/')[1])
+          .forEach(invite=>{
+            m.embeds.push({
+              type: 'invite',
+              link: invite
+            });
+          });
+      }
+    }
     // System
     if (systemMessages[m.type.toString()]) {
       let text = systemMessages[m.type.toString()]

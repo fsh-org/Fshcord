@@ -428,6 +428,15 @@ function getMessageFlags(bitfield) {
   }
   return flags;
 }
+let InviteCache = {};
+async function getInvite(code) {
+  if (InviteCache[code]) return InviteCache[code];
+  let fetc = await proxyFetch(`https://discord.com/api/v10/invites/${code}`);
+  fetc = await fetc.json();
+  fetc = JSON.parse(fetc.content);
+  InviteCache[code] = fetc;
+  return fetc;
+}
 
 // Attachments
 function getAttachmentFlags(bitfield) {
