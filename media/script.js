@@ -164,8 +164,9 @@ MessageField.onkeyup = MessageField.onkeydown = function(evt){
     proxyFetch(`https://discord.com/api/v10/channels/${window.data.currentChannel}/typing`, { method: 'POST' })
   }
 };
-MessageField.oninput = function(evt){
-  evt.target.setAttribute('rows', Math.min(Math.max(evt.target.value.split('\n').length, 1), 15));
+MessageField.oninput = function(evt) {
+  evt.target.style.height = 'auto';
+  evt.target.style.height = Math.min(evt.target.scrollHeight-16, 17 * 8) + 'px';
 };
 document.getElementById('message-send').onclick = sendMessage;
 
