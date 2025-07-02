@@ -829,7 +829,7 @@ function showUserChannel(id) {
       break;
     case 'fshcord':
       window.saveExtra = function(){
-        localStorage.setItem('extra', JSON.stringify(window.extra_settings));
+        localStorage.setItem('extra', JSON.stringify(window.data.extra_settings));
       };
       m.innerHTML = `<p>Some extra settings not available in normal discord.</p>
 <hr style="width:100%;box-sizing:border-box;">

@@ -6,6 +6,9 @@ body {
   height: 100dvh;
   overflow: hidden;
 }
+svg {
+  flex-shrink: 0;
+}
 
 #contextmenu {
   flex-direction: column;
@@ -292,7 +295,7 @@ main {
   display: flex;
   gap: 5px;
   align-items: center;
-  font-size: 125%;
+  font-size: 110%;
 }
 #messages {
   display: flex;
