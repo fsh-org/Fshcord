@@ -34,6 +34,14 @@ window.data.currentServer = "0";
 window.data.currentChannel = "0";
 window.data.currentChannelType = 0;
 
+window.data.serverLastChannel = {};
+try {
+  let s = JSON.parse(localStorage.getItem('slc'));
+  Object.keys(s).forEach(k=>window.data.serverLastChannel[k]=s[k]);
+} catch(err) {
+  // Ignore :3
+}
+
 // Menus
 function showContextMenu(event, type, data) {
   event.preventDefault();
@@ -610,8 +618,11 @@ function switchMessage(id, type) {
     return;
   }
   // Set current
-  this.data.currentChannel = id;
-  this.data.currentChannelType = type;
+  window.data.currentChannel = id;
+  window.data.currentChannelType = type;
+  // Set last
+  window.data.serverLastChannel[window.data.currentServer] = id;
+  localStorage.setItem('slc',JSON.stringify(window.data.serverLastChannel));
   // Text
   if (channelType.text.includes(type)) {
     document.querySelector('main .input-bar').style.display = '';
@@ -828,13 +839,19 @@ function showUserChannel(id) {
       break;
   }
 }
-function switchChannel(id, loadfirst=true) {
+function switchChannel(id, changechannel=true) {
   if (id == 0) {
     // Show dms
     showChannels(window.data.dms);
-    if (loadfirst) {
-      // Select first
-      let first = window.data.dms[0];
+    if (changechannel) {
+      let first = window.data.dms[0]; // First channel
+      // Saved poss?
+      if (window.data.serverLastChannel[id]) {
+        let sav = window.data.dms.find(dm=>dm.id===window.data.serverLastChannel[id]);
+        if (sav) {
+          first = sav;
+        }
+      }
       loading(channelName(first));
       setTop(channelName(first), first.type);
       switchMessage(first.id, first.type);
@@ -870,9 +887,16 @@ function switchChannel(id, loadfirst=true) {
       sorted.push(...cat[k]);
     });
     showChannels(sorted, id);
-    if (loadfirst) {
-      // Load first
-      let first = sorted.filter(c=>c.type!==4)[0];
+    let filtered = sorted.filter(c=>c.type!==4);
+    if (changechannel) {
+      let first = filtered[0]; // First channel
+      // Saved poss?
+      if (window.data.serverLastChannel[id]) {
+        let sav = filtered.find(ch=>ch.id===window.data.serverLastChannel[id]);
+        if (sav) {
+          first = sav;
+        }
+      }
       loading(channelName(first));
       setTop(channelName(first), first.type);
       switchMessage(first.id, first.type);
