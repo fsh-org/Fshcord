@@ -24,6 +24,9 @@ window.data.presences = {};
 window.data.servers = [];
 window.data.dms = [];
 
+window.data.users['0'] = SystemAuthor;
+window.data.users['1'] = UnknownAuthor;
+
 window.data.messageCache = {};
 window.data.channelTyping = {};
 

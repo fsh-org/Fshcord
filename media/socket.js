@@ -296,10 +296,10 @@ async function init(d) {
   });
 
   // Users
-  d.users.forEach(u=>window.data.users[u.id]=u);
+  d.users.forEach(u=>{
+    if (!window.data.users[u.id]) window.data.users[u.id] = u;
+  });
   window.data.users[d.user.id] = d.user;
-  window.data.users['0'] = SystemAuthor;
-  window.data.users['1'] = UnknownAuthor;
 
   // DMs
   window.data.dms = d.private_channels;
@@ -313,20 +313,25 @@ async function init(d) {
   // Channels
   window.data.channelRead = d.read_state;
 
-  loading('icons')
-  await Promise.allSettled([
-    fetchIcon(0),
-    fetchIcon(1),
-    fetchIcon(2),
-    fetchIcon(3),
-    fetchIcon(5),
-    fetchIcon(13),
-    fetchIcon(15),
-    fetchIcon(16),
-    fetchIcon('rules'),
-    fetchIcon('nsfw')
-  ]);
+  // Icons
+  if (getIcon(0)==='<img>') {
+    loading('icons')
+    await Promise.allSettled([
+      fetchIcon(0),
+      fetchIcon(1),
+      fetchIcon(2),
+      fetchIcon(3),
+      fetchIcon(5),
+      fetchIcon(13),
+      fetchIcon(15),
+      fetchIcon(16),
+      fetchIcon('rules'),
+      fetchIcon('nsfw')
+    ]);
+  }
 
-  loading('DMs');
-  switchChannel(0);
+  if (window.data.currentChannel==="0") {
+    loading('DMs');
+    switchChannel(0);
+  }
 }
