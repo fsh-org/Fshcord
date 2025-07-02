@@ -318,7 +318,7 @@ video -
             document.getElementById('si-'+id).innerHTML = `Unhandeled invite type ${res.type}`;
             return;
           }
-          document.getElementById('si-'+id).innerHTML = `<img class="banner" src="${res.guild.splash?`https://cdn.discordapp.com/splashes/${res.guild.id}/${res.guild.splash}.jpg?size=480`:(res.guild.splash?`https://cdn.discordapp.com/banners/${res.guild.id}/${res.guild.banner}.jpg?size=480`:'')}">
+          document.getElementById('si-'+id).innerHTML = `<img class="banner" src="${res.guild.splash?`https://cdn.discordapp.com/splashes/${res.guild.id}/${res.guild.splash}.jpg?size=480`:(res.guild.splash?`https://cdn.discordapp.com/banners/${res.guild.id}/${res.guild.banner}.jpg?size=480`:'')}" onerror="this.remove()">
 <div>
   <img src="https://cdn.discordapp.com/icons/${res.guild.id}/${res.guild.icon}.png?size=64">
   <span>
