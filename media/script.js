@@ -179,10 +179,18 @@ MessageField.onkeyup = MessageField.onkeydown = function(evt){
   // Slash
   if ((/^\//m).test(MessageField.value)) {
     let query = MessageField.value.slice(1);
-    document.getElementById("slash-bar").innerHTML = window.data.slash[window.data.currentServer].application_commands
+    let apps = window.data.slash['866689038731313193'].applications.toSorted((a,b)=>a.name.localeCompare(b.name));
+    let sections = {};
+    Object.values(apps).map(app=>sections[app.id]=[]);
+    window.data.slash[window.data.currentServer].application_commands
       .filter(cmd=>cmd.name.includes(query))
-      .map(cmd=>`<button>/${cmd.name}</button>`)
-      .join('');
+      .forEach(cmd=>sections[cmd.application_id].push(cmd));
+    document.getElementById("slash-bar").innerHTML = `<div class="profiles">
+  ${Object.keys(sections).filter(sec=>sections[sec].length>0).map(sec=>apps.find(app=>app.id===sec)).map(sec=>`<button><img src="https://cdn.discordapp.com/avatars/${sec.id}/${sec.icon}.webp?size=32" alt="${sec.name}" width="32" height="32"></button>`).join('')}
+</div>
+<div class="cmds">
+  ${Object.keys(sections).filter(sec=>sections[sec].length>0).map(sec=>`<span>${apps.find(app=>app.id===sec).name}</span>${sections[sec].map(cmd=>`<button><span>/${cmd.name}</span><span style="color:var(--text-2)">${cmd.description}</span></button>`).join('')}`).join('')}
+</div>`;
   } else {
     document.getElementById("slash-bar").innerText = '';
   }

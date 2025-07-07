@@ -759,8 +759,47 @@ blockquote::before {
 }
 
 #slash-bar {
+  display: flex;
   max-height: 30dvh;
-  overflow-y: auto;
+  border-radius: 0.5rem;
+  background-color: var(--bg-2);
+}
+#slash-bar > div {
+  display: flex;
+  gap: 5px;
+  flex-direction: column;
+  padding: 5px;
+  overflow: hidden auto;
+}
+#slash-bar .profiles {
+  background-color: var(--bg-0);
+  border-radius: 0px 0.5rem 0.5rem 0px;
+}
+#slash-bar .profiles button {
+  width: 32px;
+  height: 32px;
+  padding: 0px;
+  border: none;
+}
+#slash-bar .profiles img {
+  width: 32px;
+  height: 32px;
+  border-radius: 0.5rem;
+}
+#slash-bar .cmds {
+  flex: 1;
+}
+#slash-bar .cmds button {
+  display: flex;
+  flex-direction: column;
+  margin: 0px;
+  padding: 2px;
+  border: none;
+  text-align: left;
+}
+#slash-bar .cmds button:hover {
+  color: var(--text-1);
+  background-color: var(--bg-1);
 }
 
 .input-bar {
