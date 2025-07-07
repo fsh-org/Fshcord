@@ -256,13 +256,12 @@ function parseMD(text, extended=2) {
       if (match.match(/^~lt;.+?>$/m)) match=match.slice(4,-1);
       return reservemd(`<a href="${match}" target="_blank">${match}</a>`);
     })
+    .replaceAll('\\&', '&')
     .replaceAll('&', '&amp;')
     .replaceAll('~lt;', '&lt;')
     .replaceAll('~quot;', '&quot;')
     .replaceAll("'", '&apos;')
-    .replaceAll('\\*', '&ast;')
-    .replaceAll('\\_', '&lowbar;')
-    .replaceAll('\\~', '&tilde;')
+    .replaceAll(/\\([^&])/g, function(_, char){return `&#${char.charCodeAt(0)};`})
     .replaceAll(/\`([^¬]|¬)+?\`/g, function(match){return reservemd('<code>'+match.slice(1,-1)+'</code>')});
   // Discord
   text = text
@@ -333,7 +332,7 @@ setInterval(function(){
     .forEach(relative => {
       relative.innerText = formatDate(Number(relative.getAttribute('data-time')), 'R');
     })
-}, 1000)
+}, 1000);
 
 // Icons
 const iconCache = {};

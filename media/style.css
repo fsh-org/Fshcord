@@ -1,8 +1,6 @@
 body {
   display: flex;
-  width: 100vw;
   width: 100dvw;
-  height: 100vh;
   height: 100dvh;
   overflow: hidden;
 }
@@ -758,6 +756,11 @@ blockquote::before {
 }
 .message.deleted:hover .message-attach {
   filter: grayscale(0);
+}
+
+#slash-bar {
+  max-height: 30dvh;
+  overflow-y: auto;
 }
 
 .input-bar {

@@ -23,6 +23,7 @@ window.data.users = {};
 window.data.presences = {};
 window.data.servers = [];
 window.data.dms = [];
+window.data.slash = {};
 
 window.data.users['0'] = SystemAuthor;
 window.data.users['1'] = UnknownAuthor;
@@ -169,10 +170,21 @@ MessageField.onkeyup = MessageField.onkeydown = function(evt){
     sendMessage();
     return;
   }
+  // Typing indicator
   let last = window.data.channelTyping[window.data.currentChannel] ?? 0;
   if (Date.now() > last+(10 * 1000)) {
     window.data.channelTyping[window.data.currentChannel] = Date.now();
     proxyFetch(`https://discord.com/api/v10/channels/${window.data.currentChannel}/typing`, { method: 'POST' })
+  }
+  // Slash
+  if ((/^\//m).test(MessageField.value)) {
+    let query = MessageField.value.slice(1);
+    document.getElementById("slash-bar").innerHTML = window.data.slash[window.data.currentServer].application_commands
+      .filter(cmd=>cmd.name.includes(query))
+      .map(cmd=>`<button>/${cmd.name}</button>`)
+      .join('');
+  } else {
+    document.getElementById("slash-bar").innerText = '';
   }
 };
 MessageField.oninput = function(evt) {
@@ -900,6 +912,13 @@ function switchChannel(id, changechannel=true) {
       loading(channelName(first));
       setTop(channelName(first), first.type);
       switchMessage(first.id, first.type);
+    }
+    if (!window.data.slash[id]) {
+      proxyFetch(`https://discord.com/api/v10/guilds/${id}/application-command-index`)
+        .then(res=>res.json())
+        .then(res=>{
+          window.data.slash[id] = JSON.parse(res.content);
+        });
     }
   }
 }

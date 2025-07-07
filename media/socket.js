@@ -31,11 +31,12 @@
 39 REQUEST_CHANNEL_MEMBER_COUNT
 */
 
-window.data.ws = { log: false, logUnhandled: false, socket: undefined, d: undefined, session_id: undefined, resume_url: undefined };
+window.data.ws = { default: 'wss://gateway.discord.gg/?v=10&encoding=json', log: false, logUnhandled: false, socket: undefined, d: undefined, session_id: undefined, resume_url: undefined };
 
 loading('gateway');
 
 function wsstart(url) {
+  if (!url) urk = window.data.ws.default;
   let ws = new WebSocket(url);
   window.data.ws.socket = ws;
   ws.onmessage = (evt)=>{wsmessage(JSON.parse(evt.data))};
@@ -223,7 +224,7 @@ function wsmessage(wsd) {
     case 9: // Invalid session
       window.data.ws.resume_url = undefined;
       window.data.ws.session_id = undefined;
-      wsstart('wss://gateway.discord.gg/?v=10&encoding=json');
+      wsstart(window.data.ws.default);
       break;
     case 10: // Hewwo
       window.data.ws.heartbeat_interval = wsd.d.heartbeat_interval;
@@ -266,7 +267,7 @@ function wsmessage(wsd) {
   }
 }
 
-wsstart('wss://gateway.discord.gg/?v=10&encoding=json');
+wsstart(window.data.ws.default);
 
 async function init(d) {
   // User
