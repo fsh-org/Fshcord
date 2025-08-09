@@ -287,7 +287,11 @@ function parseMD(text, extended=2) {
       .replaceAll(/<\/li>\s+?<li>/g,'</li><li>');
     // Discord
     text = text
-      //.replaceAll(/(?:&lt;)@\!?[0-9]+?>/gm, function(match){return '<span class="user">@'+getUserDisplay(data.users[match.replaceAll(/^(?:&lt;)@|>$/gm,'')])+'</span>'})
+      .replaceAll(/(?:&lt;)@(?:\!?)[0-9]+?>/gm, function(match){
+        match = match.replaceAll(/^(?:&lt;)@|>$/gm,'');
+        if (!data.users[match]) return `<span class="user" onclick="showMinifiedProfile(this, '${match}')">@${match}</span>`;
+        return `<span class="user" onclick="showMinifiedProfile(this, '${match}')">@${getUserDisplay(data.users[match])}</span>`;
+      })
       .replaceAll(/(?:&lt;)@(?:&amp;)[0-9]+?>/gm, function(match){
         let role = window.data.servers.find(s=>s.id===window.data.currentServer).roles.find(r=>r.id===match.replaceAll(/^(?:&lt;)@(?:&amp;)|>$/gm,''));
         if (!role) return reservemd(`<span class="role">@Unknown Role</span>`);
@@ -364,7 +368,7 @@ function getUser(id) {
   return window.data.users[id];
 }
 function getUserDisplay(obj) {
-  return obj.nick??obj.global_name??obj.display_name??obj.username??obj.user.global_name??obj.user.display_name??obj.user.username;
+  return obj.nick??obj.global_name??obj.display_name??obj.username??obj.user?.global_name??obj.user?.display_name??obj.user?.username;
 }
 function getUserAvatar(id, hash, size = 64) {
   if (!hash) {

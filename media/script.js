@@ -105,14 +105,23 @@ async function showMinifiedProfile(element, user) {
   }, 0);
 
   // Modal content
-  if (!getUser(user)?.full) {
+  if (!getUser(user) || !getUser(user)?.full) {
     let usr = await proxyFetch(`https://discord.com/api/v10/users/${user}/profile?type=popout&with_mutual_guilds=true&with_mutual_friends=true&with_mutual_friends_count=false${window.data.currentServer!=="0"?`&guild_id=${window.data.currentServer}`:''}`);
     usr = await usr.json();
     if (JSON.parse(usr.content).code !== 10013) {
       window.data.users[user] = JSON.parse(usr.content);
       window.data.users[user].full = true;
     } else {
-      if (!window.data.users[user]) user = '1';
+      if (!window.data.users[user]) {
+        usr = await proxyFetch(`https://discord.com/api/v9/users/${user}`);
+        usr = await usr.json();
+        if ([10013, 40001].includes(JSON.parse(usr.content).code)) {
+          user = '1';
+        } else {
+          window.data.users[user] = JSON.parse(usr.content);
+          window.data.users[user].full = false;
+        }
+      }
     }
   }
   user = window.data.users[user];
@@ -125,11 +134,11 @@ async function showMinifiedProfile(element, user) {
       ${(user.badges??[]).map(b=>`<a${b.link?` href="${b.link}"`:''} target="_blank" title="${b.description}" aria-hidden="true"><img src="https://cdn.discordapp.com/badge-icons/${b.icon}.png" width="25" height="25" alt="${b.description}" aria-hidden="true"></a>`).join('')}
     </div>
   </div>
-  ${getUserBanner((user.user??user).id, user?.user?.banner, user?.user?.banner_color??colorToRGB(user?.user?.accent_color??0))}
+  ${getUserBanner((user.user??user).id, user?.user?.banner, user?.user?.banner_color??colorToRGB(user?.user?.accent_color??5595886))}
 </div>
 <div class="name">
   <b>${getUserDisplay(user.user??user)}</b>
-  <span>${(user.user??user).username}${user?.user?.discriminator?.length>1?'#'+user.user.discriminator:''}${user?.user_profile?.pronouns?` · ${user.user_profile.pronouns}`:''}</span>
+  <span style="display:block">${(user.user??user).username}${user?.user?.discriminator?.length>1?'#'+user.user.discriminator:''}${user?.user_profile?.pronouns?` · ${user.user_profile.pronouns}`:''}</span>
 </div>
 <span class="bio">${user?.user?.bio?parseMD(user.user.bio.trim(), 1):''}</span>`;
   menubound = menu.getBoundingClientRect();
@@ -384,6 +393,7 @@ video -
 14 Separator -
 16 Content Inventory Entry
 17 Container -partial spoiler
+18 Label (label, description)
 */
 /*
 {

@@ -29,6 +29,8 @@
 37 GUILD_SUBSCRIPTIONS_BULK
 38 GUILD_CHANNELS_RESYNC
 39 REQUEST_CHANNEL_MEMBER_COUNT
+40 QOS_HEARTBEAT
+41 UPDATE_TIME_SPENT_SESSION_ID
 */
 
 window.data.ws = { default: 'wss://gateway.discord.gg/?v=10&encoding=json', log: false, logUnhandled: false, socket: undefined, d: undefined, session_id: undefined, resume_url: undefined };
