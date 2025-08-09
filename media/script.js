@@ -277,8 +277,7 @@ Message types
 62: REPORT_TO_MOD_CLOSED_REPORT
 63: EMOJI_ADDED
 */
-function renderEmbed(embed) {
-      /*
+/*
 application_news
 article -
 auto_moderation_message
@@ -310,8 +309,54 @@ post_preview
 rich -
 video -
 */
+function renderEmbed(embed) {
   let c;
   switch (embed.type) {
+    case 'auto_moderation_message':
+      return `<span>${parseMD(embed.description.replace(embed.fields.find(field=>field.name==='keyword_matched_content').value, '**$&**'), 1)}</span>
+<span>Keyword: ${embed.fields.find(field=>field.name==='keyword').value} &nbsp; Rule: ${embed.fields.find(field=>field.name==='rule_name').value} &nbsp; ${embed.fields.find(field=>field.name==='timeout_duration')?.value?`Timeout: ${embed.fields.find(field=>field.name==='timeout_duration').value} seconds`:''}</span>`;
+      /*
+      {
+  "description": "@everyone play amogus",
+  "fields": [
+    {
+      "name": "rule_name",
+      "value": "Prevent hacked accounts",
+      "inline": false
+    },
+    {
+      "name": "channel_id",
+      "value": "1025976392745242666",
+      "inline": false
+    },
+    {
+      "name": "decision_id",
+      "value": "469b0bdca0914b44aa761ca0171c53f6",
+      "inline": false
+    },
+    {
+      "name": "keyword",
+      "value": "@everyone",
+      "inline": false
+    },
+    {
+      "name": "keyword_matched_content",
+      "value": "@everyone",
+      "inline": false
+    },
+    {
+      "name": "decision_outcome",
+      "value": "blocked",
+      "inline": false
+    },
+    {
+      "name": "timeout_duration",
+      "value": "60",
+      "inline": false
+    }
+  ],
+  "content_scan_version": 0
+}*/
     case 'gifv':
       return `<video src="${embed.video.proxy_url}" width="${Math.floor(embed.video.width/2)}" height="${Math.floor(embed.video.height/2)}" muted autoplay loop class="message-attach"></video>`;
     case 'image':
@@ -416,60 +461,6 @@ video -
       "description": "Search for a command"
     },
     {
-      "value": "main",
-      "label": "Main",
-      "emoji": {
-        "name": "main",
-        "id": "1275530451859017819"
-      },
-      "description": "Main commands of fsh"
-    },
-    {
-      "value": "fun",
-      "label": "Fun",
-      "emoji": {
-        "name": "fun",
-        "id": "1275462254804074496"
-      },
-      "description": "Fun and random commands"
-    },
-    {
-      "value": "utility",
-      "label": "Utility",
-      "emoji": {
-        "name": "utility",
-        "id": "1275729924212392038"
-      },
-      "description": "Useful commands"
-    },
-    {
-      "value": "economy",
-      "label": "Economy",
-      "emoji": {
-        "name": "economy",
-        "id": "1275818163346604114"
-      },
-      "description": "Commands for Fsh economy"
-    },
-    {
-      "value": "music",
-      "label": "Music",
-      "emoji": {
-        "name": "music",
-        "id": "1275462883097972786"
-      },
-      "description": "VC music controls"
-    },
-    {
-      "value": "admin",
-      "label": "Moderation",
-      "emoji": {
-        "name": "admin",
-        "id": "1275728449050382458"
-      },
-      "description": "Admin only commands"
-    },
-    {
       "value": "context",
       "label": "Context menus",
       "emoji": {
@@ -548,7 +539,7 @@ function renderMessage(content, author, m) {
     ${window.data.extra_settings.avatar_deco?`<img src="${getUserDeco(author?.avatar_decoration_data?.asset)}" class="decoration" width="50" height="50" loading="lazy" aria-hidden="true" onerror="this.remove()">`:''}
   </div>`}
   <span>
-    ${author.hide?'':`<span><span class="name" onclick="showMinifiedProfile(this, '${author.id}')"${window.data.currentServer!=='0'?` style="--rc:${getUserColor(window.data.currentServer, data.servers.find(e=>e.id===window.data.currentServer).members?.find(mem=>mem.user.id===author.id))}"`:''}>${getUserDisplay(author)}</span>${[author.system,m.webhook_id,author.bot].filter(e=>!!e).length?`<span class="tag">${author.system?'SYSTEM':(m.webhook_id?'WEBHOOK':(author.bot?`BOT${getUserFlags(author.flags??author.public_flags).VERIFIED_BOT?' ✔':''}`:''))}</span>`:''}${window.data.extra_settings.tags&&m.author.clan?getUserClan(m.author.clan):''}<span class="timestamp">${formatDate(m.timestamp, 'r')}</span>${getUserFlags(author.flags??author.public_flags).SPAMMER?'<span>· Possible spammer</span>':''}</span>`}
+    ${author.hide?'':`<span><span class="name" onclick="showMinifiedProfile(this, '${author.id}')"${window.data.currentServer!=='0'?` style="--rc:${getUserColor(window.data.currentServer, data.servers.find(e=>e.id===window.data.currentServer).members?.find(mem=>mem.user.id===author.id))}"`:''}>${getUserDisplay(author)}</span>${[author.system,m.webhook_id,author.bot].filter(e=>!!e).length?`<span class="tag">${author.system?'SYSTEM':(m.webhook_id?'WEBHOOK':(author.bot?`BOT${getUserFlags(author.flags??author.public_flags).VERIFIED_BOT?' ✔':''}`:''))}</span>`:''}${window.data.extra_settings.tags&&author.clan?getUserClan(m.author.clan):''}<span class="timestamp">${formatDate(m.timestamp, 'r')}</span>${getUserFlags(author.flags??author.public_flags).SPAMMER?'<span>· Possible spammer</span>':''}</span>`}
     <span class="inner">${parseMD(content)}${m.edited_timestamp?'<span class="edited"> (edited)</span>':''}</span>
     ${m.attachments.length?m.attachments.map(attach=>{
       if (!attach.content_type) attach.content_type=`image/${attach.url.split('?')[0].split('.').slice(-1)[0]}`;
@@ -578,10 +569,7 @@ function showMessages(list) {
         Array.from(m.content.matchAll(/(^|\s|https?:\/\/|localhost:)discord.gg\/[a-zA-Z0-9]+/gm))
           .map(invite=>invite[0].split('//').slice(-1)[0].split('/')[1])
           .forEach(invite=>{
-            m.embeds.push({
-              type: 'invite',
-              link: invite
-            });
+            m.embeds.push({ type: 'invite', link: invite });
           });
       }
     }
@@ -617,17 +605,24 @@ function showMessages(list) {
 "Yay you made it, {author}!"];
       return renderMessage(messages[new Date(m.timestamp).getTime()%13].replace('{author}',(getUserDisplay(m.author))), SystemAuthor, m);
     }
+    // AutoMod
+    if (m.type===24) {
+      return renderMessage('', AutoModAuthor, m);
+    }
     // Normal
     if (![0,19,20].includes(m.type)) {
       report(`Unhandled message type: ${m.type}`, m);
       return `<div>Unhandled message type: ${m.type}</div>`;
     }
     let auth = m.author;
-    if (a[i+1]?.author?.id===auth.id) {
-      auth.hide = true;
-      if ((new Date(m.timestamp).getTime()-new Date(a[i+1].timestamp).getTime())>(8*60*1000)) auth.hide = false;
+    if ([19,20].includes(m.type)) {
+      auth.hide = false;
+    } else {
+      if (a[i+1]?.author?.id===auth.id) {
+        auth.hide = true;
+        if ((new Date(m.timestamp).getTime()-new Date(a[i+1].timestamp).getTime())>(8*60*1000)) auth.hide = false;
+      }
     }
-    if ([19,20].includes(m.type)) auth.hide = false;
     return renderMessage(m.content, auth, m);
   }).join('');
   // Lottie stickers

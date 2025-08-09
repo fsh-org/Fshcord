@@ -38,7 +38,7 @@ window.data.ws = { default: 'wss://gateway.discord.gg/?v=10&encoding=json', log:
 loading('gateway');
 
 function wsstart(url) {
-  if (!url) urk = window.data.ws.default;
+  if (!url) url = window.data.ws.default;
   let ws = new WebSocket(url);
   window.data.ws.socket = ws;
   ws.onmessage = (evt)=>{wsmessage(JSON.parse(evt.data))};

@@ -130,6 +130,33 @@ const UnknownAuthor = {
   badges: [],
   full: true
 };
+const AutoModAuthor = {
+  id: 2,
+  avatar: 'system',
+  global_name: 'AutoMod',
+  username: 'automod',
+  bot: true,
+  system: true,
+  flags: 4097,
+  public_flags: 4097,
+  user: {
+    id: '2',
+    username: 'automod',
+    discriminator: '0',
+    global_name: 'AutoMod',
+    avatar: 'system',
+    avatar_decoration_data: null,
+    banner: null,
+    banner_color: '#58b9ff',
+    accent_color: 5814783,
+    bio: 'This is a built-in user account'
+  },
+  user_profile: {
+    pronouns: ''
+  },
+  badges: [],
+  full: true
+};
 // {} gets evaluated, m is the message object
 const systemMessages = {
   '1': `{getUserDisplay(m.author)} added {getUserDisplay(m.mentions[0])} to the {channelType===3?'group':'thread'}.`,
