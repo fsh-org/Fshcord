@@ -949,7 +949,7 @@ function showServers(list) {
   ${s.guilds.map(g=>`<button aria-label="${g.properties?.name??g.name}" data-id="${g.id}" class="server-clicky">${(g.properties?.icon??g.icon) == null ? (g.properties?.name??g.name).trim().split(/\s+/).map(word=>word[0]??'').join('') : `<img src="https://cdn.discordapp.com/icons/${g.id}/${g.properties?.icon??g.icon}.png?size=64" alt="${g.properties?.name??g.name}" loading="lazy">`}</button>`).join('')}
 </div>`;
     }
-    return `<button aria-label="${s.properties?.name??s.name??'Server'}" data-id="${s.id}" class="server-clicky">${(s.properties?.icon??s.icon??null) == null ? (s.properties?.name??s.name??'Server').trim().split(/\s+/).map(word=>word[0]??'').join('') : `<img src="https://cdn.discordapp.com/icons/${s.id}/${s.properties?.icon??s.icon}.png?size=64" alt="${s.properties?.name??s.name??'Server'}" loading="lazy">`}</button>`;
+    return `<button aria-label="${s.properties?.name??s.name??'Server'}" data-id="${s.id}" class="server-clicky">${(s.properties?.icon??s.icon??null) == null ? (s.properties?.name??s.name??'Server').trim().split(/\s+/).map(word=>word[0]??'').join('') : `<img src="https://cdn.discordapp.com/icons/${s.id}/${s.properties?.icon??s.icon}.png?size=64" alt="${s.properties?.name??s.name??'Server'}" loading="lazy">`}${(new Date(s.incidents_data?.dms_disabled_until)>new Date())||(new Date(s.incidents_data?.invites_disabled_until)>new Date())?'<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 256 256" class="paused-invites" title="Server has security actions enabled."><rect x="19" width="64" height="256" rx="15"/><rect x="173" width="64" height="256" rx="15"/></svg>':''}</button>`;
   }).join('');
   Array.from(document.querySelectorAll('#server button'))
     .forEach(b=>{
@@ -988,7 +988,7 @@ function showServers(list) {
         content: b.getAttribute('aria-label'),
         placement: 'right',
         maxWidth: 200
-      })
+      });
     });
   document.querySelector('#server button[selected]')?.removeAttribute('selected');
   document.querySelector(`#server button[data-id="${window.data.currentServer}"]`).setAttribute('selected', true);

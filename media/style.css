@@ -137,6 +137,14 @@ svg {
 .server-clicky:hover img, .server-clicky[selected] img {
   border-radius: 1rem;
 }
+.server-clicky .paused-invites {
+  position: absolute;
+  right: 0px;
+  bottom: 0px;
+  padding: 3px;
+  border-radius: 0.25rem;
+  background-color: var(--bg-0);
+}
 .server-folder {
   display: flex;
   gap: 10px;
