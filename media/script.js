@@ -350,21 +350,27 @@ video -
       getInvite(embed.link)
         .then(res=>{
           if (res.code===10006) {
-            document.getElementById('si-'+id).innerHTML = `Unknown invite ${embed.link}`;
+            document.getElementById('si-'+id).innerHTML = `<span style="padding:10px">Unknown invite ${embed.link}</span>`;
             return;
           }
           if (res.type!==0) {
             report(`Unhandeled invite type ${res.type}`, res);
-            document.getElementById('si-'+id).innerHTML = `Unhandeled invite type ${res.type}`;
+            document.getElementById('si-'+id).innerHTML = `<span style="padding:10px">Unhandeled invite type ${res.type}</span>`;
             return;
           }
           document.getElementById('si-'+id).innerHTML = `<img class="banner" src="${res.guild.splash?`https://cdn.discordapp.com/splashes/${res.guild.id}/${res.guild.splash}.jpg?size=480`:(res.guild.splash?`https://cdn.discordapp.com/banners/${res.guild.id}/${res.guild.banner}.jpg?size=480`:'')}" onerror="this.remove()">
-<div>
+<div style="padding:10px">
   <img src="https://cdn.discordapp.com/icons/${res.guild.id}/${res.guild.icon}.png?size=64">
   <span>
-    <span>${res.guild.name}</span>
-    <span>${res.profile.online_count} online &nbsp; ${res.profile.member_count} members</span>
+    <b>${res.guild.name}</b>
+    <span style="font-size:80%;color:var(--text-2);">${res.profile.online_count} online &nbsp; ${res.profile.member_count} members</span>
   </span>
+</div>
+<div>
+  <span style="color:var(--text-2);font-size:90%;">${res.profile.description}</span>
+</div>
+<div class="traits">
+  ${res.profile.traits.map(trait=>`<span>${trait.emoji_name?twemoji.parse(window.emoji_colons[`:${trait.emoji_name}:`]??'', twemojiConfig):''}${trait.label}</span>`).join('')}
 </div>
 <button disabled>Join</button>`;
         })

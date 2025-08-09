@@ -594,6 +594,7 @@ lottie-sticker.message-attach {
 }
 .server-invite {
   width: fit-content;
+  max-width: 50%;
   border-radius: 0.5rem;
   background-color: var(--bg-2);
   overflow: hidden;
@@ -607,7 +608,7 @@ lottie-sticker.message-attach {
   display: flex;
   gap: 10px;
   align-items: center;
-  padding: 10px;
+  padding: 0px 10px;
 }
 .server-invite > div > img {
   border-radius: 1rem;
@@ -622,6 +623,18 @@ lottie-sticker.message-attach {
   border: none;
   font-size: 100%;
   background: color-mix(in oklab, var(--green-2) 75%, var(--bg-0) 25%);
+}
+.server-invite .traits {
+  padding: 10px;
+}
+.server-invite .traits span {
+  display: flex;
+  gap: 5px;
+  flex-direction: row;
+  align-items: center;
+  padding: 2px 5px;
+  border-radius: 0.5rem;
+  background-color: var(--bg-3);
 }
 .component.c1 {
   display: flex;

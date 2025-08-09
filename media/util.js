@@ -317,7 +317,7 @@ function parseMD(text, extended=2) {
     .replaceAll(/:[a-zA-Z0-9:_-]+?:/g, function(match){
       if (!window.emoji_colons[match.toLowerCase()]) return match;
       match = window.emoji_colons[match.toLowerCase()];
-      return Array.from(match.matchAll(/.{6}/g)).map(part=>String.fromCodePoint(parseInt(part[0],16))).join('')
+      return match;//Array.from(match.matchAll(/.{6}/g)).map(part=>String.fromCodePoint(parseInt(part[0],16))).join('')
     });
   text = twemoji.parse(text, twemojiConfig);
   // Reserve
