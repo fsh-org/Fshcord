@@ -27,6 +27,7 @@ window.data.slash = {};
 
 window.data.users['0'] = SystemAuthor;
 window.data.users['1'] = UnknownAuthor;
+window.data.users['2'] = AutoModAuthor;
 
 window.data.messageCache = {};
 window.data.channelTyping = {};
@@ -313,50 +314,8 @@ function renderEmbed(embed) {
   let c;
   switch (embed.type) {
     case 'auto_moderation_message':
-      return `<span>${parseMD(embed.description.replace(embed.fields.find(field=>field.name==='keyword_matched_content').value, '**$&**'), 1)}</span>
+      return `${renderMessage(embed.description.replace(embed.fields.find(field=>field.name==='keyword_matched_content').value, '***$&***'), embed.user, { flags: 0 })}
 <span>Keyword: ${embed.fields.find(field=>field.name==='keyword').value} &nbsp; Rule: ${embed.fields.find(field=>field.name==='rule_name').value} &nbsp; ${embed.fields.find(field=>field.name==='timeout_duration')?.value?`Timeout: ${embed.fields.find(field=>field.name==='timeout_duration').value} seconds`:''}</span>`;
-      /*
-      {
-  "description": "@everyone play amogus",
-  "fields": [
-    {
-      "name": "rule_name",
-      "value": "Prevent hacked accounts",
-      "inline": false
-    },
-    {
-      "name": "channel_id",
-      "value": "1025976392745242666",
-      "inline": false
-    },
-    {
-      "name": "decision_id",
-      "value": "469b0bdca0914b44aa761ca0171c53f6",
-      "inline": false
-    },
-    {
-      "name": "keyword",
-      "value": "@everyone",
-      "inline": false
-    },
-    {
-      "name": "keyword_matched_content",
-      "value": "@everyone",
-      "inline": false
-    },
-    {
-      "name": "decision_outcome",
-      "value": "blocked",
-      "inline": false
-    },
-    {
-      "name": "timeout_duration",
-      "value": "60",
-      "inline": false
-    }
-  ],
-  "content_scan_version": 0
-}*/
     case 'gifv':
       return `<video src="${embed.video.proxy_url}" width="${Math.floor(embed.video.width/2)}" height="${Math.floor(embed.video.height/2)}" muted autoplay loop class="message-attach"></video>`;
     case 'image':
@@ -383,7 +342,7 @@ function renderEmbed(embed) {
   ${embed.description&&embed.type!=='video'?`<span class="desc">${parseMD(embed.description)}</span>`:''}
   ${embed.fields?`<div class="fields">${embed.fields.map(f=>`<div style="${f.inline?'':'flex:1 1 100%'}">
   <span class="etitle">${parseMD(f.name, 0)}</span>
-  <span class="desc">${parseMD(f.value)}</span>
+  <span class="desc">${parseMD(f.value, 1)}</span>
 </div>`).join('')}</div>`:''}
   ${embed.video?(embed.video.proxy_url?`<video src="${embed.video.proxy_url}" class="message-attach" style="max-width:100%" controls></video>`:`<iframe src="${embed.video.url}" class="message-attach" allow="autoplay" frameborder="0" scrolling="no" sandbox="allow-forms allow-modals allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts allow-presentation" allowfullscreen></iframe>`):''}
   ${embed.image&&embed.type!=='video'?`<img src="${embed.image.proxy_url}" class="message-attach big" style="max-width:100%;margin-top:${embed.thumbnail?(c>2?'0':(c>1?'15':'40')):'0'}px">`:''}
@@ -520,7 +479,7 @@ ${comp.style===5?'</a>':''}`;
   }
 }
 function renderMessage(content, author, m) {
-  return `<div class="message${m.deleted?' deleted':''}${m.mentions.map(e=>e.id).includes(window.data.user.id)?' mention':''}${getMessageFlags(m.flags).EPHEMERAL?' ephemeral':''}">
+  return `<div class="message${m.deleted?' deleted':''}${(m.mentions??[]).map(e=>e.id).includes(window.data.user.id)?' mention':''}${getMessageFlags(m.flags).EPHEMERAL?' ephemeral':''}">
   ${m.type===19&&m.message_reference?`<div class="reply-preview">
     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 256 256" style="margin-left:20px;flex-shrink:0;"><path d="M0 164H32V240C32 248.837 24.8366 256 16 256V256C7.16344 256 0 248.837 0 240V164Z" fill="#ACACAC"></path><path d="M52 112H240C248.837 112 256 119.163 256 128V128C256 136.837 248.837 144 240 144H52V112Z" fill="#ACACAC"></path><path d="M52 112C45.1713 112 38.4094 113.345 32.1005 115.958C25.7915 118.572 20.0591 122.402 15.2304 127.23C10.4018 132.059 6.57151 137.792 3.95826 144.1C1.34502 150.409 -1.03111e-06 157.171 0 164L31.9854 164C31.9854 161.372 32.5031 158.769 33.5089 156.341C34.5148 153.912 35.989 151.706 37.8476 149.848C39.7061 147.989 41.9125 146.515 44.3408 145.509C46.769 144.503 49.3716 143.985 52 143.985V112Z" fill="#ACACAC"></path></svg>
     ${m.referenced_message?`<img src="${getUserAvatar(m.referenced_message.author.id, m.referenced_message.author.avatar)}" width="20" height="20" loading="lazy" aria-hidden="true" onclick="showMinifiedProfile(this, '${m.referenced_message.author.id}')">`:''}
@@ -539,15 +498,15 @@ function renderMessage(content, author, m) {
     ${window.data.extra_settings.avatar_deco?`<img src="${getUserDeco(author?.avatar_decoration_data?.asset)}" class="decoration" width="50" height="50" loading="lazy" aria-hidden="true" onerror="this.remove()">`:''}
   </div>`}
   <span>
-    ${author.hide?'':`<span><span class="name" onclick="showMinifiedProfile(this, '${author.id}')"${window.data.currentServer!=='0'?` style="--rc:${getUserColor(window.data.currentServer, data.servers.find(e=>e.id===window.data.currentServer).members?.find(mem=>mem.user.id===author.id))}"`:''}>${getUserDisplay(author)}</span>${[author.system,m.webhook_id,author.bot].filter(e=>!!e).length?`<span class="tag">${author.system?'SYSTEM':(m.webhook_id?'WEBHOOK':(author.bot?`BOT${getUserFlags(author.flags??author.public_flags).VERIFIED_BOT?' ✔':''}`:''))}</span>`:''}${window.data.extra_settings.tags&&author.clan?getUserClan(m.author.clan):''}<span class="timestamp">${formatDate(m.timestamp, 'r')}</span>${getUserFlags(author.flags??author.public_flags).SPAMMER?'<span>· Possible spammer</span>':''}</span>`}
+    ${author.hide?'':`<span><span class="name" onclick="showMinifiedProfile(this, '${author.id}')"${window.data.currentServer!=='0'?` style="--rc:${getUserColor(window.data.currentServer, data.servers.find(e=>e.id===window.data.currentServer).members?.find(mem=>mem.user.id===author.id))}"`:''}>${getUserDisplay(author)}</span>${[author.system,m.webhook_id,author.bot].filter(e=>!!e).length?`<span class="tag">${author.system?'SYSTEM':(m.webhook_id?'WEBHOOK':(author.bot?`BOT${getUserFlags(author.flags??author.public_flags).VERIFIED_BOT?' ✔':''}`:''))}</span>`:''}${window.data.extra_settings.tags&&author.clan?getUserClan(author.clan):''}<span class="timestamp">${formatDate(m.timestamp, 'r')}</span>${getUserFlags(author.flags??author.public_flags).SPAMMER?'<span>· Possible spammer</span>':''}</span>`}
     <span class="inner">${parseMD(content)}${m.edited_timestamp?'<span class="edited"> (edited)</span>':''}</span>
-    ${m.attachments.length?m.attachments.map(attach=>{
+    ${m.attachments?.length?m.attachments.map(attach=>{
       if (!attach.content_type) attach.content_type=`image/${attach.url.split('?')[0].split('.').slice(-1)[0]}`;
       if (attach.content_type.startsWith('image')&&!attach.width) attach.content_type=`application/${attach.content_type.split('/')[1]}`;
       return `<${attach.content_type.startsWith('image/')?'img':attach.content_type.startsWith('audio/')?'audio':attach.content_type.startsWith('video/')?'video':'div'} src="${attach.url}" width="${Math.floor(attach.width/2)}" height="${Math.floor(attach.height/2)}" class="message-attach${attach.flags?(getAttachmentFlags(attach.flags).SPOILER?` spoiler"onclick="this.classList.remove('spoiler')`:''):''}" controls>${attach.content_type.startsWith('image/')?'':attach.content_type.startsWith('audio/')?'</audio>':attach.content_type.startsWith('video/')?'</video>':`<a download="${attach.filename}">${attach.filename}</a> · ${formatBytes(attach.size)}</div>`}`;
     }).join(''):''}
-    ${m.embeds.length?m.embeds.map(embed=>renderEmbed(embed)).join(''):''}
-    ${renderComponents(m.components, { id: m.id, app: author.id, flags: m.flags })}
+    ${m.embeds?.length?m.embeds.map(embed=>renderEmbed(embed)).join(''):''}
+    ${renderComponents(m.components??[], { id: m.id, app: author.id, flags: m.flags })}
     ${m.sticker_items?.length?m.sticker_items.map(sticker=>{
       if (sticker.format_type===3) {
         return `<lottie-sticker class="message-attach" data-id="${sticker.id}"></lottie-sticker>`;
@@ -607,7 +566,9 @@ function showMessages(list) {
     }
     // AutoMod
     if (m.type===24) {
-      return renderMessage('', AutoModAuthor, m);
+      m.embeds[m.embeds.findIndex(embed=>embed.type==='auto_moderation_message')].user = m.author;
+      let text = autoModText[m.embeds[0].fields.find(f=>f.name==='decision_outcome').value]??'';
+      return renderMessage(text, AutoModAuthor, m);
     }
     // Normal
     if (![0,19,20].includes(m.type)) {

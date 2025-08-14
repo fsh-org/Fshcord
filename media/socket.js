@@ -33,7 +33,7 @@
 41 UPDATE_TIME_SPENT_SESSION_ID
 */
 
-window.data.ws = { default: 'wss://gateway.discord.gg/?v=10&encoding=json', log: false, logUnhandled: false, socket: undefined, d: undefined, session_id: undefined, resume_url: undefined };
+window.data.ws = { default: 'wss://gateway.discord.gg/?v=10&encoding=json', log: false, logUnhandled: false, socket: undefined, d: undefined, session_id: undefined, resume_url: undefined, failedResumes: 0, maxFailedResumes: 50 };
 
 loading('gateway');
 
@@ -45,6 +45,11 @@ function wsstart(url) {
   ws.onclose = ()=>{
     ws.onmessage = ()=>{};
     ws.onclose = ()=>{};
+    window.data.ws.failedResumes += 1;
+    if (window.data.ws.failedResumes>window.data.ws.maxFailedResumes) {
+      loading('Cannot reconect socket', true);
+      return;
+    }
     wsstart(window.data.ws.resume_url);
   };
 }
@@ -224,6 +229,7 @@ function wsmessage(wsd) {
       loading('Reconecting socket', true);
       break;
     case 9: // Invalid session
+      window.data.ws.failedResumes += 5;
       window.data.ws.resume_url = undefined;
       window.data.ws.session_id = undefined;
       wsstart(window.data.ws.default);

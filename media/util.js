@@ -191,6 +191,10 @@ const dateFormats = {
   f: {dateStyle: 'long', timeStyle: 'short'},
   F: {dateStyle: 'full', timeStyle: 'short'}
 };
+const autoModText = {
+  blocked: 'Blocked a message',
+  flagged: 'Flagged a user'
+};
 function toBinaryString(numString) {
   if (!numString || isNaN(numString)) return "0";
   if (numString === "0") return "0";
