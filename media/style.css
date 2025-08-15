@@ -250,7 +250,7 @@ svg {
   height: 20px;
   z-index: 2;
 }
-#channel button[data-type="1"] .avatar, #channel button[data-type="1"] .avatar img:not(.decoration) {
+#channel button .avatar, #channel button .avatar img:not(.decoration) {
   border-radius: 2rem;
 }
 .channel-nsfw {

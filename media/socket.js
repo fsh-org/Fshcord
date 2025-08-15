@@ -74,6 +74,13 @@ function wsmessage(wsd) {
         wsd.d.merged_presences.friends.forEach(m=>{
           window.data.presences[m.user_id] = m;
         });
+      } else if (wsd.t === 'RATE_LIMITED') {
+        setTimeout(()=>{
+          window.data.ws.socket.send(`{
+  "op": ${wsd.d.opcode},
+  "d": ${JSON.stringify(wsd.d.meta, null, 2)}
+}`);
+        }, wsd.d.retry_after*1000);
       } else if (wsd.t === 'GUILD_CREATE') {// Guilds
         proxyFetch(`https://discord.com/api/v10/guilds/${wsd.d.id}`)
           .then(res=>res.json())
