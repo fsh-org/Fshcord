@@ -388,7 +388,7 @@ main {
   color: var(--text-2);
   font-size: 60%;
 }
-.message .inner .user, .message .inner .role, .message .inner .channel {
+.message > *:not(:nth-child(1)) .user, .message > *:not(:nth-child(1)) .role, .message > *:not(:nth-child(1)) .channel {
   cursor: pointer;
   color: var(--mcol);
   padding: 0px 2px;
@@ -681,6 +681,41 @@ a:has(.component.c2) {
 }
 .component.c2[disabled] img {
   opacity: 0.5;
+}
+.component.c3 {
+  width: 50%;
+}
+.component.c3 .preview {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  padding: 8px;
+  margin: 2px 0px;
+  border: none;
+  border-radius: 0.5rem;
+  background-color: var(--bg-0);
+}
+.component.c3 .menu {
+  color: var(--text-1);
+  margin: 0;
+  border: none;
+  background-color: var(--bg-2);
+}
+.component.c3 .menu::backdrop {
+  background: none;
+  backdrop-filter: none;
+}
+.component.c3 .opt {
+  display: flex;
+  gap: 5px;
+}
+.component.c3 .opt > span {
+  display: flex;
+  flex-direction: column;
+}
+.component.c3 .opt > span > span {
+  color: var(--text-2);
+  font-size: 80%;
 }
 .component.c17 {
   display: flex;

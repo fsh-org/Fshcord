@@ -337,7 +337,7 @@ function renderEmbed(embed) {
       return `<div class="message-rich-embed" style="--embed-color:${colorToRGB(embed.color??0)}">
   ${embed.thumbnail&&embed.type!=='video'?`<img src="${embed.thumbnail.proxy_url}" class="message-attach thumbnail">`:''}
   ${embed?.provider?.name?`<a${embed.provider?.url?` href="${embed.provider.url}"`:''} class="sub">${embed.provider.name}</a>`:''}
-  ${embed?.author?.name?`<a${embed.author?.url?` href="${embed.author.url}"`:''} class="sub">${embed.author.proxy_icon_url?`<img src="${embed.author.proxy_icon_url}">`:''}${embed.author.name}</a>`:''}
+  ${embed?.author?.name?`<a${embed.author?.url?` href="${embed.author.url}"`:''} class="sub">${embed.author.proxy_icon_url?`<img src="${embed.author.proxy_icon_url}" loading="lazy">`:''}${embed.author.name}</a>`:''}
   ${embed.title?`<a${embed.url?` href="${embed.url}"`:''} class="etitle">${parseMD(embed.title, 0)}</a>`:''}
   ${embed.description&&embed.type!=='video'?`<span class="desc">${parseMD(embed.description)}</span>`:''}
   ${embed.fields?`<div class="fields">${embed.fields.map(f=>`<div style="${f.inline?'':'flex:1 1 100%'}">
@@ -345,8 +345,8 @@ function renderEmbed(embed) {
   <span class="desc">${parseMD(f.value, 1)}</span>
 </div>`).join('')}</div>`:''}
   ${embed.video?(embed.video.proxy_url?`<video src="${embed.video.proxy_url}" class="message-attach" style="max-width:100%" controls></video>`:`<iframe src="${embed.video.url}" class="message-attach" allow="autoplay" frameborder="0" scrolling="no" sandbox="allow-forms allow-modals allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts allow-presentation" allowfullscreen></iframe>`):''}
-  ${embed.image&&embed.type!=='video'?`<img src="${embed.image.proxy_url}" class="message-attach big" style="max-width:100%;margin-top:${embed.thumbnail?(c>2?'0':(c>1?'15':'40')):'0'}px">`:''}
-  ${embed?.footer?.text||embed.timestamp?`<span class="footer">${embed?.footer?.text?`<span class="text">${embed.footer.proxy_icon_url?`<img src="${embed.footer.proxy_icon_url}">`:''}${embed.footer.text}</span>`:''}${embed?.footer?.text&&embed.timestamp?'<span class="dot"></span>':''}${embed.timestamp?`<span>${formatDate(embed.timestamp)}</span>`:''}</span>`:''}
+  ${embed.image&&embed.type!=='video'?`<img src="${embed.image.proxy_url}" loading="lazy" class="message-attach big" style="max-width:100%;margin-top:${embed.thumbnail?(c>2?'0':(c>1?'15':'40')):'0'}px">`:''}
+  ${embed?.footer?.text||embed.timestamp?`<span class="footer">${embed?.footer?.text?`<span class="text">${embed.footer.proxy_icon_url?`<img src="${embed.footer.proxy_icon_url}" loading="lazy">`:''}${embed.footer.text}</span>`:''}${embed?.footer?.text&&embed.timestamp?'<span class="dot"></span>':''}${embed.timestamp?`<span>${formatDate(embed.timestamp)}</span>`:''}</span>`:''}
 </div>`;
     // Custom Internal
     case 'invite':
@@ -364,7 +364,7 @@ function renderEmbed(embed) {
           }
           document.getElementById('si-'+id).innerHTML = `<img class="banner" src="${res.guild.splash?`https://cdn.discordapp.com/splashes/${res.guild.id}/${res.guild.splash}.jpg?size=480`:(res.guild.splash?`https://cdn.discordapp.com/banners/${res.guild.id}/${res.guild.banner}.jpg?size=480`:'')}" onerror="this.remove()">
 <div style="padding:10px">
-  <img src="https://cdn.discordapp.com/icons/${res.guild.id}/${res.guild.icon}.png?size=64">
+  <img src="https://cdn.discordapp.com/icons/${res.guild.id}/${res.guild.icon}.png?size=64" loading="lazy">
   <span>
     <b>${res.guild.name}</b>
     <span style="font-size:80%;color:var(--text-2);">${res.profile.online_count} online &nbsp; ${res.profile.member_count} members</span>
@@ -389,7 +389,7 @@ function renderEmbed(embed) {
 /*
 1  Action Row -
 2  Button -partial style6, interaction
-3  String Select
+3  String Select -partial interaction, select, menu placement
 4  Text Input
 5  User Select
 6  Role Select
@@ -404,36 +404,6 @@ function renderEmbed(embed) {
 16 Content Inventory Entry
 17 Container -partial spoiler
 18 Label (label, description)
-*/
-/*
-{
-  "type": 3,
-  "placeholder": "Select a category",
-  "options": [
-    {
-      "value": "search",
-      "label": "Search commands",
-      "emoji": {
-        "name": "search",
-        "id": "1275454891208347768"
-      },
-      "description": "Search for a command"
-    },
-    {
-      "value": "context",
-      "label": "Context menus",
-      "emoji": {
-        "name": "context",
-        "id": "1275518446972698645"
-      },
-      "description": "Context menu commands (right-click)"
-    }
-  ],
-  "min_values": 1,
-  "max_values": 1,
-  "id": 2,
-  "custom_id": "help%816691475844694047%"
-}
 */
 function componentInteraction(type, cid, data) {
   data = JSON.parse(data.replaceAll("'",'"'));
@@ -465,6 +435,32 @@ function renderComponents(comp, data) {
       return `${comp.style===5?`<a href="${comp.url}" target="_blank">`:''}
 <button class="component c2 style-${comp.style}" ${comp.disabled?'disabled':(comp.style!==5?`onclick="componentInteraction(2, '${comp.custom_id}', \`${JSON.stringify(data).replaceAll('"',"'")}\`)"`:'')}>${comp.emoji?(comp.emoji.id?`<img src="https://cdn.discordapp.com/emojis/${comp.emoji.id}.webp?size=96" width="16" height="16" loading="lazy" onerror="this.remove()">`:twemoji.parse(comp.emoji.name, twemojiConfig)):''}${comp.label??''}${comp.style===5?'<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 256 256"><path d="M109.25 0C119.605 0 128 8.39466 128 18.75V18.75C128 29.1053 119.605 37.5 109.25 37.5H57.5C46.4543 37.5 37.5 46.4543 37.5 57.5V198.5C37.5 209.546 46.4543 218.5 57.5 218.5H198.5C209.546 218.5 218.5 209.546 218.5 198.5V146.75C218.5 136.395 226.895 128 237.25 128V128C247.605 128 256 136.395 256 146.75V226C256 242.569 242.569 256 226 256H30C13.4315 256 0 242.569 0 226V30C0 13.4315 13.4315 0 30 0H109.25Z"></path><path d="M156 18.75C156 8.39466 164.395 0 174.75 0H236C247.046 0 256 8.95431 256 20V81.25C256 91.6053 247.605 100 237.25 100V100C226.895 100 218.5 91.6053 218.5 81.25V57.5C218.5 46.4543 209.546 37.5 198.5 37.5H174.75C164.395 37.5 156 29.1053 156 18.75V18.75Z"></path><path d="M114.742 114.742C107.419 122.064 107.419 133.936 114.742 141.258C122.064 148.581 133.936 148.581 141.258 141.258L114.742 114.742ZM235 21L221.742 7.74175L114.742 114.742L128 128L141.258 141.258L248.258 34.2583L235 21Z"></path></svg>':''}</button>
 ${comp.style===5?'</a>':''}`;
+    case 3:
+      return `<div class="component c3">
+  <button class="preview" popovertarget="c3o-${comp.id}">
+    ${comp.options.filter(opt=>opt.default)[0]?
+      ``:
+      `<span style="color:var(--text-2)">${comp.placeholder??'Select'}</span>`
+    }
+    <span style="color:var(--text-1)">v</span>
+  </button>
+  <div class="menu" id="c3o-${comp.id}" popover>
+    ${comp.options.map(opt=>`<div class="opt" data-value="${opt.value}">
+  ${opt.emoji?.name?(opt.emoji.id?`<img src="https://cdn.discordapp.com/emojis/${opt.emoji.id}.webp?size=44" loading="lazy">`:opt.emoji.name):''}
+  <span>
+    <b>${opt.label}</b>
+    <span style="color:var(--text-2)">${opt.description}</span>
+  </span>
+</div>`).join('')}
+  </div>
+</div>`;
+/*
+{
+  "min_values": 1,
+  "max_values": 1,
+  "custom_id": "help%816691475844694047%"
+}
+*/
     case 9:
       return `<div class="component c9">${renderComponents(comp.components, data)}</div>`;
     case 10:

@@ -117,6 +117,7 @@ function wsmessage(wsd) {
       } else if (wsd.t === 'CHANNEL_UPDATE') {// Channels
         let temp = window.data.servers[window.data.servers.findIndex(e=>e.id===wsd.d.guild_id)];
         temp = temp.channels[temp.channels.findIndex(e=>e.id===wsd.d.id)];
+        if (!temp) return;
         Object.merge(temp, wsd.d);
         if (window.data.currentServer===wsd.d.guild_id) {
           switchChannel(wsd.d.guild_id, false);
