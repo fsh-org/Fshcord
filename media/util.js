@@ -258,6 +258,14 @@ function proxyFetch(url, o) {
   })
 }
 
+// Sanitize
+function sanitizeHTML(text) {
+  if (text===null||text===undefined||Number.isNaN(text)) return text;
+  return text
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;');
+}
+
 // MD Parse
 function parseMD(text, extended=2) {
   let reserve = {};
@@ -399,7 +407,7 @@ function getUser(id) {
   return window.data.users[id];
 }
 function getUserDisplay(obj) {
-  return obj.nick??obj.global_name??obj.display_name??obj.username??obj.user?.global_name??obj.user?.display_name??obj.user?.username;
+  return sanitizeHTML(obj.nick??obj.global_name??obj.display_name??obj.username??obj.user?.global_name??obj.user?.display_name??obj.user?.username);
 }
 function getUserAvatar(id, hash, size = 64) {
   if (!hash) {
@@ -427,7 +435,7 @@ function getUserFlags(bitfield) {
 function getUserClan(clan, omit=false) {
   if (!clan) return '';
   if (!clan.tag) return '';
-  return `<span class="tag"${omit?'':' style="background-color:var(--bg-3)"'}><img src="https://cdn.discordapp.com/clan-badges/${clan.identity_guild_id}/${clan.badge}.png?size=16" width="12" height="12" inert aria-hidden="true">${clan.tag}</span>`;
+  return `<span class="tag"${omit?'':' style="background-color:var(--bg-3)"'}><img src="https://cdn.discordapp.com/clan-badges/${clan.identity_guild_id}/${clan.badge}.png?size=16" width="12" height="12" inert aria-hidden="true">${sanitizeHTML(clan.tag)}</span>`;
 }
 let UserColorCache = {};
 function getUserColor(server, mem) {
@@ -495,7 +503,8 @@ Object.prototype.merge = (a,b)=>{
   Object.keys(b).forEach(k=>a[k]=b[k]);
 }
 function colorToRGB(color) {
-  return `#${color.toString(16).padStart(6, '0')}`;
+  if ((typeof color)==='string' && color.startsWith('#')) return color;
+  return `#${color.toString(16).padStart(6,'0').slice(0,6)}`;
 }
 function formatDate(date, format='f') {
   if (format==='R') {

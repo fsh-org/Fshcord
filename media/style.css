@@ -754,6 +754,25 @@ a:has(.component.c2) {
   margin: var(--spacing) 0px;
   background-color: var(--divider);
 }
+.poll {
+  display: flex;
+  flex-direction: column;
+  width: 60%;
+  padding: 5px 10px;
+  border-radius: 1rem;
+  background-color: var(--bg-2);
+}
+.poll .small {
+  font-size: 80%;
+  color: var(--text-2);
+}
+.poll > div > div {
+  font-size: 110%;
+  margin: 4px 0px;
+  padding: 4px;
+  border-radius: 0.5rem;
+  background-color: var(--bg-3);
+}
 .message-poll-result {
   gap: 5px;
   flex-direction: row;

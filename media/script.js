@@ -325,7 +325,7 @@ function renderEmbed(embed) {
   ${embed.fields[5]?.value?`<span>${embed.fields[5].value}</span>`:''}
   <div>
     <span>${embed.fields[3]?.value?embed.fields[4].value+' ✓':'The results were tied'}</span>
-    <span class="small">${embed.fields[3]?.value?'Winning answer • ':''}${(embed.fields[1].value/embed.fields[2].value*100).toFixed(2).replace('.00','')}%</span>
+    <span class="small">${embed.fields[3]?.value?'Winning answer • ':''}${((embed.fields[1].value/embed.fields[2].value*100)||0).toFixed(2).replace('.00','')}%</span>
   </div>
 </div>`;
     case 'article':
@@ -366,15 +366,15 @@ function renderEmbed(embed) {
 <div style="padding:10px">
   <img src="https://cdn.discordapp.com/icons/${res.guild.id}/${res.guild.icon}.png?size=64" loading="lazy">
   <span>
-    <b>${res.guild.name}</b>
+    <b>${sanitizeHTML(res.guild.name)}</b>
     <span style="font-size:80%;color:var(--text-2);">${res.profile.online_count} online &nbsp; ${res.profile.member_count} members</span>
   </span>
 </div>
 <div>
-  <span style="color:var(--text-2);font-size:90%;">${res.profile.description}</span>
+  <span style="color:var(--text-2);font-size:90%;">${sanitizeHTML(res.profile.description)}</span>
 </div>
 <div class="traits">
-  ${res.profile.traits.map(trait=>`<span>${trait.emoji_name?twemoji.parse(window.emoji_colons[`:${trait.emoji_name}:`]??'', twemojiConfig):''}${trait.label}</span>`).join('')}
+  ${res.profile.traits.map(trait=>`<span>${trait.emoji_name?twemoji.parse(window.emoji_colons[`:${trait.emoji_name}:`]??'', twemojiConfig):''}${sanitizeHTML(trait.label)}</span>`).join('')}
 </div>
 <button disabled>Join</button>`;
         })
@@ -433,14 +433,14 @@ function renderComponents(comp, data) {
       return `<div class="component c1">${renderComponents(comp.components, data)}</div>`;
     case 2:
       return `${comp.style===5?`<a href="${comp.url}" target="_blank">`:''}
-<button class="component c2 style-${comp.style}" ${comp.disabled?'disabled':(comp.style!==5?`onclick="componentInteraction(2, '${comp.custom_id}', \`${JSON.stringify(data).replaceAll('"',"'")}\`)"`:'')}>${comp.emoji?(comp.emoji.id?`<img src="https://cdn.discordapp.com/emojis/${comp.emoji.id}.webp?size=96" width="16" height="16" loading="lazy" onerror="this.remove()">`:twemoji.parse(comp.emoji.name, twemojiConfig)):''}${comp.label??''}${comp.style===5?'<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 256 256"><path d="M109.25 0C119.605 0 128 8.39466 128 18.75V18.75C128 29.1053 119.605 37.5 109.25 37.5H57.5C46.4543 37.5 37.5 46.4543 37.5 57.5V198.5C37.5 209.546 46.4543 218.5 57.5 218.5H198.5C209.546 218.5 218.5 209.546 218.5 198.5V146.75C218.5 136.395 226.895 128 237.25 128V128C247.605 128 256 136.395 256 146.75V226C256 242.569 242.569 256 226 256H30C13.4315 256 0 242.569 0 226V30C0 13.4315 13.4315 0 30 0H109.25Z"></path><path d="M156 18.75C156 8.39466 164.395 0 174.75 0H236C247.046 0 256 8.95431 256 20V81.25C256 91.6053 247.605 100 237.25 100V100C226.895 100 218.5 91.6053 218.5 81.25V57.5C218.5 46.4543 209.546 37.5 198.5 37.5H174.75C164.395 37.5 156 29.1053 156 18.75V18.75Z"></path><path d="M114.742 114.742C107.419 122.064 107.419 133.936 114.742 141.258C122.064 148.581 133.936 148.581 141.258 141.258L114.742 114.742ZM235 21L221.742 7.74175L114.742 114.742L128 128L141.258 141.258L248.258 34.2583L235 21Z"></path></svg>':''}</button>
+<button class="component c2 style-${comp.style}" ${comp.disabled?'disabled':(comp.style!==5?`onclick="componentInteraction(2, '${comp.custom_id}', \`${JSON.stringify(data).replaceAll('"',"'")}\`)"`:'')}>${comp.emoji?(comp.emoji.id?`<img src="https://cdn.discordapp.com/emojis/${comp.emoji.id}.webp?size=96" width="16" height="16" loading="lazy" onerror="this.remove()">`:twemoji.parse(comp.emoji.name, twemojiConfig)):''}${sanitizeHTML(comp.label??'')}${comp.style===5?'<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 256 256"><path d="M109.25 0C119.605 0 128 8.39466 128 18.75V18.75C128 29.1053 119.605 37.5 109.25 37.5H57.5C46.4543 37.5 37.5 46.4543 37.5 57.5V198.5C37.5 209.546 46.4543 218.5 57.5 218.5H198.5C209.546 218.5 218.5 209.546 218.5 198.5V146.75C218.5 136.395 226.895 128 237.25 128V128C247.605 128 256 136.395 256 146.75V226C256 242.569 242.569 256 226 256H30C13.4315 256 0 242.569 0 226V30C0 13.4315 13.4315 0 30 0H109.25Z"></path><path d="M156 18.75C156 8.39466 164.395 0 174.75 0H236C247.046 0 256 8.95431 256 20V81.25C256 91.6053 247.605 100 237.25 100V100C226.895 100 218.5 91.6053 218.5 81.25V57.5C218.5 46.4543 209.546 37.5 198.5 37.5H174.75C164.395 37.5 156 29.1053 156 18.75V18.75Z"></path><path d="M114.742 114.742C107.419 122.064 107.419 133.936 114.742 141.258C122.064 148.581 133.936 148.581 141.258 141.258L114.742 114.742ZM235 21L221.742 7.74175L114.742 114.742L128 128L141.258 141.258L248.258 34.2583L235 21Z"></path></svg>':''}</button>
 ${comp.style===5?'</a>':''}`;
     case 3:
       return `<div class="component c3">
   <button class="preview" popovertarget="c3o-${comp.id}">
     ${comp.options.filter(opt=>opt.default)[0]?
       ``:
-      `<span style="color:var(--text-2)">${comp.placeholder??'Select'}</span>`
+      `<span style="color:var(--text-2)">${sanitizeHTML(comp.placeholder)??'Select'}</span>`
     }
     <span style="color:var(--text-1)">v</span>
   </button>
@@ -448,8 +448,8 @@ ${comp.style===5?'</a>':''}`;
     ${comp.options.map(opt=>`<div class="opt" data-value="${opt.value}">
   ${opt.emoji?.name?(opt.emoji.id?`<img src="https://cdn.discordapp.com/emojis/${opt.emoji.id}.webp?size=44" loading="lazy">`:opt.emoji.name):''}
   <span>
-    <b>${opt.label}</b>
-    <span style="color:var(--text-2)">${opt.description}</span>
+    <b>${sanitizeHTML(opt.label)}</b>
+    <span style="color:var(--text-2)">${sanitizeHTML(opt.description)}</span>
   </span>
 </div>`).join('')}
   </div>
@@ -468,11 +468,24 @@ ${comp.style===5?'</a>':''}`;
     case 14:
       return `<div class="component c14" style="--divider:${comp.divider?'var(--bg-3)':'transparent'};--spacing:${comp.spacing===1?'10px':'20px'}"></div>`;
     case 17:
-      return `<div class="component c17" style="--color:${comp.accent_color}">${renderComponents(comp.components, data)}</div>`;
+      return `<div class="component c17" style="--color:${colorToRGB(comp.accent_color)}">${renderComponents(comp.components, data)}</div>`;
     default:
       report(`Unknown component type: ${comp.type}`, comp);
       return `<span>Unknown component type: ${comp.type}</span>`;
   }
+}
+function renderPoll(poll) {
+  return `<div class="poll">
+  <span>${sanitizeHTML(poll.question.text)}</span>
+  ${poll.results.is_finalized?'':`<span class="small">Select one${poll.allow_multiselect?' or more':''} answers</span>`}
+  <div>
+    ${poll.answers.map(ans=>`<div>
+  ${ans.poll_media.emoji?(ans.poll_media.emoji.id?`<img src="https://cdn.discordapp.com/emojis/${ans.poll_media.emoji.id}.webp?size=96" width="16" height="16" loading="lazy" onerror="this.remove()">`:twemoji.parse(ans.poll_media.emoji.name, twemojiConfig)):''}
+  <span>${sanitizeHTML(ans.poll_media.text)}</span>
+</div>`).join('')}
+  </div>
+  <span class="small">${poll.results.answer_counts.map(a=>a.count).reduce((acc,val)=>acc+val,0)} votes · ${poll.results.is_finalized?'Closed':'Ends '+formatDate(poll.expiry,'R')}</span>
+</div>`;
 }
 function renderMessage(content, author, m) {
   return `<div class="message${m.deleted?' deleted':''}${(m.mentions??[]).map(e=>e.id).includes(window.data.user.id)?' mention':''}${getMessageFlags(m.flags).EPHEMERAL?' ephemeral':''}">
@@ -487,14 +500,14 @@ function renderMessage(content, author, m) {
     <img src="${getUserAvatar(m.interaction.user.id, m.interaction.user.avatar)}" width="20" height="20" loading="lazy" aria-hidden="true" onclick="showMinifiedProfile(this, '${m.interaction.user.id}')">
     <span class="name" onclick="showMinifiedProfile(this, '${m.interaction.user.id}')">${getUserDisplay(m.interaction.user)}</span>
     <span> used </span>
-    <span>${m.interaction.name}</span>
+    <span>${sanitizeHTML(m.interaction.name)}</span>
   </div>`:''}
   ${author.hide?'<div class="avatar" aria-hidden="true"></div>':`<div class="avatar" aria-hidden="true" onclick="showMinifiedProfile(this, '${author.id}')">
     <img src="${getUserAvatar(author.id, author.avatar)}" width="40" height="40" loading="lazy" aria-hidden="true">
     ${window.data.extra_settings.avatar_deco?`<img src="${getUserDeco(author?.avatar_decoration_data?.asset)}" class="decoration" width="50" height="50" loading="lazy" aria-hidden="true" onerror="this.remove()">`:''}
   </div>`}
   <span>
-    ${author.hide?'':`<span><span class="name" onclick="showMinifiedProfile(this, '${author.id}')"${window.data.currentServer!=='0'?` style="--rc:${getUserColor(window.data.currentServer, data.servers.find(e=>e.id===window.data.currentServer).members?.find(mem=>mem.user.id===author.id))}"`:''}>${getUserDisplay(author)}</span>${[author.system,m.webhook_id,author.bot].filter(e=>!!e).length?`<span class="tag">${author.system?'SYSTEM':(m.webhook_id?'WEBHOOK':(author.bot?`BOT${getUserFlags(author.flags??author.public_flags).VERIFIED_BOT?' ✔':''}`:''))}</span>`:''}${window.data.extra_settings.tags&&author.clan?getUserClan(author.clan):''}<span class="timestamp">${formatDate(m.timestamp, 'r')}</span>${getUserFlags(author.flags??author.public_flags).SPAMMER?'<span>· Possible spammer</span>':''}</span>`}
+    ${author.hide?'':`<span><span class="name" onclick="showMinifiedProfile(this, '${author.id}')"${window.data.currentServer!=='0'?` style="--rc:${getUserColor(window.data.currentServer, data.servers.find(e=>e.id===window.data.currentServer).members?.find(mem=>mem.user.id===author.id))}"`:''}>${getUserDisplay(author)}</span>${[author.system,m.webhook_id,author.bot].filter(e=>!!e).length?`<span class="tag">${author.system?'SYSTEM':(m.webhook_id?'WEBHOOK':(author.bot?`BOT${getUserFlags(author.flags??author.public_flags).VERIFIED_BOT?' ✔':''}`:''))}</span>`:''}${window.data.extra_settings.tags&&author.clan?getUserClan(author.clan):''}<span class="timestamp">${formatDate(m.timestamp, 'r')}</span>${!m.webhook_id&&getUserFlags(author.flags??author.public_flags).SPAMMER?'<span>· Possible spammer</span>':''}</span>`}
     <span class="inner">${parseMD(content)}${m.edited_timestamp?'<span class="edited"> (edited)</span>':''}</span>
     ${m.attachments?.length?m.attachments.map(attach=>{
       if (!attach.content_type) attach.content_type=`image/${attach.url.split('?')[0].split('.').slice(-1)[0]}`;
@@ -503,6 +516,7 @@ function renderMessage(content, author, m) {
     }).join(''):''}
     ${m.embeds?.length?m.embeds.map(embed=>renderEmbed(embed)).join(''):''}
     ${renderComponents(m.components??[], { id: m.id, app: author.id, flags: m.flags })}
+    ${m.poll?renderPoll(m.poll):''}
     ${m.sticker_items?.length?m.sticker_items.map(sticker=>{
       if (sticker.format_type===3) {
         return `<lottie-sticker class="message-attach" data-id="${sticker.id}"></lottie-sticker>`;
@@ -511,7 +525,7 @@ function renderMessage(content, author, m) {
     }).join(''):''}
     ${m.reactions?.length?`<div class="reactions">${m.reactions.map(reaction=>`<button${reaction.me?' class="me"':''}>${reaction.emoji.id?`<img src="https://cdn.discordapp.com/emojis/${reaction.emoji.id}.${reaction.emoji.animated?'gif':'webp'}?size=96" width="16" height="16" loading="lazy">`:twemoji.parse(reaction.emoji.name, twemojiConfig)}${reaction.count}</button>`).join('')}</div>`:''}
     ${m.thread?`<div class="thread">
-      <span>${m.thread.name} · ${m.thread.message_count} messages</span>
+      <span>${sanitizeHTML(m.thread.name)} · ${m.thread.message_count} messages</span>
     </div>`:''}
     ${getMessageFlags(m.flags).EPHEMERAL?`<span>Only you can see this · <button style="font-weight:normal;padding:2px;border:none;border-radius:0.25rem;" onclick="window.data.messageCache[window.data.currentChannel]=window.data.messageCache[window.data.currentChannel].filter(msg=>msg.id!=='${m.id}');switchMessage(window.data.currentChannel,window.data.currentChannelType)">Delete this message</button></span>`:''}
   </span>
