@@ -277,6 +277,7 @@ Message types
 61: REPORT_TO_MOD_BAN_USER
 62: REPORT_TO_MOD_CLOSED_REPORT
 63: EMOJI_ADDED
+64: PREMIUM_GROUP_INVITE
 */
 /*
 application_news
@@ -404,6 +405,7 @@ function renderEmbed(embed) {
 16 Content Inventory Entry
 17 Container -partial spoiler
 18 Label (label, description)
+19 File Upload
 */
 function componentInteraction(type, cid, data) {
   data = JSON.parse(data.replaceAll("'",'"'));

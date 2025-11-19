@@ -181,8 +181,15 @@ const systemMessages = {
   '37': `{getUserDisplay(m.author)} disabled security actions.`,
   '38': `{getUserDisplay(m.author)} reported a raid in {window.data.servers.find(s=>s.id===window.data.currentServer).name}.`,
   '46': `{getUserDisplay(m.author)}'s poll {m.embeds[0].fields[0].value} has closed.`,
-  '55': `{getUserDisplay(m.author)} activated HD Splash Potion`
+  '55': `{getUserDisplay(m.author)} activated HD Splash Potion`,
+  '63': `{getUserDisplay(m.author)} added a new emoji, {m.content} :{m.content.split(':')[1]}:`
 };
+/*
+main.py
+ ha añadido un nuevo emoji,  :happy3moji: — 08/11/2025 19:25
+
+{
+*/
 const dateFormats = {
   t: {timeStyle: 'short'},
   T: {timeStyle: 'medium'},
