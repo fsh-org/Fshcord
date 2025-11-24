@@ -583,12 +583,12 @@ function showMessages(list) {
       return renderMessage(text, AutoModAuthor, m);
     }
     // Normal
-    if (![0,19,20].includes(m.type)) {
+    if (![0,19,20,23].includes(m.type)) {
       report(`Unhandled message type: ${m.type}`, m);
       return `<div>Unhandled message type: ${m.type}</div>`;
     }
     let auth = m.author;
-    if ([19,20].includes(m.type)) {
+    if ([19,20,23].includes(m.type)) {
       auth.hide = false;
     } else {
       if (a[i+1]?.author?.id===auth.id) {
@@ -779,9 +779,7 @@ function showChannels(list, server) {
   }
   document.getElementById('channel').innerHTML = (server?'<div id="channels-server-header"></div>':'')+list.map(c=>{
     let name = channelName(c);
-    if (c.type===4) {
-      return `<span style="color:var(--text-2);font-size:80%;">${name}</span>`
-    }
+    if (c.type===4) return `<span class="cat">${name}</span>`;
     return `<button data-id="${c.id}" data-type="${c.type}" data-name="${name}">
   ${c.type===1&&window.data.extra_settings.nameplates&&getUser(c.recipient_ids[0]).collectibles?.nameplate?`<video class="nameplate" src="https://cdn.discordapp.com/assets/collectibles/${getUser(c.recipient_ids[0]).collectibles.nameplate.asset}asset.webm" muted loop aria-hidden="true"></video>`:''}
   ${c.type===1?`<div class="avatar" aria-hidden="true"><img src="${getUserAvatar(c.recipient_ids[0], getUser(c.recipient_ids[0]).avatar, 32)}" width="20" height="20" loading="lazy" aria-hidden="true">${c.type===1&&window.data.extra_settings.avatar_deco?`<img src="${getUserDeco(getUser(c.recipient_ids[0])?.avatar_decoration_data?.asset)}" class="decoration" width="25" height="25" loading="lazy" aria-hidden="true" onerror="this.remove()">`:''}</div>`:''}

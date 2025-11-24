@@ -184,19 +184,15 @@ const systemMessages = {
   '55': `{getUserDisplay(m.author)} activated HD Splash Potion`,
   '63': `{getUserDisplay(m.author)} added a new emoji, {m.content} :{m.content.split(':')[1]}:`
 };
-/*
-main.py
- ha añadido un nuevo emoji,  :happy3moji: — 08/11/2025 19:25
-
-{
-*/
 const dateFormats = {
   t: {timeStyle: 'short'},
   T: {timeStyle: 'medium'},
   d: {dateStyle: 'short'},
   D: {dateStyle: 'long'},
   f: {dateStyle: 'long', timeStyle: 'short'},
-  F: {dateStyle: 'full', timeStyle: 'short'}
+  F: {dateStyle: 'full', timeStyle: 'short'},
+  s: {dateStyle: 'short', timeStyle: 'short'},
+  S: {dateStyle: 'short', timeStyle: 'medium'}
 };
 const autoModText = {
   blocked: 'Blocked a message',
@@ -327,7 +323,7 @@ function parseMD(text, extended=2) {
   // Extended
   if (extended>0) {
     text = text
-      .replaceAll(/&lt;t:[0-9]+?(:[tTdDfFR])?>/gm, function(match){match=match.split(':');match[1]=Number(match[1].replace('>',''))*1000;return `<code title="${formatDate(match[1], 'F')}" style="display:unset"${((match[2]??'f')[0])==='R'?` class="timestamp-relative" data-time="${match[1]}"`:''}>${formatDate(match[1], (match[2]??'f')[0])}</code>`})
+      .replaceAll(/&lt;t:[0-9]+?(:[tTdDfFsSR])?>/gm, function(match){match=match.split(':');match[1]=Number(match[1].replace('>',''))*1000;return `<code title="${formatDate(match[1], 'F')}" style="display:unset"${((match[2]??'f')[0])==='R'?` class="timestamp-relative" data-time="${match[1]}"`:''}>${formatDate(match[1], (match[2]??'f')[0])}</code>`})
       .replaceAll(/^(-|\*) .+?$/gm, function(match){return '<li>'+match.slice(2)+'</li>'})
       .replaceAll(/(?:^\d+\. .*(?:\r?\n(?=\d+\. ))?)+/gm, function(match){return '<ol>'+match.replaceAll(/^(.+?)$\n?/gm, function(mat){return`<li>${mat.replace(/^\d+. /m,'')}</li>`})+'</ol>'})
       .replaceAll(/<\/li>\s+?<li>/g,'</li><li>');

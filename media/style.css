@@ -265,8 +265,17 @@ svg {
   inset: 0px;
   width: 100%;
   height: 100%;
-  object-fit: fill;
+  object-fit: cover;
   border-radius: 0.5rem;
+}
+
+#channel .cat {
+  flex-shrink: 0;
+  color: var(--text-2);
+  font-size: 80%;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
 }
 
 .avatar {
@@ -426,7 +435,7 @@ main {
 .message-attach {
   width: fit-content;
   height: fit-content;
-  max-width: 45vh;
+  max-width: min(45vh, 100%);
   max-height: 45vh;
   margin: 2px;
   border-radius: 0.25rem;
@@ -911,8 +920,11 @@ blockquote::before {
   overflow: hidden auto;
 }
 #users summary {
-  font-size: 80%;
   color: var(--rc);
+  font-size: 80%;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
 }
 #users .user {
   position: relative;
@@ -945,6 +957,6 @@ blockquote::before {
   position: absolute;
   width: 100%;
   height: 100%;
-  object-fit: fill;
+  object-fit: cover;
   border-radius: 0.5rem;
 }
