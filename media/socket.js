@@ -288,7 +288,7 @@ function wsmessage(wsd) {
               browser: 'Chrome',
               browser_user_agent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36',
               browser_version: '147.0.0.0',
-              client_build_number:	integer,
+              //client_build_number: 529864,
               client_app_state: 'active',
               release_channel: 'stable',
               system_locale: 'en-US',
