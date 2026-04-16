@@ -33,10 +33,28 @@
 41 UPDATE_TIME_SPENT_SESSION_ID
 */
 
+// Utility
+function GenerateLaunchSignature() {
+  const bits = BigInt('0b00000000100000000001000000010000000010000001000000001000000000000010000010000001000000000100000000000001000000000000100000000000');
+  let value = BigInt('0x'+crypto.randomUUID().replaceAll('-',''));
+  let fullMask = (1n << 128n) - 1n;
+  value = value & (~bits & fullMask);
+  let hex = value.toString(16).padStart(32, '0');
+  return [
+    hex.slice(0, 8),
+    hex.slice(8, 12),
+    hex.slice(12, 16),
+    hex.slice(16, 20),
+    hex.slice(20)
+  ].join('-');
+}
+
+// Data
 window.data.ws = { default: 'wss://gateway.discord.gg/?v=10&encoding=json', log: false, logUnhandled: false, socket: undefined, d: undefined, session_id: undefined, resume_url: undefined, failedResumes: 0, maxFailedResumes: 50 };
 
 loading('gateway');
 
+// Ws handle
 function wsstart(url) {
   if (!url) url = window.data.ws.default;
   let ws = new WebSocket(url);
@@ -60,7 +78,7 @@ function wsmessage(wsd) {
   if (window.data.ws.log) console.log(wsd);
   switch (wsd.op) {
     case 0: // Just anything
-      window.data.ws.d = wsd.s;
+      if (wsd.s) window.data.ws.d = wsd.s;
       if (wsd.t === 'READY') {// Resume
         window.data.ws.resume_url = wsd.d.resume_gateway_url;
         window.data.ws.session_id = wsd.d.session_id;
@@ -257,15 +275,26 @@ function wsmessage(wsd) {
         }));
       } else {
         // Auth
-        window.data.ws.d = wsd.s;
+        window.data.ws.d = wsd.s||0;
         wsheartbeat();
         window.data.ws.socket.send(JSON.stringify({
           op: 2,
           d: {
             token: localStorage.getItem('token'),
             properties: {
-              os: "windows",
-              browser: "chrome"
+              os: 'Windows',
+              os_version: '10',
+              device: '',
+              browser: 'Chrome',
+              browser_user_agent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36',
+              browser_version: '147.0.0.0',
+              client_build_number:	integer,
+              client_app_state: 'active',
+              release_channel: 'stable',
+              system_locale: 'en-US',
+              has_client_mods: false,
+              client_launch_id: crypto.randomUUID(),
+              launch_signature: GenerateLaunchSignature()
             },
             compress: false,
             capabilities: (1<<0)+(1<<4)+(1<<5)+(1<<10)+(1<<13) // Lazy notes, dedupe user objects, prioritizied ready payload, client state v2, debounce message reactions
