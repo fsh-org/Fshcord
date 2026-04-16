@@ -7,7 +7,7 @@
   "display_override": ["minimal-ui"],
   "theme_color": "#333333",
   "background_color": "#181818",
-  "description": "Fshcord - Alternative discord client",
+  "description": "Fshcord - Open and light-weight alternative discord client",
   "icons": [
     {
       "src": "https://fsh.plus/fsh.png",
