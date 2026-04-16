@@ -281,7 +281,7 @@ function parseMD(text, extended=2) {
   text = text
     .replaceAll('<', '~lt;')
     .replaceAll('"', '~quot;');
-  if (extended>0) {
+  if (extended>0.5) {
     text = text.replaceAll(/```([^¬]|¬)*?```/g, (match)=>{
       match = match
         .replaceAll('&', '&amp;')
@@ -321,12 +321,15 @@ function parseMD(text, extended=2) {
     .replaceAll(/\|\|.+?\|\|/g, (match)=>`<span style="cursor:pointer;color:var(--bg-3);border-radius:0.25rem;background-color:var(--bg-3);transition:500ms;" onclick="this.style.color='var(--text-1)';this.style.backgroundColor='var(--bg-0)'">`+match.slice(2,-2)+'</span>')
     .replaceAll(/^\>\>\> ([^¬]|¬)+/gm, (match)=>'> '+match.slice(4).split('\n').join('\n> '));
   // Extended
-  if (extended>0) {
+  if (extended>0.5) {
     text = text
-      .replaceAll(/&lt;t:[0-9]+?(:[tTdDfFsSR])?>/gm, (match)=>{match=match.split(':');match[1]=Number(match[1].replace('>',''))*1000;return `<code title="${formatDate(match[1], 'F')}" style="display:unset"${((match[2]??'f')[0])==='R'?` class="timestamp-relative" data-time="${match[1]}"`:''}>${formatDate(match[1], (match[2]??'f')[0])}</code>`})
       .replaceAll(/^(-|\*) .+?$/gm, (match)=>'<li>'+match.slice(2)+'</li>')
       .replaceAll(/(?:^\d+\. .*(?:\r?\n(?=\d+\. ))?)+/gm, (match)=>'<ol>'+match.replaceAll(/^(.+?)$\n?/gm, (match)=>`<li>${match.replace(/^\d+. /m,'')}</li>`)+'</ol>')
       .replaceAll(/<\/li>[ \t\r]*?\n/g,'</li>');
+  }
+  if (extended>0) {
+    text = text
+      .replaceAll(/&lt;t:[0-9]+?(:[tTdDfFsSR])?>/gm, (match)=>{match=match.split(':');match[1]=Number(match[1].replace('>',''))*1000;return `<code title="${formatDate(match[1], 'F')}" style="display:unset"${((match[2]??'f')[0])==='R'?` class="timestamp-relative" data-time="${match[1]}"`:''}>${formatDate(match[1], (match[2]??'f')[0])}</code>`});
     // Discord
     text = text
       .replaceAll(/(?:&lt;)@(?:\!?)[0-9]+?>/gm, (match)=>{

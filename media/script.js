@@ -143,12 +143,8 @@ async function showMinifiedProfile(element, user) {
 </div>
 <span class="bio">${user?.user?.bio?parseMD(user.user.bio.trim(), 1):''}</span>`;
   menubound = menu.getBoundingClientRect();
-  if (window.innerHeight<menubound.bottom) {
-    menu.style.top = bound.top-(menubound.bottom-window.innerHeight)+'px';
-  }
-  if (bound.left>window.innerWidth/2) {
-    menu.style.left = bound.left-menubound.width-10+'px';;
-  }
+  if (window.innerHeight<menubound.bottom) menu.style.top = bound.top-(menubound.bottom-window.innerHeight)+'px';
+  if (bound.left>window.innerWidth/2) menu.style.left = bound.left-menubound.width-10+'px';
 }
 
 const MessageField = document.getElementById('message-input');
@@ -283,9 +279,10 @@ Message types
 67: FRIEND_REQUEST_ACCEPTED
 */
 /*
-application_news
+age_verification_system_notification
+application_news x
 article -
-auto_moderation_message
+auto_moderation_message -
 auto_moderation_notification
 [
   {
@@ -312,6 +309,8 @@ link -
 poll_result -
 post_preview
 rich -
+safety_policy_notice
+safety_system_notification
 video -
 */
 function renderEmbed(embed) {
@@ -339,13 +338,13 @@ function renderEmbed(embed) {
       // TODO: Add very strange thing where if the embed has url it will allow other embeds with only images to join up to 4
       c=[embed.title, embed.description, embed?.author?.name, embed?.provider?.name].filter(e=>!!e).length;
       return `<div class="message-rich-embed" style="--embed-color:${colorToRGB(embed.color??0)}">
-  ${embed.thumbnail&&embed.type!=='video'?`<img src="${embed.thumbnail.proxy_url}" class="message-attach thumbnail">`:''}
+  ${embed.thumbnail&&embed.type!=='video'?`<img src="${embed.thumbnail.proxy_url}" class="message-attach thumbnail" width="60" height="60" loading="lazy">`:''}
   ${embed?.provider?.name?`<a${embed.provider?.url?` href="${embed.provider.url}"`:''} class="sub">${embed.provider.name}</a>`:''}
   ${embed?.author?.name?`<a${embed.author?.url?` href="${embed.author.url}"`:''} class="sub">${embed.author.proxy_icon_url?`<img src="${embed.author.proxy_icon_url}" loading="lazy">`:''}${embed.author.name}</a>`:''}
   ${embed.title?`<a${embed.url?` href="${embed.url}"`:''} class="etitle">${parseMD(embed.title, 0)}</a>`:''}
   ${embed.description&&embed.type!=='video'?`<span class="desc">${parseMD(embed.description)}</span>`:''}
   ${embed.fields?`<div class="fields">${embed.fields.map(f=>`<div style="${f.inline?'':'flex:1 1 100%'}">
-  <span class="etitle">${parseMD(f.name, 0)}</span>
+  <span class="etitle">${parseMD(f.name, 0.5)}</span>
   <span class="desc">${parseMD(f.value, 1)}</span>
 </div>`).join('')}</div>`:''}
   ${embed.video?(embed.video.proxy_url?`<video src="${embed.video.proxy_url}" class="message-attach" style="max-width:100%" controls></video>`:`<iframe src="${embed.video.url}" class="message-attach" allow="autoplay" frameborder="0" scrolling="no" sandbox="allow-forms allow-modals allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts allow-presentation" allowfullscreen></iframe>`):''}
@@ -392,16 +391,16 @@ function renderEmbed(embed) {
 }
 /*
 1  Action Row -
-2  Button -partial style6, interaction
+2  Button -partial style6
 3  String Select -partial interaction, select, menu placement
 4  Text Input
 5  User Select
 6  Role Select
 7  Mentionable Select
 8  Channel Select
-9  Section -partial accessory
+9  Section -
 10 Text Display -
-11 Thumbnail
+11 Thumbnail -partial spoiler
 12 Media Gallery
 13 File
 14 Separator -
@@ -431,12 +430,10 @@ function componentInteraction(type, cid, data) {
         custom_id: cid
       }
     })
-  })
+  });
 }
 function renderComponents(comp, data) {
-  if (Array.isArray(comp)) {
-    return comp.map(com=>renderComponents(com, data)).join('');
-  }
+  if (Array.isArray(comp)) return comp.map(com=>renderComponents(com, data)).join('');
   switch(comp.type) {
     case 1:
       return `<div class="component c1">${renderComponents(comp.components, data)}</div>`;
@@ -448,7 +445,7 @@ ${comp.style===5?'</a>':''}`;
       return `<div class="component c3">
   <button class="preview" popovertarget="c3o-${comp.id}">
     ${comp.options.filter(opt=>opt.default)[0]?
-      ``:
+      '':
       `<span style="color:var(--text-2)">${sanitizeHTML(comp.placeholder)??'Select'}</span>`
     }
     <span style="color:var(--text-1)">v</span>
@@ -471,9 +468,11 @@ ${comp.style===5?'</a>':''}`;
 }
 */
     case 9:
-      return `<div class="component c9">${renderComponents(comp.components, data)}</div>`;
+      return `<div class="component c9">${comp.accessory?`<div class="accessory">${renderComponents(comp.accessory, data)}</div>`:''}${renderComponents(comp.components, data)}</div>`;
     case 10:
       return `<span class="component c10">${parseMD(comp.content)}</span>`;
+    case 11:
+      return `<img class="component c11" src="${comp.media.proxy_url}"${comp.description?` alt="${comp.description}"`:''} width="60" height="60" loading="lazy">`;
     case 14:
       return `<div class="component c14" style="--divider:${comp.divider?'var(--bg-3)':'transparent'};--spacing:${comp.spacing===1?'10px':'20px'}"></div>`;
     case 17:

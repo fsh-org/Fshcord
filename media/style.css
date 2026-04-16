@@ -88,7 +88,7 @@ svg {
 }
 #server-list {
   display: flex;
-  gap: 10px;
+  gap: 6px;
   flex-direction: column;
   align-items: center;
   width: 70px;
@@ -98,8 +98,8 @@ svg {
 .server-clicky {
   cursor: pointer;
   position: relative;
-  width: 50px;
-  height: 50px;
+  width: 45px;
+  height: 45px;
   aspect-ratio: 1 / 1;
   padding: 0px;
   margin: 0px;
@@ -129,13 +129,13 @@ svg {
   animation: select-leave forwards 250ms;
 }
 .server-clicky img {
-  width: 50px;
-  height: 50px;
-  border-radius: 2rem;
+  width: 45px;
+  height: 45px;
+  border-radius: 1rem;
   transition: border-radius 250ms;
 }
 .server-clicky:hover img, .server-clicky[selected] img {
-  border-radius: 1rem;
+  border-radius: 0.5rem;
 }
 .server-clicky .paused-invites {
   position: absolute;
@@ -539,13 +539,13 @@ lottie-sticker.message-attach {
   position: absolute;
   top: 10px;
   right: 12px;
-  width: 50px;
-  height: 50px;
+  width: 60px;
+  height: 60px;
   margin: 0;
 }
 .message-rich-embed:has(.thumbnail):not(:has(.big)) {
-  padding-right: 70px;
-  padding-bottom: 20px;
+  padding-right: 80px;
+  min-height: 60px;
 }
 .message-rich-embed .sub {
   cursor: auto;
@@ -730,6 +730,31 @@ a:has(.component.c2) {
   color: var(--text-2);
   font-size: 80%;
 }
+.component.c9 {
+  display: flex;
+  flex-direction: column;
+}
+.component.c9 .accessory {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+}
+.component.c10 {
+  word-break: break-word;
+  white-space: break-spaces;
+}
+.component.c11 {
+  display: block;
+  width: 60px;
+  height: 60px;
+  border-radius: 5px;
+}
+.component.c14 {
+  flex: 1;
+  padding: 1px;
+  margin: var(--spacing) 0px;
+  background-color: var(--divider);
+}
 .component.c17 {
   display: flex;
   flex-direction: column;
@@ -752,20 +777,6 @@ a:has(.component.c2) {
   width: 4px;
   border-radius: 1rem 0 0 1rem;
   background-color: var(--color);
-}
-.component.c9 {
-  display: flex;
-  flex-direction: column;
-}
-.component.c10 {
-  word-break: break-word;
-  white-space: break-spaces;
-}
-.component.c14 {
-  flex: 1;
-  padding: 1px;
-  margin: var(--spacing) 0px;
-  background-color: var(--divider);
 }
 .poll {
   display: flex;
