@@ -282,7 +282,7 @@ function parseMD(text, extended=2) {
     .replaceAll('<', '~lt;')
     .replaceAll('"', '~quot;');
   if (extended>0) {
-    text = text.replaceAll(/```([^¬]|¬)*?```/g, function(match){
+    text = text.replaceAll(/```([^¬]|¬)*?```/g, (match)=>{
       match = match
         .replaceAll('&', '&amp;')
         .replaceAll('~lt;', '&lt;')
@@ -291,10 +291,10 @@ function parseMD(text, extended=2) {
     });
   }
   text = text
-    .replaceAll(/\[.*?\]\((?:~lt;)?https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)>?\)/g, function(match){
+    .replaceAll(/\[.*?\]\((?:~lt;)?https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)>?\)/g, (match)=>{
       return reservemd(`<a href="${match.split('](')[1].split(')')[0].replace(/^~lt;|>$/gm, '')}" target="_blank">`)+match.split('](')[0].split('[')[1]+reservemd(`</a>`);
     })
-    .replaceAll(/(?:~lt;)?https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)>?/g, function(match){
+    .replaceAll(/(?:~lt;)?https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)>?/g, (match)=>{
       if (match.match(/^~lt;.+?>$/m)) match=match.slice(4,-1);
       return reservemd(`<a href="${match}" target="_blank">${match}</a>`);
     })
@@ -303,43 +303,43 @@ function parseMD(text, extended=2) {
     .replaceAll('~lt;', '&lt;')
     .replaceAll('~quot;', '&quot;')
     .replaceAll("'", '&apos;')
-    .replaceAll(/\\([^&])/g, function(_, char){return `&#${char.charCodeAt(0)};`})
-    .replaceAll(/\`([^¬]|¬)+?\`/g, function(match){return reservemd('<code>'+match.slice(1,-1)+'</code>')});
+    .replaceAll(/\\([^&])/g, (_, char)=>`&#${char.charCodeAt(0)};`)
+    .replaceAll(/\`([^¬]|¬)+?\`/g, (match)=>reservemd('<code>'+match.slice(1,-1)+'</code>'));
   // Discord
   text = text
-    .replaceAll(/&lt;a?:.+?:[0-9]+?>/g, function(match){
+    .replaceAll(/&lt;a?:.+?:[0-9]+?>/g, (match)=>{
       let parts = match.replace('>','').split(':');
       return reservemd(`<img src="https://cdn.discordapp.com/emojis/${parts[2]}.${parts[0]==='&lt;a'?'gif':'webp'}?size=96" width="18" height="18" loading="lazy" onerror="this.outerText='${match}'" class="emoji">`);
     });
   // General
   text = text
-    .replaceAll(/\*\*.+?\*\*/g, function(match){return '<b>'+match.slice(2,-2)+'</b>'})
-    .replaceAll(/\*.+?\*/g, function(match){return '<i>'+match.slice(1,-1)+'</i>'})
-    .replaceAll(/\_\_.+?\_\_/g, function(match){return '<u>'+match.slice(2,-2)+'</u>'})
-    .replaceAll(/\_.+?\_/g, function(match){return '<i>'+match.slice(1,-1)+'</i>'})
-    .replaceAll(/\~\~.+?\~\~/g, function(match){return '<s>'+match.slice(2,-2)+'</s>'})
-    .replaceAll(/\|\|.+?\|\|/g, function(match){return `<span style="cursor:pointer;color:var(--bg-3);border-radius:0.25rem;background-color:var(--bg-3);transition:500ms;" onclick="this.style.color='var(--text-1)';this.style.backgroundColor='var(--bg-0)'">`+match.slice(2,-2)+'</span>'})
-    .replaceAll(/^\>\>\> ([^¬]|¬)+/gm, function(match){return '> '+match.slice(4).split('\n').join('\n> ')});
+    .replaceAll(/\*\*.+?\*\*/g, (match)=>'<b>'+match.slice(2,-2)+'</b>')
+    .replaceAll(/\*.+?\*/g, (match)=>'<i>'+match.slice(1,-1)+'</i>')
+    .replaceAll(/\_\_.+?\_\_/g, (match)=>'<u>'+match.slice(2,-2)+'</u>')
+    .replaceAll(/\_.+?\_/g, (match)=>'<i>'+match.slice(1,-1)+'</i>')
+    .replaceAll(/\~\~.+?\~\~/g, (match)=>'<s>'+match.slice(2,-2)+'</s>')
+    .replaceAll(/\|\|.+?\|\|/g, (match)=>`<span style="cursor:pointer;color:var(--bg-3);border-radius:0.25rem;background-color:var(--bg-3);transition:500ms;" onclick="this.style.color='var(--text-1)';this.style.backgroundColor='var(--bg-0)'">`+match.slice(2,-2)+'</span>')
+    .replaceAll(/^\>\>\> ([^¬]|¬)+/gm, (match)=>'> '+match.slice(4).split('\n').join('\n> '));
   // Extended
   if (extended>0) {
     text = text
-      .replaceAll(/&lt;t:[0-9]+?(:[tTdDfFsSR])?>/gm, function(match){match=match.split(':');match[1]=Number(match[1].replace('>',''))*1000;return `<code title="${formatDate(match[1], 'F')}" style="display:unset"${((match[2]??'f')[0])==='R'?` class="timestamp-relative" data-time="${match[1]}"`:''}>${formatDate(match[1], (match[2]??'f')[0])}</code>`})
-      .replaceAll(/^(-|\*) .+?$/gm, function(match){return '<li>'+match.slice(2)+'</li>'})
-      .replaceAll(/(?:^\d+\. .*(?:\r?\n(?=\d+\. ))?)+/gm, function(match){return '<ol>'+match.replaceAll(/^(.+?)$\n?/gm, function(mat){return`<li>${mat.replace(/^\d+. /m,'')}</li>`})+'</ol>'})
-      .replaceAll(/<\/li>\s+?<li>/g,'</li><li>');
+      .replaceAll(/&lt;t:[0-9]+?(:[tTdDfFsSR])?>/gm, (match)=>{match=match.split(':');match[1]=Number(match[1].replace('>',''))*1000;return `<code title="${formatDate(match[1], 'F')}" style="display:unset"${((match[2]??'f')[0])==='R'?` class="timestamp-relative" data-time="${match[1]}"`:''}>${formatDate(match[1], (match[2]??'f')[0])}</code>`})
+      .replaceAll(/^(-|\*) .+?$/gm, (match)=>'<li>'+match.slice(2)+'</li>')
+      .replaceAll(/(?:^\d+\. .*(?:\r?\n(?=\d+\. ))?)+/gm, (match)=>'<ol>'+match.replaceAll(/^(.+?)$\n?/gm, (match)=>`<li>${match.replace(/^\d+. /m,'')}</li>`)+'</ol>')
+      .replaceAll(/<\/li>[ \t\r]*?\n/g,'</li>');
     // Discord
     text = text
-      .replaceAll(/(?:&lt;)@(?:\!?)[0-9]+?>/gm, function(match){
+      .replaceAll(/(?:&lt;)@(?:\!?)[0-9]+?>/gm, (match)=>{
         match = match.replaceAll(/^(?:&lt;)@|>$/gm,'');
         if (!data.users[match]) return `<span class="user" onclick="showMinifiedProfile(this, '${match}')">@${match}</span>`;
         return `<span class="user" onclick="showMinifiedProfile(this, '${match}')">@${getUserDisplay(data.users[match])}</span>`;
       })
-      .replaceAll(/(?:&lt;)@(?:&amp;)[0-9]+?>/gm, function(match){
+      .replaceAll(/(?:&lt;)@(?:&amp;)[0-9]+?>/gm, (match)=>{
         let role = window.data.servers.find(s=>s.id===window.data.currentServer).roles.find(r=>r.id===match.replaceAll(/^(?:&lt;)@(?:&amp;)|>$/gm,''));
         if (!role) return reservemd(`<span class="role">@Unknown Role</span>`);
         return reservemd(`<span class="role"${role.color===0?'':` style="--mcol:${colorToRGB(role.color)}"`}>@${role.name}</span>`);
       })
-      .replaceAll(/(?:&lt;)#[0-9]+?>/gm, function(match){
+      .replaceAll(/(?:&lt;)#[0-9]+?>/gm, (match)=>{
         let channel = window.data.servers.find(s=>s.id===window.data.currentServer).channels.find(c=>c.id===match.replaceAll(/^(?:&lt;)#|>$/gm,''));
         if (!channel) return reservemd(`<span class="channel">#Unknown Channel</span>`);
         return reservemd(`<span class="channel" onclick="loading('${channel.name}');setTop('${channel.name}',${channel.type});switchMessage('${channel.id}',${channel.type})">#${channel.name}</span>`);
@@ -347,23 +347,23 @@ function parseMD(text, extended=2) {
   }
   if (extended>1) {
     text = text
-      .replaceAll(/^(> )?### .+?$/gm, function(match){return (match.startsWith('> ')?'> ':'')+'<span style="font-size:110%">'+match.replace(/^> /m, '').slice(4)+'</span>'})
-      .replaceAll(/^(> )?## .+?$/gm, function(match){return (match.startsWith('> ')?'> ':'')+'<span style="font-size:125%">'+match.replace(/^> /m, '').slice(3)+'</span>'})
-      .replaceAll(/^(> )?# .+?$/gm, function(match){return (match.startsWith('> ')?'> ':'')+'<span style="font-size:150%">'+match.replace(/^> /m, '').slice(2)+'</span>'})
-      .replaceAll(/^(> )?-# .+?$/gm, function(match){return (match.startsWith('> ')?'> ':'')+'<span style="font-size:80%;color:var(--text-2);">'+match.replace(/^> /m, '').slice(3)+'</span>'});
+      .replaceAll(/^(> )?### .+?$/gm, (match)=>(match.startsWith('> ')?'> ':'')+'<span style="font-size:110%;font-weight:bold;">'+match.replace(/^> /m, '').slice(4)+'</span>')
+      .replaceAll(/^(> )?## .+?$/gm, (match)=>(match.startsWith('> ')?'> ':'')+'<span style="font-size:125%;font-weight:bold;">'+match.replace(/^> /m, '').slice(3)+'</span>')
+      .replaceAll(/^(> )?# .+?$/gm, (match)=>(match.startsWith('> ')?'> ':'')+'<span style="font-size:150%;font-weight:bold;">'+match.replace(/^> /m, '').slice(2)+'</span>')
+      .replaceAll(/^(> )?-# .+?$/gm, (match)=>(match.startsWith('> ')?'> ':'')+'<span style="font-size:80%;color:var(--text-2);">'+match.replace(/^> /m, '').slice(3)+'</span>');
   }
   text = text
-    .replaceAll(/^\> .+?$/gm, function(match){return '<blockquote>'+match.slice(2)+'</blockquote>'});
+    .replaceAll(/^\> .+?$/gm, (match)=>'<blockquote>'+match.slice(2)+'</blockquote>');
   // Twemojis
   text = text
-    .replaceAll(/:[a-zA-Z0-9:_-]+?:/g, function(match){
+    .replaceAll(/:[a-zA-Z0-9:_-]+?:/g, (match)=>{
       if (!window.emoji_colons[match.toLowerCase()]) return match;
       match = window.emoji_colons[match.toLowerCase()];
-      return match;//Array.from(match.matchAll(/.{6}/g)).map(part=>String.fromCodePoint(parseInt(part[0],16))).join('')
+      return match;
     });
   text = twemoji.parse(text, twemojiConfig);
   // Reserve
-  text = text.replaceAll(/¬r[0-9]{16}¬r/g, function(match){
+  text = text.replaceAll(/¬r[0-9]{16}¬r/g, (match)=>{
     let id = match.split('¬r')[1];
     if (reserve[id]) {
       return reserve[id];
@@ -373,7 +373,7 @@ function parseMD(text, extended=2) {
   })
   return text;
 }
-setInterval(function(){
+setInterval(()=>{
   Array.from(document.querySelectorAll('.timestamp-relative'))
     .forEach(relative => {
       relative.innerText = formatDate(Number(relative.getAttribute('data-time')), 'R');

@@ -65,7 +65,7 @@ function showContextMenu(event, type, data) {
       report('Unknown context menu type: '+type, data);
   }
 }
-window.addEventListener('click', function(){document.getElementById('contextmenu').close()});
+window.addEventListener('click', document.getElementById('contextmenu').close);
 
 let userpopupevent = false;
 function handleUserPopupClose(event) {
@@ -174,7 +174,7 @@ function sendMessage() {
       CurrentlySending = false;
     });
 }
-MessageField.onkeyup = MessageField.onkeydown = function(evt){
+MessageField.onkeyup = MessageField.onkeydown = (evt)=>{
   if (evt.key==='Enter'&&!evt.shiftKey) {
     evt.preventDefault();
     sendMessage();
@@ -205,7 +205,7 @@ MessageField.onkeyup = MessageField.onkeydown = function(evt){
     document.getElementById("slash-bar").innerText = '';
   }
 };
-MessageField.oninput = function(evt) {
+MessageField.oninput = (evt)=>{
   evt.target.style.height = 'auto';
   evt.target.style.height = Math.min(evt.target.scrollHeight-16, 17 * 8) + 'px';
 };
@@ -554,8 +554,8 @@ function showMessages(list) {
     // System
     if (systemMessages[m.type.toString()]) {
       let text = systemMessages[m.type.toString()]
-        .replaceAll(/\{\{(.*?)\}\}/g, function(_match, g1){return eval(g1)})
-        .replaceAll(/\{(.*?)\}/g, function(_match, g1){return eval(g1)});
+        .replaceAll(/\{\{(.*?)\}\}/g, (_match, g1)=>eval(g1))
+        .replaceAll(/\{(.*?)\}/g, (_match, g1)=>eval(g1));
       return renderMessage(text, SystemAuthor, m);
     }
     // Call
@@ -713,7 +713,7 @@ function showMembers(members) {
     .forEach(u=>{
       let n = u.querySelector('.nameplate');
       if (n) {
-        u.onmouseover = ()=>{n.play()};
+        u.onmouseover = n.play;
         u.onmouseleave = ()=>{n.pause();n.currentTime=0};
       }
     })
@@ -798,7 +798,7 @@ function showChannels(list, server) {
   }).join('');
   Array.from(document.querySelectorAll('#channel button'))
     .forEach(b=>{
-      b.onclick = function(){
+      b.onclick = ()=>{
         loading(b.getAttribute('data-name'));
         setTop(b.getAttribute('data-name'), b.getAttribute('data-type'))
         switchMessage(b.getAttribute('data-id'), b.getAttribute('data-type'));
@@ -809,7 +809,7 @@ function showChannels(list, server) {
       })};
       let n = b.querySelector('.nameplate');
       if (n) {
-        b.onmouseenter = ()=>{n.play()};
+        b.onmouseenter = n.play;
         b.onmouseleave = ()=>{n.pause();n.currentTime=0};
       }
     });
@@ -837,7 +837,7 @@ function showUserChannel(id) {
 </div>`;
       break;
     case 'fshcord':
-      window.saveExtra = function(){
+      window.saveExtra = ()=>{
         localStorage.setItem('extra', JSON.stringify(window.data.extra_settings));
       };
       m.innerHTML = `<p>Some extra settings not available in normal discord.</p>
@@ -876,7 +876,7 @@ function switchChannel(id, changechannel=true) {
 </button>`).join('');
     Array.from(document.querySelectorAll('#channel button'))
       .forEach(b=>{
-        b.onclick = function(){
+        b.onclick = ()=>{
           setTop(b.getAttribute('data-name'), 'none')
           showUserChannel(b.getAttribute('data-id'));
         };
@@ -939,7 +939,7 @@ function showServers(list) {
         maxWidth: 200
       });
       // On click
-      b.onclick = function(){
+      b.onclick = ()=>{
         let sid = b.getAttribute('data-id');
         // Set selected
         let previous = document.querySelector('#server button[selected]');

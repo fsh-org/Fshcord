@@ -363,6 +363,7 @@ main {
 .message .tag {
   display: inline-flex;
   align-items: center;
+  color: var(--text-0);
   width: fit-content;
   font-size: 75%;
   padding: 0px 2px;
@@ -417,7 +418,7 @@ main {
   width: calc(100% + 20px);
   height: 100%;
   opacity: 0.25;
-  background-color: var(--blue-1);
+  background-color: var(--blue-2);
   box-sizing: border-box;
   z-index: -10;
 }
@@ -562,6 +563,9 @@ lottie-sticker.message-attach {
   word-break: break-word;
   white-space: break-spaces;
 }
+.message-rich-embed .desc li {
+  margin-left: 20px;
+}
 .message-rich-embed .fields {
   display: flex;
   flex-wrap: wrap;
@@ -669,10 +673,10 @@ a:has(.component.c2) {
   color: var(--text-3);
 }
 .component.c2.style-1 {
-  background: var(--blue-1);
+  background: var(--blue-2);
 }
 .component.c2.style-2 {
-  background: var(--black-1);
+  background: var(--bg-3);
 }
 .component.c2.style-3 {
   background: var(--green-2);
@@ -681,7 +685,7 @@ a:has(.component.c2) {
   background: var(--red-2);
 }
 .component.c2.style-5 {
-  background: var(--black-1);
+  background: var(--bg-3);
 }
 .component.c2 img {
   width: 16px;
@@ -825,7 +829,7 @@ blockquote::before {
   width: 4px;
   height: calc(100% + 2px);
   border-radius: 1rem;
-  background-color: var(--text-2);
+  background-color: var(--text-3);
 }
 .message.deleted {
   color: var(--red-2);
