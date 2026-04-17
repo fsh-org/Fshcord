@@ -736,8 +736,8 @@ a:has(.component.c2) {
 }
 .component.c9 .accessory {
   position: absolute;
-  top: 5px;
-  right: 5px;
+  top: 10px;
+  right: 10px;
 }
 .component.c10 {
   word-break: break-word;

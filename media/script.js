@@ -476,7 +476,7 @@ ${comp.style===5?'</a>':''}`;
     case 14:
       return `<div class="component c14" style="--divider:${comp.divider?'var(--bg-3)':'transparent'};--spacing:${comp.spacing===1?'10px':'20px'}"></div>`;
     case 17:
-      return `<div class="component c17" style="--color:${colorToRGB(comp.accent_color)}">${renderComponents(comp.components, data)}</div>`;
+      return `<div class="component c17" style="--color:${colorToRGB(comp.accent_color||0)}">${renderComponents(comp.components, data)}</div>`;
     default:
       report(`Unknown component type: ${comp.type}`, comp);
       return `<span>Unknown component type: ${comp.type}</span>`;
