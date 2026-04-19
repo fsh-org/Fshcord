@@ -72,12 +72,12 @@ svg {
 }
 
 @keyframes select-enter {
-  from {left:-15px}
-  to {left:-10px}
+  from {left:-17.5px}
+  to {left:-12.5px}
 }
 @keyframes select-leave {
-  from {left:-10px}
-  to {left:-15px}
+  from {left:-12.5px}
+  to {left:-17.5px}
 }
 #server {
   display: flex;
@@ -732,12 +732,12 @@ a:has(.component.c2) {
 }
 .component.c9 {
   display: flex;
-  flex-direction: column;
+  gap: 5px;
+  justify-content: space-between;
 }
-.component.c9 .accessory {
-  position: absolute;
-  top: 10px;
-  right: 10px;
+.component.c9 .c9-inner {
+  display: flex;
+  flex-direction: column;
 }
 .component.c10 {
   word-break: break-word;

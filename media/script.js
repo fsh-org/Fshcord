@@ -468,7 +468,7 @@ ${comp.style===5?'</a>':''}`;
 }
 */
     case 9:
-      return `<div class="component c9">${comp.accessory?`<div class="accessory">${renderComponents(comp.accessory, data)}</div>`:''}${renderComponents(comp.components, data)}</div>`;
+      return `<div class="component c9"><div class="c9-inner">${renderComponents(comp.components, data)}</div>${comp.accessory?`<div class="accessory">${renderComponents(comp.accessory, data)}</div>`:''}</div>`;
     case 10:
       return `<span class="component c10">${parseMD(comp.content)}</span>`;
     case 11:
@@ -708,14 +708,16 @@ function showMembers(members) {
   <span style="--rc:${getUserColor(window.data.currentServer, mem)}">${getUserDisplay(mem)}</span>
 </button>`).join('') + '</details>'
   }).join('');
-  Array.from(document.querySelectorAll('#users .user'))
-    .forEach(u=>{
-      let n = u.querySelector('.nameplate');
-      if (n) {
-        u.onmouseover = n.play;
-        u.onmouseleave = ()=>{n.pause();n.currentTime=0};
-      }
-    })
+  document.querySelectorAll('#users .user .nameplate')
+    .forEach(plate=>{
+      plate.parentElement.onmouseover = ()=>{
+        plate.play();
+      };
+      plate.parentElement.onmouseleave = ()=>{
+        plate.pause();
+        plate.currentTime = 0;
+      };
+    });
 }
 function getMembers(id) {
   // TODO: Support any server (currently only for servers where user has perms)
@@ -808,8 +810,13 @@ function showChannels(list, server) {
       })};
       let n = b.querySelector('.nameplate');
       if (n) {
-        b.onmouseenter = n.play;
-        b.onmouseleave = ()=>{n.pause();n.currentTime=0};
+        b.onmouseenter = ()=>{
+          n.play();
+        };
+        b.onmouseleave = ()=>{
+          n.pause();
+          n.currentTime = 0;
+        };
       }
     });
   if (server) {
@@ -856,9 +863,7 @@ function switchChannel(id, changechannel=true) {
       // Saved poss?
       if (window.data.serverLastChannel[id]) {
         let sav = window.data.dms.find(dm=>dm.id===window.data.serverLastChannel[id]);
-        if (sav) {
-          first = sav;
-        }
+        if (sav) first = sav;
       }
       loading(channelName(first));
       setTop(channelName(first), first.type);
@@ -901,9 +906,7 @@ function switchChannel(id, changechannel=true) {
       // Saved poss?
       if (window.data.serverLastChannel[id]) {
         let sav = filtered.find(ch=>ch.id===window.data.serverLastChannel[id]);
-        if (sav) {
-          first = sav;
-        }
+        if (sav) first = sav;
       }
       loading(channelName(first));
       setTop(channelName(first), first.type);
