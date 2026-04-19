@@ -65,7 +65,7 @@ function showContextMenu(event, type, data) {
       report('Unknown context menu type: '+type, data);
   }
 }
-window.addEventListener('click', document.getElementById('contextmenu').close);
+window.addEventListener('click', ()=>{document.getElementById('contextmenu').close()});
 
 let userpopupevent = false;
 function handleUserPopupClose(event) {
