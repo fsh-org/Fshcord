@@ -401,7 +401,7 @@ function renderEmbed(embed) {
 9  Section -
 10 Text Display -
 11 Thumbnail -partial spoiler
-12 Media Gallery
+12 Media Gallery -partial spoiler
 13 File
 14 Separator -
 16 Content Inventory Entry
@@ -473,6 +473,8 @@ ${comp.style===5?'</a>':''}`;
       return `<span class="component c10">${parseMD(comp.content)}</span>`;
     case 11:
       return `<img class="component c11" src="${comp.media.proxy_url}"${comp.description?` alt="${comp.description}"`:''} width="60" height="60" loading="lazy">`;
+    case 12:
+      return `<div class="gallery">${comp.items.map(item=>`<${item.media.content_type?.startsWith('video/')?'video':'img'} src="${item.media.proxy_url}"${item.description?` alt="${item.description}"`:''} controls loading="lazy">${item.media.content_type?.startsWith('video/')?'</video>':''}`).join('')}</div>`;
     case 14:
       return `<div class="component c14" style="--divider:${comp.divider?'var(--bg-3)':'transparent'};--spacing:${comp.spacing===1?'10px':'20px'}"></div>`;
     case 17:

@@ -433,6 +433,18 @@ main {
   background-color: var(--blue-1);
   z-index: -5;
 }
+.gallery {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+  min-width: 25dvw;
+  margin-top: 10px;
+}
+.gallery img, .gallery video {
+  flex: 1 1 calc(33.33% - 5px);
+  width: 0px;
+  border-radius: 0.5rem;
+}
 .message-attach {
   width: fit-content;
   height: fit-content;
@@ -459,8 +471,8 @@ lottie-sticker.message-attach {
   width: 160px;
   height: 160px;
 }
-.message-attach.spoiler {
-  filter: blur(6px) contrast(1.5) saturate(0.5) grayscale(0.5);
+.message .spoiler {
+  filter: blur(10px) brightness(0.75) grayscale(0.5);
 }
 .reactions {
   display: flex;
