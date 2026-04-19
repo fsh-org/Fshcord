@@ -444,6 +444,7 @@ main {
   flex: 1 1 calc(33.33% - 5px);
   width: 0px;
   border-radius: 0.5rem;
+  transition: filter 500ms;
 }
 .message-attach {
   width: fit-content;
@@ -472,6 +473,7 @@ lottie-sticker.message-attach {
   height: 160px;
 }
 .message .spoiler {
+  cursor: pointer;
   filter: blur(10px) brightness(0.75) grayscale(0.5);
 }
 .reactions {
@@ -760,6 +762,7 @@ a:has(.component.c2) {
   width: 60px;
   height: 60px;
   border-radius: 5px;
+  transition: filter 500ms;
 }
 .component.c14 {
   flex: 1;
