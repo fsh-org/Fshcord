@@ -277,6 +277,7 @@ Message types
 65: VOICE_SESSION
 66: GUILD_BOOST_UPSELL
 67: FRIEND_REQUEST_ACCEPTED
+68: MEDIA_MENTION_MESSAGE
 */
 /*
 age_verification_system_notification
@@ -743,8 +744,8 @@ Channel types
 4: GUILD_CATEGORY -
 5: GUILD_NEWS -
 6: GUILD_STORE
-7: GUILD_LFG x
-8: LFG_GROUP_DM x
+7: GUILD_LFG ?
+8: LFG_GROUP_DM ?
 9: THREAD_ALPHA -
 10: NEWS_THREAD -
 11: PUBLIC_THREAD -
@@ -755,6 +756,8 @@ Channel types
 16: GUILD_MEDIA
 17: LOBBY
 18: DM_SDK
+19: MEDIA_THREAD
+20: GUILD_SPACE
 */
 function channelName(c) {
   let name = c.id;
