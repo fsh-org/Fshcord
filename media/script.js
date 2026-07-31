@@ -758,6 +758,7 @@ Channel types
 18: DM_SDK
 19: MEDIA_THREAD
 20: GUILD_SPACE
+21: GUILD_APP
 */
 function channelName(c) {
   let name = c.id;

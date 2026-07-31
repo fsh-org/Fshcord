@@ -70,11 +70,11 @@ const attachmentFlags = {
   CONTAINS_GORE_CONTENT: 6n
 };
 const channelType = {
-  invalid: [4,7,8], // These can't be opened or haven't existed for very long
-  text: [0,1,3,5,9,10,11,12], // Add 17 when discord releases lobies (they should be a normal text channel?)
+  invalid: [4,14, 20,21], // Can't be opened / Unknown type
+  text: [0,1,3,5,9,10,11,12,17,18,19],
   voice: [2,13],
   store: [6],
-  forum: [15,16]
+  forum: [7,8,15,16]
 };
 const SystemAuthor = {
   id: 0,
