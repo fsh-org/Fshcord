@@ -119,10 +119,12 @@ function wsmessage(wsd) {
         switchServers();
       } else if (wsd.t === 'GUILD_DELETE') {
         window.data.servers = window.data.servers.filter(e=>e.id!==wsd.d.id);
-        window.data.settings.guild_folders.forEach(g=>{
-          g.guild_ids = g.guild_ids.filter(s=>s.id!==wsd.d.id);
-        });
-        window.data.settings.guild_folders = window.data.settings.guild_folders.filter(g=>g.guild_ids.length>0);
+        window.data.settings.guild_folders = window.data.settings.guild_folders
+          .map(g=>{
+            g.guild_ids = g.guild_ids.filter(id=>id!==wsd.d.id);
+            return g;
+          })
+          .filter(g=>g.guild_ids.length>0);
         switchServers();
       } else if (wsd.t === 'GUILD_MEMBERS_CHUNK') {
         let temp = window.data.servers[window.data.servers.findIndex(e=>e.id===wsd.d.guild_id)];
@@ -156,6 +158,7 @@ function wsmessage(wsd) {
       } else if (wsd.t === 'MESSAGE_UPDATE') {
         if (!window.data.messageCache[wsd.d.channel_id]) return;
         let message = window.data.messageCache[wsd.d.channel_id].find(m=>m.id===wsd.d.id);
+        if (!message) return;
         Object.merge(message, wsd.d);
         // If current, show new
         if (window.data.currentChannel===wsd.d.channel_id) {
@@ -176,6 +179,8 @@ function wsmessage(wsd) {
       } else if (wsd.t === 'MESSAGE_REACTION_ADD') {
         if (!window.data.messageCache[wsd.d.channel_id]) return;
         let message = window.data.messageCache[wsd.d.channel_id].find(m=>m.id===wsd.d.message_id);
+        if (!message) return;
+        message.reactions ??= [];
         let same = message.reactions.find(r=>r.emoji.id==wsd.d.emoji.id&&r.emoji.name===wsd.d.emoji.name);
         if (same) {
           // Count up
@@ -202,7 +207,7 @@ function wsmessage(wsd) {
             burst_colors: [],
             me: (wsd.d.user_id===window.data.user.id),
             me_burst: (wsd.d.type===1)&&(wsd.d.user_id===window.data.user.id)
-          })
+          });
         }
         // If current, show new
         if (window.data.currentChannel===wsd.d.channel_id) {
