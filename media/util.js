@@ -266,7 +266,9 @@ function sanitizeHTML(text) {
   if (text===null||text===undefined||Number.isNaN(text)) return text;
   return text
     .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;');
+    .replaceAll('<', '&lt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&apos;');
 }
 
 // MD Parse

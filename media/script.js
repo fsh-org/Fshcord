@@ -53,11 +53,11 @@ function showContextMenu(event, type, data) {
   menu.style.top = event.y+'px';
   switch(type) {
     case 'server':
-      menu.innerHTML = `<button onclick="copy('${data.name}')">Copy name</button>
+      menu.innerHTML = `<button onclick="copy('${sanitizeHTML(data.name)}')">Copy name</button>
 <button onclick="copy('${data.id}')">Copy id</button>`;
       break;
     case 'channel':
-      menu.innerHTML = `<button onclick="copy('${data.name}')">Copy name</button>
+      menu.innerHTML = `<button onclick="copy('${sanitizeHTML(data.name)}')">Copy name</button>
 <button onclick="copy('${data.id}')">Copy id</button>`;
       break;
     default:
@@ -139,7 +139,7 @@ async function showMinifiedProfile(element, user) {
 </div>
 <div class="name">
   <b>${getUserDisplay(user.user??user)}</b>
-  <span style="display:block">${(user.user??user).username}${user?.user?.discriminator?.length>1?'#'+user.user.discriminator:''}${user?.user_profile?.pronouns?` · ${user.user_profile.pronouns}`:''}</span>
+  <span style="display:block">${sanitizeHTML((user.user??user).username)}${user?.user?.discriminator?.length>1?'#'+user.user.discriminator:''}${user?.user_profile?.pronouns?` · ${sanitizeHTML(user.user_profile.pronouns)}`:''}</span>
 </div>
 <span class="bio">${user?.user?.bio?parseMD(user.user.bio.trim(), 1):''}</span>`;
   menubound = menu.getBoundingClientRect();
@@ -340,8 +340,8 @@ function renderEmbed(embed) {
       c=[embed.title, embed.description, embed?.author?.name, embed?.provider?.name].filter(e=>!!e).length;
       return `<div class="message-rich-embed" style="--embed-color:${colorToRGB(embed.color??0)}">
   ${embed.thumbnail&&embed.type!=='video'?`<img src="${embed.thumbnail.proxy_url}" class="message-attach thumbnail" width="60" height="60" loading="lazy">`:''}
-  ${embed?.provider?.name?`<a${embed.provider?.url?` href="${embed.provider.url}"`:''} class="sub">${embed.provider.name}</a>`:''}
-  ${embed?.author?.name?`<a${embed.author?.url?` href="${embed.author.url}"`:''} class="sub">${embed.author.proxy_icon_url?`<img src="${embed.author.proxy_icon_url}" loading="lazy">`:''}${embed.author.name}</a>`:''}
+  ${embed?.provider?.name?`<a${embed.provider?.url?` href="${embed.provider.url}"`:''} class="sub">${sanitizeHTML(embed.provider.name)}</a>`:''}
+  ${embed?.author?.name?`<a${embed.author?.url?` href="${embed.author.url}"`:''} class="sub">${embed.author.proxy_icon_url?`<img src="${embed.author.proxy_icon_url}" loading="lazy">`:''}${sanitizeHTML(embed.author.name)}</a>`:''}
   ${embed.title?`<a${embed.url?` href="${embed.url}"`:''} class="etitle">${parseMD(embed.title, 0)}</a>`:''}
   ${embed.description&&embed.type!=='video'?`<span class="desc">${parseMD(embed.description)}</span>`:''}
   ${embed.fields?`<div class="fields">${embed.fields.map(f=>`<div style="${f.inline?'':'flex:1 1 100%'}">
@@ -350,7 +350,7 @@ function renderEmbed(embed) {
 </div>`).join('')}</div>`:''}
   ${embed.video?(embed.video.proxy_url?`<video src="${embed.video.proxy_url}" class="message-attach" style="max-width:100%" controls></video>`:`<iframe src="${embed.video.url}" class="message-attach" allow="autoplay" frameborder="0" scrolling="no" sandbox="allow-forms allow-modals allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts allow-presentation" allowfullscreen></iframe>`):''}
   ${embed.image&&embed.type!=='video'?`<img src="${embed.image.proxy_url}" loading="lazy" class="message-attach big" style="max-width:100%;margin-top:${embed.thumbnail?(c>2?'0':(c>1?'15':'40')):'0'}px">`:''}
-  ${embed?.footer?.text||embed.timestamp?`<span class="footer">${embed?.footer?.text?`<span class="text">${embed.footer.proxy_icon_url?`<img src="${embed.footer.proxy_icon_url}" loading="lazy">`:''}${embed.footer.text}</span>`:''}${embed?.footer?.text&&embed.timestamp?'<span class="dot"></span>':''}${embed.timestamp?`<span>${formatDate(embed.timestamp)}</span>`:''}</span>`:''}
+  ${embed?.footer?.text||embed.timestamp?`<span class="footer">${embed?.footer?.text?`<span class="text">${embed.footer.proxy_icon_url?`<img src="${embed.footer.proxy_icon_url}" loading="lazy">`:''}${sanitizeHTML(embed.footer.text)}</span>`:''}${embed?.footer?.text&&embed.timestamp?'<span class="dot"></span>':''}${embed.timestamp?`<span>${formatDate(embed.timestamp)}</span>`:''}</span>`:''}
 </div>`;
     // Custom Internal
     case 'invite':
@@ -702,7 +702,7 @@ function showMembers(members) {
   document.getElementById('users').innerHTML = Object.keys(sections).map(sec=>{
     let cat = roles.find(rol=>rol.id===sec);
     if (sections[sec].length<1) return '';
-    return `<details open><summary style="--rc:${colorToRGB(cat.color===0?10070709:cat.color)}">${cat.name} — ${sections[sec].length}</summary>` + sections[sec].toSorted((a,b)=>getUserDisplay(a).localeCompare(getUserDisplay(b), undefined, { sensitivity: 'accent' })).map(mem=>`<button class="user" onclick="showMinifiedProfile(this, '${mem.user.id}')">
+    return `<details open><summary style="--rc:${colorToRGB(cat.color===0?10070709:cat.color)}">${sanitizeHTML(cat.name)} — ${sections[sec].length}</summary>` + sections[sec].toSorted((a,b)=>getUserDisplay(a).localeCompare(getUserDisplay(b), undefined, { sensitivity: 'accent' })).map(mem=>`<button class="user" onclick="showMinifiedProfile(this, '${mem.user.id}')">
   ${window.data.extra_settings.nameplates&&mem.user.collectibles?.nameplate?`<video class="nameplate" src="https://cdn.discordapp.com/assets/collectibles/${mem.user.collectibles.nameplate.asset}asset.webm" muted loop aria-hidden="true"></video>`:''}
   <div class="avatar" aria-hidden="true" style="height:40px">
     <img src="${getUserAvatar(mem.user.id, mem.user.avatar)}" width="40" height="40" loading="lazy" aria-hidden="true">
@@ -793,13 +793,13 @@ function showChannels(list, server) {
   }
   document.getElementById('channel').innerHTML = (server?'<div id="channels-server-header"></div>':'')+list.map(c=>{
     let name = channelName(c);
-    if (c.type===4) return `<span class="cat">${name}</span>`;
-    return `<button data-id="${c.id}" data-type="${c.type}" data-name="${name}">
+    if (c.type===4) return `<span class="cat">${sanitizeHTML(name)}</span>`;
+    return `<button data-id="${c.id}" data-type="${c.type}" data-name="${sanitizeHTML(name)}">
   ${c.type===1&&window.data.extra_settings.nameplates&&getUser(c.recipient_ids[0]).collectibles?.nameplate?`<video class="nameplate" src="https://cdn.discordapp.com/assets/collectibles/${getUser(c.recipient_ids[0]).collectibles.nameplate.asset}asset.webm" muted loop aria-hidden="true"></video>`:''}
   ${c.type===1?`<div class="avatar" aria-hidden="true"><img src="${getUserAvatar(c.recipient_ids[0], getUser(c.recipient_ids[0]).avatar, 32)}" width="20" height="20" loading="lazy" aria-hidden="true">${c.type===1&&window.data.extra_settings.avatar_deco?`<img src="${getUserDeco(getUser(c.recipient_ids[0])?.avatar_decoration_data?.asset)}" class="decoration" width="25" height="25" loading="lazy" aria-hidden="true" onerror="this.remove()">`:''}</div>`:''}
   ${c.type!==1?(c.type===3&&c.icon?`<div class="avatar" aria-hidden="true"><img src="https://cdn.discordapp.com/channel-icons/${c.id}/${c.icon}.png?size=32" width="20" height="20" loading="lazy" aria-hidden="true"></div>`:(rules===c.id?getIcon('rules', 20):getIcon(c.type, 20))):''}
   ${c.nsfw?getIcon('nsfw', 20).replace('>',' class="channel-nsfw">'):''}
-  <span class="name">${name}</span>
+  <span class="name">${sanitizeHTML(name)}</span>
   ${window.data.extra_settings.tags&&c.type===1?getUserClan(getUser(c.recipient_ids[0]).clan??getUser(c.recipient_ids[0]).user?.clan, true):''}
 </button>`;
   }).join('');
@@ -827,7 +827,7 @@ function showChannels(list, server) {
     });
   if (server) {
     // Server banner
-    document.getElementById('channels-server-header').innerHTML = `<span class="name">${server.properties.name??server.name}</span>
+    document.getElementById('channels-server-header').innerHTML = `<span class="name">${sanitizeHTML(server.properties.name??server.name)}</span>
 ${(server.properties.banner??server.banner)?`<div><img src="https://cdn.discordapp.com/banners/${server.id}/${server.properties.banner??server.banner}.webp?size=240"></div>`:''}`;
   }
 }
@@ -931,12 +931,12 @@ function switchChannel(id, changechannel=true) {
 function showServers(list) {
   document.getElementById('server-list').innerHTML = list.map(s=>{
     if (s?.type==='folder') {
-      return `<div aria-label="${s.name??'Folder'}" aria-role="button" class="server-folder" style="--folder-color:${colorToRGB(s.color??1579032)}">
+      return `<div aria-label="${sanitizeHTML(s.name??'Folder')}" aria-role="button" class="server-folder" style="--folder-color:${colorToRGB(s.color??1579032)}">
   <svg onclick="let op=(this.getAttribute('open')==='true');this.setAttribute('open', !op);this.parentElement.style.height=(!op?'${(s.guilds.length+1)*50+s.guilds.length*10}px':'50px')" open="false"${getIcon('folder', 50).replace('<svg','').replace('viewBox="0 0 256 256"','viewBox="-64 -64 384 384"')}
-  ${s.guilds.map(g=>`<button aria-label="${g.properties?.name??g.name}" data-id="${g.id}" class="server-clicky">${(g.properties?.icon??g.icon) == null ? (g.properties?.name??g.name).trim().split(/\s+/).map(word=>word[0]??'').join('') : `<img src="https://cdn.discordapp.com/icons/${g.id}/${g.properties?.icon??g.icon}.png?size=64" alt="${g.properties?.name??g.name}" loading="lazy">`}</button>`).join('')}
+  ${s.guilds.map(g=>`<button aria-label="${sanitizeHTML(g.properties?.name??g.name)}" data-id="${g.id}" class="server-clicky">${(g.properties?.icon??g.icon) == null ? (g.properties?.name??g.name).trim().split(/\s+/).map(word=>word[0]??'').join('') : `<img src="https://cdn.discordapp.com/icons/${g.id}/${g.properties?.icon??g.icon}.png?size=64" alt="${g.properties?.name??g.name}" loading="lazy">`}</button>`).join('')}
 </div>`;
     }
-    return `<button aria-label="${s.properties?.name??s.name??'Server'}" data-id="${s.id}" class="server-clicky">${(s.properties?.icon??s.icon??null) == null ? (s.properties?.name??s.name??'Server').trim().split(/\s+/).map(word=>word[0]??'').join('') : `<img src="https://cdn.discordapp.com/icons/${s.id}/${s.properties?.icon??s.icon}.png?size=64" alt="${s.properties?.name??s.name??'Server'}" loading="lazy">`}${(new Date(s.incidents_data?.dms_disabled_until)>new Date())||(new Date(s.incidents_data?.invites_disabled_until)>new Date())?'<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 256 256" class="paused-invites" title="Server has security actions enabled."><rect x="19" width="64" height="256" rx="15"/><rect x="173" width="64" height="256" rx="15"/></svg>':''}</button>`;
+    return `<button aria-label="${sanitizeHTML(s.properties?.name??s.name??'Server')}" data-id="${s.id}" class="server-clicky">${(s.properties?.icon??s.icon??null) == null ? sanitizeHTML((s.properties?.name??s.name??'Server').trim().split(/\s+/).map(word=>word[0]??'').join('')) : `<img src="https://cdn.discordapp.com/icons/${s.id}/${s.properties?.icon??s.icon}.png?size=64" alt="${sanitizeHTML(s.properties?.name??s.name??'Server')}" loading="lazy">`}${(new Date(s.incidents_data?.dms_disabled_until)>new Date())||(new Date(s.incidents_data?.invites_disabled_until)>new Date())?'<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 256 256" class="paused-invites" title="Server has security actions enabled."><rect x="19" width="64" height="256" rx="15"/><rect x="173" width="64" height="256" rx="15"/></svg>':''}</button>`;
   }).join('');
   Array.from(document.querySelectorAll('#server button'))
     .forEach(b=>{
