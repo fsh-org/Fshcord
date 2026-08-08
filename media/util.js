@@ -185,14 +185,14 @@ const systemMessages = {
   '63': `{getUserDisplay(m.author)} added a new emoji, {m.content} :{m.content.split(':')[1]}:`
 };
 const dateFormats = {
-  t: {timeStyle: 'short'},
-  T: {timeStyle: 'medium'},
-  d: {dateStyle: 'short'},
-  D: {dateStyle: 'long'},
-  f: {dateStyle: 'long', timeStyle: 'short'},
-  F: {dateStyle: 'full', timeStyle: 'short'},
-  s: {dateStyle: 'short', timeStyle: 'short'},
-  S: {dateStyle: 'short', timeStyle: 'medium'}
+  t: { timeStyle: 'short' },
+  T: { timeStyle: 'medium' },
+  d: { day: '2-digit', month: '2-digit', year: 'numeric' },
+  D: { dateStyle: 'long' },
+  f: { dateStyle: 'long', timeStyle: 'short' },
+  F: { dateStyle: 'full', timeStyle: 'short' },
+  s: { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' },
+  S: { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' }
 };
 const autoModText = {
   blocked: 'Blocked a message',
@@ -228,17 +228,17 @@ function proxyFetch(url, o) {
     method: 'GET',
     headers: {
       'accept': '*/*',
-      'accept-language': 'en;q=1.0',
+      'accept-language': 'en;q=0.9',
       'authorization': localStorage.getItem('token'),
       'pragma': 'no-cache',
       'priority': 'u=1, i',
-      'sec-ch-ua': '"Google Chrome";v="147", "Not.A/Brand";v="8", "Chromium";v="147"',
+      'sec-ch-ua': '"Not=A?Brand";v="99", "Google Chrome";v="151", "Chromium";v="151"',
       'sec-ch-ua-mobile': '?0',
       'sec-ch-ua-platform': '"Windows"',
       'sec-fetch-dest': 'empty',
       'sec-fetch-mode': 'cors',
       'sec-fetch-site': 'same-origin',
-      'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36'
+      'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36'
     }
   };
   if (o?.method) opts.method=o.method;
@@ -279,34 +279,19 @@ function parseMD(text, extended=2) {
     reserve[id] = txt;
     return `¬r${id}¬r`;
   }
-  // Escaping + Pre steps
+  // Basic escaping
   text = text
-    .replaceAll('<', '~lt;')
-    .replaceAll('"', '~quot;');
-  if (extended>0.5) {
-    text = text.replaceAll(/```([^¬]|¬)*?```/g, (match)=>{
-      match = match
-        .replaceAll('&', '&amp;')
-        .replaceAll('~lt;', '&lt;')
-        .replaceAll('~quot;', '&quot;');
-      return reservemd(`<code class="block">${match.slice(3,-3)}</code>`);
-    });
-  }
-  text = text
-    .replaceAll(/\[.*?\]\((?:~lt;)?https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)>?\)/g, (match)=>{
-      return reservemd(`<a href="${match.split('](')[1].split(')')[0].replace(/^~lt;|>$/gm, '')}" target="_blank">`)+match.split('](')[0].split('[')[1]+reservemd(`</a>`);
-    })
-    .replaceAll(/(?:~lt;)?https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)>?/g, (match)=>{
-      if (match.match(/^~lt;.+?>$/m)) match=match.slice(4,-1);
-      return reservemd(`<a href="${match}" target="_blank">${match}</a>`);
-    })
-    .replaceAll('\\&', '&')
     .replaceAll('&', '&amp;')
-    .replaceAll('~lt;', '&lt;')
-    .replaceAll('~quot;', '&quot;')
-    .replaceAll("'", '&apos;')
-    .replaceAll(/\\([^&])/g, (_, char)=>`&#${char.charCodeAt(0)};`)
-    .replaceAll(/\`([^¬]|¬)+?\`/g, (match)=>reservemd('<code>'+match.slice(1,-1)+'</code>'));
+    .replaceAll('<', '&lt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&apos;');
+  // Elements that need reserve
+  if (extended>0.5) text = text.replaceAll(/```([^¬]|¬)*?```/g, (match)=>reservemd(`<code class="block">${match.slice(3,-3)}</code>`));
+  text = text
+    .replaceAll(/\`.+?\`/g, (match)=>`<code>${reservemd(match.slice(1,-1))}</code>`) // Inline code
+    .replaceAll(/\[(.+?)\]\((?:&lt;)?(https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_\+.~#?&//=]|&amp;)*)>?\)/g, (_,g1,g2)=>reservemd(`<a href="${g2.replaceAll('&amp;','&')}" target="_blank">${g1}</a>`))
+    .replaceAll(/(?:&lt;)?(https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_\+.~#?&//=]|&amp;)*)>?/g, (_,g1)=>reservemd(`<a href="${g1.replaceAll('&amp;','&')}" target="_blank">${g1}</a>`))
+    .replaceAll(/\\([^&])/g, (_, char)=>`&#${char.charCodeAt(0)};`);
   // Discord
   text = text
     .replaceAll(/&lt;a?:.+?:[0-9]+?>/g, (match)=>{
@@ -315,17 +300,17 @@ function parseMD(text, extended=2) {
     });
   // General
   text = text
-    .replaceAll(/\*\*.+?\*\*/g, (match)=>'<b>'+match.slice(2,-2)+'</b>')
-    .replaceAll(/\*.+?\*/g, (match)=>'<i>'+match.slice(1,-1)+'</i>')
-    .replaceAll(/\_\_.+?\_\_/g, (match)=>'<u>'+match.slice(2,-2)+'</u>')
-    .replaceAll(/\_.+?\_/g, (match)=>'<i>'+match.slice(1,-1)+'</i>')
-    .replaceAll(/\~\~.+?\~\~/g, (match)=>'<s>'+match.slice(2,-2)+'</s>')
+    .replaceAll(/\*\*.+?\*\*/g, (match)=>`<b>${match.slice(2,-2)}</b>`) // Bold
+    .replaceAll(/\*.+?\*/g, (match)=>`<i>${match.slice(1,-1)}</i>`) // Italic 1
+    .replaceAll(/\_\_.+?\_\_/g, (match)=>`<u>${match.slice(2,-2)}</u>`) // Underline
+    .replaceAll(/\_.+?\_/g, (match)=>`<i>${match.slice(1,-1)}</i>`) // Italic 2
+    .replaceAll(/\~\~.+?\~\~/g, (match)=>`<s>${match.slice(2,-2)}</s>`) // Strikethrough
     .replaceAll(/\|\|.+?\|\|/g, (match)=>`<span style="cursor:pointer;color:var(--bg-3);border-radius:0.25rem;background-color:var(--bg-3);transition:500ms;" onclick="this.style.color='var(--text-1)';this.style.backgroundColor='var(--bg-0)'">`+match.slice(2,-2)+'</span>')
     .replaceAll(/^\>\>\> ([^¬]|¬)+/gm, (match)=>'> '+match.slice(4).split('\n').join('\n> '));
   // Extended
   if (extended>0.5) {
     text = text
-      .replaceAll(/^(-|\*) .+?$/gm, (match)=>'<li>'+match.slice(2)+'</li>')
+      .replaceAll(/^(-|\*) .+?$/gm, (match)=>`<li>${match.slice(2)}</li>`) // Unordered list
       .replaceAll(/(?:^\d+\. .*(?:\r?\n(?=\d+\. ))?)+/gm, (match)=>'<ol>'+match.replaceAll(/^(.+?)$\n?/gm, (match)=>`<li>${match.replace(/^\d+. /m,'')}</li>`)+'</ol>')
       .replaceAll(/<\/li>[ \t\r]*?\n/g,'</li>');
   }
@@ -352,13 +337,13 @@ function parseMD(text, extended=2) {
   }
   if (extended>1) {
     text = text
-      .replaceAll(/^(> )?### .+?$/gm, (match)=>(match.startsWith('> ')?'> ':'')+'<span style="font-size:110%;font-weight:bold;">'+match.replace(/^> /m, '').slice(4)+'</span>')
-      .replaceAll(/^(> )?## .+?$/gm, (match)=>(match.startsWith('> ')?'> ':'')+'<span style="font-size:125%;font-weight:bold;">'+match.replace(/^> /m, '').slice(3)+'</span>')
-      .replaceAll(/^(> )?# .+?$/gm, (match)=>(match.startsWith('> ')?'> ':'')+'<span style="font-size:150%;font-weight:bold;">'+match.replace(/^> /m, '').slice(2)+'</span>')
-      .replaceAll(/^(> )?-# .+?$/gm, (match)=>(match.startsWith('> ')?'> ':'')+'<span style="font-size:80%;color:var(--text-2);">'+match.replace(/^> /m, '').slice(3)+'</span>');
+      .replaceAll(/^(> )?### .+?$/gm, (match)=>`<span style="font-size:110%">${match.slice(4)}</span>`) // 3rd heading
+      .replaceAll(/^(> )?## .+?$/gm, (match)=>`<span style="font-size:125%">${match.slice(3)}</span>`) // 2nd heading
+      .replaceAll(/^(> )?# .+?$/gm, (match)=>`<span style="font-size:150%">${match.slice(2)}</span>`) // 1st heading
+      .replaceAll(/^(> )?-# .+?$/gm, (match)=>`<span style="font-size:80%;color:var(--text-2);">${match.slice(3)}</span>`); // -1st heading
   }
   text = text
-    .replaceAll(/^\> .+?$/gm, (match)=>'<blockquote>'+match.slice(2)+'</blockquote>');
+    .replaceAll(/^\> .*?$/gm, (match)=>`<blockquote>${match.slice(2)}</blockquote>`); // Blockquote
   // Twemojis
   text = text
     .replaceAll(/:[a-zA-Z0-9:_-]+?:/g, (match)=>{
@@ -370,12 +355,9 @@ function parseMD(text, extended=2) {
   // Reserve
   text = text.replaceAll(/¬r[0-9]{16}¬r/g, (match)=>{
     let id = match.split('¬r')[1];
-    if (reserve[id]) {
-      return reserve[id];
-    } else {
-      return match;
-    }
-  })
+    if (reserve[id]) return reserve[id];
+    return match;
+  });
   return text;
 }
 setInterval(()=>{

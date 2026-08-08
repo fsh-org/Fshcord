@@ -134,15 +134,29 @@ function wsmessage(wsd) {
         if (window.data.currentServer===wsd.d.guild_id) {
           showMembers(temp.members);
         }
-      } else if (wsd.t === 'CHANNEL_UPDATE') {// Channels
+      } else if (wsd.t === 'CHANNEL_CREATE') {// Channels
+        let server = window.data.servers[window.data.servers.findIndex(e=>e.id===wsd.d.guild_id)];
+        server.channels.push(wsd.d);
+        if (window.data.currentServer===wsd.d.guild_id) switchChannel(wsd.d.guild_id, false);
+      } else if (wsd.t === 'CHANNEL_UPDATE') {
         let temp = window.data.servers[window.data.servers.findIndex(e=>e.id===wsd.d.guild_id)];
         temp = temp.channels[temp.channels.findIndex(e=>e.id===wsd.d.id)];
         if (!temp) return;
         Object.merge(temp, wsd.d);
         if (window.data.currentServer===wsd.d.guild_id) {
           switchChannel(wsd.d.guild_id, false);
+          if (window.data.currentChannel===wsd.d.id) setTop(channelName(wsd.d), wsd.d.type);
+        }
+      } else if (wsd.t === 'CHANNEL_DELETE') {
+        let server = window.data.servers[window.data.servers.findIndex(e=>e.id===wsd.d.guild_id)];
+        let idx = server.channels.findIndex(e=>e.id===wsd.d.id);
+        if (idx===-1) return;
+        delete server.channels[idx];
+        if (window.data.currentServer===wsd.d.guild_id) {
+          switchChannel(wsd.d.guild_id, false);
           if (window.data.currentChannel===wsd.d.id) {
-            setTop(channelName(wsd.d), wsd.d.type);
+            let first = server.channels.filter(ch=>channelType.text.includes(ch.type)).toSorted((a,b)=>a.position-b.position)[0];
+            switchMessage(first.id, first.type);
           }
         }
       } else if (wsd.t === 'MESSAGE_CREATE') {// Messages
@@ -151,9 +165,7 @@ function wsmessage(wsd) {
         window.data.messageCache[wsd.d.channel_id].unshift(wsd.d);
         // If current, show new
         if (window.data.currentChannel===wsd.d.channel_id) {
-          if (channelType.text.includes(window.data.currentChannelType)) {
-            showMessages(window.data.messageCache[wsd.d.channel_id]);
-          }
+          if (channelType.text.includes(window.data.currentChannelType)) showMessages(window.data.messageCache[wsd.d.channel_id]);
         }
       } else if (wsd.t === 'MESSAGE_UPDATE') {
         if (!window.data.messageCache[wsd.d.channel_id]) return;
@@ -381,7 +393,7 @@ async function init(d) {
     ]);
   }
 
-  if (window.data.currentChannel==="0") {
+  if (window.data.currentChannel==='0') {
     loading('DMs');
     switchChannel(0);
   }
