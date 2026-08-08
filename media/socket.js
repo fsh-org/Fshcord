@@ -159,6 +159,12 @@ function wsmessage(wsd) {
             switchMessage(first.id, first.type);
           }
         }
+      } else if (wsd.t === 'CHANNEL_UNREAD_UPDATE') {
+        wsd.d.channel_unread_updates.forEach(update=>{
+          let idx = window.data.channelRead.findIndex(chr=>chr.id===update.id);
+          if (idx===-1) return;
+          Object.merge(window.data.channelRead[idx], update);
+        });
       } else if (wsd.t === 'MESSAGE_CREATE') {// Messages
         if (!window.data.messageCache[wsd.d.channel_id]) return;
         // Add to cache
@@ -254,6 +260,12 @@ function wsmessage(wsd) {
             showMessages(window.data.messageCache[wsd.d.channel_id]);
           }
         }
+      } else if (wsd.t === 'MESSAGE_ACK') {
+        let idx = window.data.channelRead.findIndex(chr=>chr.id===wsd.d.channel_id);
+        wsd.d.last_message_id = wsd.d.message_id;
+        delete wsd.d.message_id;
+        delete wsd.d.channel_id;
+        Object.merge(window.data.channelRead[idx], wsd.d);
       } else if (wsd.t === 'USER_SETTINGS_UPDATE') {// Settings
         Object.merge(window.data.settings, wsd.d);
         if (wsd.d.guild_folders) switchServers();
@@ -303,8 +315,8 @@ function wsmessage(wsd) {
               os_version: '10',
               device: '',
               browser: 'Chrome',
-              browser_user_agent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36',
-              browser_version: '147.0.0.0',
+              browser_user_agent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36',
+              browser_version: '151.0.0.0',
               //client_build_number: 529864,
               client_app_state: 'active',
               release_channel: 'stable',
@@ -378,7 +390,7 @@ async function init(d) {
 
   // Icons
   if (getIcon(0)==='<img>') {
-    loading('icons')
+    loading('icons');
     await Promise.allSettled([
       fetchIcon(0),
       fetchIcon(1),
