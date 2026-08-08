@@ -32,8 +32,8 @@ window.data.users['2'] = AutoModAuthor;
 window.data.messageCache = {};
 window.data.channelTyping = {};
 
-window.data.currentServer = "0";
-window.data.currentChannel = "0";
+window.data.currentServer = '0';
+window.data.currentChannel = '0';
 window.data.currentChannelType = 0;
 
 window.data.serverLastChannel = {};
@@ -87,7 +87,7 @@ async function showMinifiedProfile(element, user) {
   // Show modal
   let bound = element.getBoundingClientRect();
   let menu = document.getElementById('usermenu');
-  menu.innerHTML = "Loading user data...";
+  menu.innerText = 'Loading user data...';
   menu.show();
   let menubound = menu.getBoundingClientRect();
   if (bound.left>window.innerWidth/2) {
@@ -107,7 +107,7 @@ async function showMinifiedProfile(element, user) {
 
   // Modal content
   if (!getUser(user) || !getUser(user)?.full) {
-    let usr = await proxyFetch(`https://discord.com/api/v10/users/${user}/profile?type=popout&with_mutual_guilds=true&with_mutual_friends=true&with_mutual_friends_count=false${window.data.currentServer!=="0"?`&guild_id=${window.data.currentServer}`:''}`);
+    let usr = await proxyFetch(`https://discord.com/api/v10/users/${user}/profile?type=popout&with_mutual_guilds=true&with_mutual_friends=true&with_mutual_friends_count=false${window.data.currentServer!=='0'?`&guild_id=${window.data.currentServer}`:''}`);
     usr = await usr.json();
     if (JSON.parse(usr.content).code !== 10013) {
       window.data.users[user] = JSON.parse(usr.content);
@@ -132,7 +132,7 @@ async function showMinifiedProfile(element, user) {
     ${window.data.extra_settings.avatar_deco?`<img src="${getUserDeco((user.user??user)?.avatar_decoration_data?.asset)}" class="decoration" width="100" height="100" loading="lazy" aria-hidden="true" onerror="this.remove()">`:''}
     <div class="badges">
       ${user.user?'':'<img src="/media/icon/limited.svg" width="25" height="25" alt="This profile has limited info" title="This profile has limited info">'}
-      ${(user.badges??[]).map(b=>`<a${b.link?` href="${b.link}"`:''} target="_blank" title="${b.description}" aria-hidden="true"><img src="https://cdn.discordapp.com/badge-icons/${b.icon}.png" width="25" height="25" alt="${b.description}" aria-hidden="true"></a>`).join('')}
+      ${(user.badges??[]).map(b=>`<a${b.link?` href="${b.link}"`:''} target="_blank" title="${sanitizeHTML(b.description)}" aria-hidden="true"><img src="https://cdn.discordapp.com/badge-icons/${b.icon}.png" width="25" height="25" alt="${sanitizeHTML(b.description)}" aria-hidden="true"></a>`).join('')}
     </div>
   </div>
   ${getUserBanner((user.user??user).id, user?.user?.banner, user?.user?.banner_color??colorToRGB(user?.user?.accent_color??5595886))}
@@ -170,6 +170,7 @@ function sendMessage() {
       CurrentlySending = false;
     });
 }
+let pastquery = '';
 MessageField.onkeyup = MessageField.onkeydown = (evt)=>{
   if (evt.key==='Enter'&&!evt.shiftKey) {
     evt.preventDefault();
@@ -185,20 +186,22 @@ MessageField.onkeyup = MessageField.onkeydown = (evt)=>{
   // Slash
   if ((/^\//m).test(MessageField.value)) {
     let query = MessageField.value.slice(1);
-    let apps = window.data.slash['866689038731313193'].applications.toSorted((a,b)=>a.name.localeCompare(b.name));
+    if (pastquery===query) return;
+    pastquery = query;
+    let apps = window.data.slash[window.data.currentServer].applications.toSorted((a,b)=>a.name.localeCompare(b.name));
     let sections = {};
     Object.values(apps).map(app=>sections[app.id]=[]);
     window.data.slash[window.data.currentServer].application_commands
       .filter(cmd=>cmd.name.includes(query))
       .forEach(cmd=>sections[cmd.application_id].push(cmd));
-    document.getElementById("slash-bar").innerHTML = `<div class="profiles">
-  ${Object.keys(sections).filter(sec=>sections[sec].length>0).map(sec=>apps.find(app=>app.id===sec)).map(sec=>`<button><img src="https://cdn.discordapp.com/avatars/${sec.id}/${sec.icon}.webp?size=32" alt="${sec.name}" width="32" height="32"></button>`).join('')}
+    document.getElementById('slash-bar').innerHTML = `<div class="profiles">
+  ${Object.keys(sections).filter(sec=>sections[sec].length>0).map(sec=>apps.find(app=>app.id===sec)).map(sec=>`<button><img src="https://cdn.discordapp.com/avatars/${sec.id}/${sec.icon}.webp?size=32" alt="${sanitizeHTML(sec.name)}" width="32" height="32"></button>`).join('')}
 </div>
 <div class="cmds">
-  ${Object.keys(sections).filter(sec=>sections[sec].length>0).map(sec=>`<span>${apps.find(app=>app.id===sec).name}</span>${sections[sec].map(cmd=>`<button><span>/${cmd.name}</span><span style="color:var(--text-2)">${cmd.description}</span></button>`).join('')}`).join('')}
+  ${Object.keys(sections).filter(sec=>sections[sec].length>0).map(sec=>`<span>${sanitizeHTML(apps.find(app=>app.id===sec).name)}</span>${sections[sec].map(cmd=>`<button><span>/${sanitizeHTML(cmd.name)}</span><span style="color:var(--text-2)">${sanitizeHTML(cmd.description)}</span></button>`).join('')}`).join('')}
 </div>`;
   } else {
-    document.getElementById("slash-bar").innerText = '';
+    document.getElementById('slash-bar').innerText = '';
   }
 };
 MessageField.oninput = (evt)=>{
@@ -358,7 +361,7 @@ function renderEmbed(embed) {
       getInvite(embed.link)
         .then(res=>{
           if (res.code===10006) {
-            document.getElementById('si-'+id).innerHTML = `<span style="padding:10px">Unknown invite ${embed.link}</span>`;
+            document.getElementById('si-'+id).innerHTML = `<span style="padding:10px">Unknown invite ${sanitizeHTML(embed.link)}</span>`;
             return;
           }
           if (res.type!==0) {
@@ -383,7 +386,7 @@ function renderEmbed(embed) {
 <button disabled>Join</button>`;
         })
       return `<div class="server-invite" id="si-${id}">
-  Loading invite "${embed.link}"
+  Loading invite "${sanitizeHTML(embed.link)}"
 </div>`;
     default:
       report(`Unknown embed type: ${embed.type}`, embed);
@@ -523,7 +526,7 @@ function renderMessage(content, author, m) {
     ${m.attachments?.length?m.attachments.map(attach=>{
       if (!attach.content_type) attach.content_type=`image/${attach.url.split('?')[0].split('.').slice(-1)[0]}`;
       if (attach.content_type.startsWith('image')&&!attach.width) attach.content_type=`application/${attach.content_type.split('/')[1]}`;
-      return `<${attach.content_type.startsWith('image/')?'img':attach.content_type.startsWith('audio/')?'audio':attach.content_type.startsWith('video/')?'video':'div'} src="${attach.url}" width="${Math.floor(attach.width/2)}" height="${Math.floor(attach.height/2)}" class="message-attach${attach.flags?(getAttachmentFlags(attach.flags).SPOILER?` spoiler"onclick="this.classList.remove('spoiler')`:''):''}" controls>${attach.content_type.startsWith('image/')?'':attach.content_type.startsWith('audio/')?'</audio>':attach.content_type.startsWith('video/')?'</video>':`<a download="${attach.filename}">${attach.filename}</a> · ${formatBytes(attach.size)}</div>`}`;
+      return `<${attach.content_type.startsWith('image/')?'img':attach.content_type.startsWith('audio/')?'audio':attach.content_type.startsWith('video/')?'video':'div'} src="${attach.url}" width="${Math.floor(attach.width/2)}" height="${Math.floor(attach.height/2)}" class="message-attach${attach.flags?(getAttachmentFlags(attach.flags).SPOILER?` spoiler"onclick="this.classList.remove('spoiler')`:''):''}" controls>${attach.content_type.startsWith('image/')?'':attach.content_type.startsWith('audio/')?'</audio>':attach.content_type.startsWith('video/')?'</video>':`<a download="${sanitizeHTML(attach.filename)}">${sanitizeHTML(attach.filename)}</a> · ${formatBytes(attach.size)}</div>`}`;
     }).join(''):''}
     ${m.embeds?.length?m.embeds.map(embed=>renderEmbed(embed)).join(''):''}
     ${renderComponents(m.components??[], { id: m.id, app: author.id, flags: m.flags })}

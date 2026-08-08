@@ -1,7 +1,7 @@
 // Configurations
 const twemojiConfig = {
-  size: "svg",
-  ext: ".svg",
+  size: 'svg',
+  ext: '.svg',
   base: 'https://raw.githubusercontent.com/twitter/twemoji/refs/heads/master/assets/'
 };
 const userFlags = {
@@ -199,12 +199,12 @@ const autoModText = {
   flagged: 'Flagged a user'
 };
 function toBinaryString(numString) {
-  if (!numString || isNaN(numString)) return "0";
-  if (numString === "0") return "0";
-  let result = "";
+  if (!numString || isNaN(numString)) return '0';
+  if (numString === '0') return '0';
+  let result = '';
   let dividend = numString;
-  while (dividend !== "0") {
-    let newDividend = "";
+  while (dividend !== '0') {
+    let newDividend = '';
     let carry = 0;
     let leadingZero = true;
     for (let i = 0; i < dividend.length; i++) {
@@ -217,7 +217,7 @@ function toBinaryString(numString) {
       carry = current % 2;
     }
     result = carry.toString() + result;
-    dividend = newDividend.length ? newDividend : "0";
+    dividend = newDividend.length ? newDividend : '0';
   }
   return result;
 }
@@ -225,7 +225,7 @@ function toBinaryString(numString) {
 // Fetching
 function proxyFetch(url, o) {
   let opts = {
-    method: "GET",
+    method: 'GET',
     headers: {
       'accept': '*/*',
       'accept-language': 'en;q=1.0',
@@ -254,7 +254,7 @@ function proxyFetch(url, o) {
   return fetch('https://api.fsh.plus/request?url='+encodeURIComponent(url), {
     method: 'POST',
     headers: {
-      "content-type": "application/json"
+      'content-type': 'application/json'
     },
     body: JSON.stringify(opts),
     signal: AbortSignal.timeout(10000) // 10s max
@@ -342,12 +342,12 @@ function parseMD(text, extended=2) {
       .replaceAll(/(?:&lt;)@(?:&amp;)[0-9]+?>/gm, (match)=>{
         let role = window.data.servers.find(s=>s.id===window.data.currentServer).roles.find(r=>r.id===match.replaceAll(/^(?:&lt;)@(?:&amp;)|>$/gm,''));
         if (!role) return reservemd(`<span class="role">@Unknown Role</span>`);
-        return reservemd(`<span class="role"${role.color===0?'':` style="--mcol:${colorToRGB(role.color)}"`}>@${role.name}</span>`);
+        return reservemd(`<span class="role"${role.color===0?'':` style="--mcol:${colorToRGB(role.color)}"`}>@${sanitizeHTML(role.name)}</span>`);
       })
       .replaceAll(/(?:&lt;)#[0-9]+?>/gm, (match)=>{
         let channel = window.data.servers.find(s=>s.id===window.data.currentServer).channels.find(c=>c.id===match.replaceAll(/^(?:&lt;)#|>$/gm,''));
         if (!channel) return reservemd(`<span class="channel">#Unknown Channel</span>`);
-        return reservemd(`<span class="channel" onclick="loading('${channel.name}');setTop('${channel.name}',${channel.type});switchMessage('${channel.id}',${channel.type})">#${channel.name}</span>`);
+        return reservemd(`<span class="channel" onclick="loading('${sanitizeHTML(channel.name)}');setTop('${sanitizeHTML(channel.name)}',${channel.type});switchMessage('${channel.id}',${channel.type})">#${sanitizeHTML(channel.name)}</span>`);
       });
   }
   if (extended>1) {
