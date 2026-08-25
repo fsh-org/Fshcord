@@ -11,7 +11,6 @@ function proxyFetch(url, o) {
       'X-Fingerprint': window.fingerprint,
       'accept': '*/*',
       'accept-language': 'en;q=0.9',
-      'authorization': localStorage.getItem('token'),
       'pragma': 'no-cache',
       'priority': 'u=1, i',
       'sec-ch-ua': '"Not=A?Brand";v="99", "Google Chrome";v="151", "Chromium";v="151"',
