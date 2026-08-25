@@ -6,35 +6,41 @@ if (localStorage.getItem('token')) {
 // Utility functions
 function proxyFetch(url, o) {
   let opts = {
-    method: "GET",
+    method: 'GET',
     headers: {
-      accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
-      "accept-language": "en;q=0.9",
-      "sec-ch-ua": '"Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"',
-      "sec-ch-ua-mobile": "?0 ",
-      "sec-ch-ua-platform": '"Windows"',
-      "sec-fetch-dest": "document",
-      "sec-fetch-mode": "navigate",
-      "sec-fetch-site": "none",
-      "sec-fetch-user": "?1",
-      "sec-gpc": "1",
-      "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
+      'X-Fingerprint': window.fingerprint,
+      'accept': '*/*',
+      'accept-language': 'en;q=0.9',
+      'authorization': localStorage.getItem('token'),
+      'pragma': 'no-cache',
+      'priority': 'u=1, i',
+      'sec-ch-ua': '"Not=A?Brand";v="99", "Google Chrome";v="151", "Chromium";v="151"',
+      'sec-ch-ua-mobile': '?0',
+      'sec-ch-ua-platform': '"Windows"',
+      'sec-fetch-dest': 'empty',
+      'sec-fetch-mode': 'cors',
+      'sec-fetch-site': 'same-origin',
+      'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36'
     }
   };
   if (o?.method) opts.method=o.method;
-  if (o?.body) opts.body=o.body;
   if (o?.headers) {
     Object.keys(o.headers).forEach(h=>{
       opts.headers[h] = o.headers[h]
     })
   }
+  if (o?.body) {
+    opts.body = o.body;
+    if (!opts.headers['content-type']) opts.headers['content-type']='application/json';
+  }
   return fetch('https://api.fsh.plus/request?url='+encodeURIComponent(url), {
     method: 'POST',
     headers: {
-      "content-type": "application/json"
+      'content-type': 'application/json'
     },
-    body: JSON.stringify(opts)
-  });
+    body: JSON.stringify(opts),
+    signal: AbortSignal.timeout(10000) // 10s max
+  })
 }
 
 proxyFetch(`https://discord.com/api/v10/experiments`)
@@ -90,7 +96,7 @@ function handleResponse(data) {
     return;
   }
   if (!data.token) {
-    if (!data.mfa) {
+    if (!data.mfa||data.suspended_user_token) {
       alert(data.suspended_user_token?'Account suspended':'Login requirements not met');
       return;
     }
