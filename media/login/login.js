@@ -9,7 +9,7 @@ function proxyFetch(url, o) {
     method: "GET",
     headers: {
       accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
-      "accept-language": "en;q=1.0",
+      "accept-language": "en;q=0.9",
       "sec-ch-ua": '"Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"',
       "sec-ch-ua-mobile": "?0 ",
       "sec-ch-ua-platform": '"Windows"',
@@ -34,7 +34,7 @@ function proxyFetch(url, o) {
       "content-type": "application/json"
     },
     body: JSON.stringify(opts)
-  })
+  });
 }
 
 proxyFetch(`https://discord.com/api/v10/experiments`)
@@ -42,7 +42,7 @@ proxyFetch(`https://discord.com/api/v10/experiments`)
 .then(res=>{
   let dat = JSON.parse(res.content);
   window.fingerprint = dat.fingerprint;
-})
+});
 
 function handleResponse(data) {
   console.log(data);
@@ -80,7 +80,7 @@ function handleResponse(data) {
               .then(res=>res.json())
               .then(res=>{
                 handleResponse(JSON.parse(res.content));
-              })
+              });
           }
         });
         break;
@@ -89,25 +89,18 @@ function handleResponse(data) {
     }
     return;
   }
-  /*{
-  "user_id": "id",
-  "mfa": true,
-  "sms": true,
-  "ticket": "h.h.h-h-h",
-  "backup": true,
-  "totp": true,
-  "webauthn": null
-  }*/
   if (!data.token) {
+    if (!data.mfa) {
+      alert(data.suspended_user_token?'Account suspended':'Login requirements not met');
+      return;
+    }
     if (data.totp) {
       document.getElementById('totp').style.display = '';
-      document.getElementById('btn-login-totp').setAttribute('ticket', data.ticket);
+      document.getElementById('btn-login-totp').setAttribute('data-ticket', data.ticket);
+      document.getElementById('btn-login-totp').setAttribute('data-inst', data.login_instance_id);
       return;
     }
-    if (data.mfa || data.sms || data.backup || data.webauthn) {
-      alert('We dont support sms, backup or webauthn mfa yet');
-      return;
-    }
+    alert('Only TOTP MFA supported');
     return;
   } else {
     localStorage.setItem('token', data.token);
@@ -130,13 +123,18 @@ document.getElementById('btn-login').onclick = function(){
     .then(res=>res.json())
     .then(res=>{
       handleResponse(JSON.parse(res.content));
-    })
+    });
 };
-document.getElementById('btn-login-token').onclick = function(){
+document.getElementById('btn-login-token').onclick = ()=>{
   localStorage.setItem('token', document.getElementById('u-token').value);
   location.href = '/';
 };
-document.getElementById('btn-login-totp').onclick = function(){
+document.getElementById('btn-login-totp').onclick = ()=>{
+  let ticket = document.getElementById('btn-login-totp').getAttribute('data-ticket');
+  ticket = ticket==='null'?null:ticket;
+  let inst = document.getElementById('btn-login-totp').getAttribute('data-inst');
+  inst = inst==='null'?null:inst;
+
   proxyFetch(`https://discord.com/api/v10/auth/mfa/totp`, {
     method: 'POST',
     headers: {
@@ -144,16 +142,19 @@ document.getElementById('btn-login-totp').onclick = function(){
     },
     body: JSON.stringify({
       code: document.getElementById('u-code').value,
-      ticket: document.getElementById('btn-login-totp').getAttribute('ticket')
+      ticket,
+      login_instance_id: inst
     })
   })
     .then(res=>res.json())
     .then(res=>{
-      if (!data.token) {
-        alert('Failed')
+      res = JSON.parse(res.content);
+      if (!res.token) {
+        alert('Failed');
+        return;
       }
-      handleResponse(JSON.parse(res.content));
-    })
+      handleResponse(res);
+    });
 };
 
 document.getElementById('btn-back').onclick = function(){
