@@ -68,11 +68,12 @@ function handleResponse(data) {
           sitekey: data.captcha_sitekey,
           rqdata: data.captcha_rqdata,
           callback: function(token) {
-            proxyFetch(`https://discord.com/api/v10/auth/login`, {
+            proxyFetch('https://discord.com/api/v10/auth/login', {
               method: 'POST',
               headers: {
                 'content-type': 'application/json',
                 'x-captcha-key': token,
+                'x-captcha-session-id': (data.captcha_session_id??null),
                 'x-captcha-rqtoken': (data.captcha_rqtoken??null),
                 'x-fingerprint': window.fingerprint
               },
