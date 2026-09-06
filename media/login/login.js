@@ -61,12 +61,12 @@ function handleResponse(data) {
   if (data.captcha_key) {
     document.getElementById('captcha').style.display = '';
     document.getElementById('h-captcha').innerText = '';
+    let wid;
     switch (data.captcha_service) {
       case 'hcaptcha':
-        hcaptcha.render('h-captcha', {
+        wid = hcaptcha.render('h-captcha', {
           theme: 'dark',
           sitekey: data.captcha_sitekey,
-          rqdata: data.captcha_rqdata,
           callback: function(token) {
             proxyFetch('https://discord.com/api/v10/auth/login', {
               method: 'POST',
@@ -89,6 +89,7 @@ function handleResponse(data) {
               });
           }
         });
+        hcaptcha.execute(wid, { rqdata: data.captcha_rqdata });
         break;
       default:
         alert('Unhandled captcha type');
