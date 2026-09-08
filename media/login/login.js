@@ -8,7 +8,8 @@ function proxyFetch(url, o) {
   let opts = {
     method: 'GET',
     headers: {
-      'X-Fingerprint': window.fingerprint,
+      'x-fingerprint': window.fingerprint,
+      'referer': 'https://discord.com/login',
       'accept': '*/*',
       'accept-language': 'en;q=0.9',
       'pragma': 'no-cache',
@@ -49,6 +50,29 @@ proxyFetch(`https://discord.com/api/v10/experiments`)
   window.fingerprint = dat.fingerprint;
 });
 
+function login(token=null, sesid=null, rqtok=null) {
+  let headers = { 'content-type': 'application/json' };
+  if (token) {
+    headers['x-captcha-key'] = token;
+    headers['x-captcha-session-id'] = sesid;
+    headers['x-captcha-rqtoken'] = rqtok;
+  }
+  proxyFetch('https://discord.com/api/v9/auth/login', {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({
+      gift_code_sku_id: null,
+      login: document.getElementById('u-login').value,
+      login_source: null,
+      password: document.getElementById('u-password').value,
+      undelete: false
+    })
+  })
+    .then(res=>res.json())
+    .then(res=>{
+      handleResponse(JSON.parse(res.content));
+    });
+}
 function handleResponse(data) {
   console.log(data);
   document.getElementById('login').style.display = 'none';
@@ -67,26 +91,8 @@ function handleResponse(data) {
         wid = hcaptcha.render('h-captcha', {
           theme: 'dark',
           sitekey: data.captcha_sitekey,
-          callback: function(token) {
-            proxyFetch('https://discord.com/api/v10/auth/login', {
-              method: 'POST',
-              headers: {
-                'content-type': 'application/json',
-                'x-captcha-key': token,
-                'x-captcha-session-id': (data.captcha_session_id??null),
-                'x-captcha-rqtoken': (data.captcha_rqtoken??null),
-                'x-fingerprint': window.fingerprint
-              },
-              body: JSON.stringify({
-                login: document.getElementById('u-login').value,
-                password: document.getElementById('u-password').value,
-                undelete: true
-              })
-            })
-              .then(res=>res.json())
-              .then(res=>{
-                handleResponse(JSON.parse(res.content));
-              });
+          callback: (token)=>{
+            login(token, (data.captcha_session_id??null), (data.captcha_rqtoken??null))
           }
         });
         hcaptcha.execute(wid, { rqdata: data.captcha_rqdata });
@@ -115,22 +121,8 @@ function handleResponse(data) {
   }
 }
 
-document.getElementById('btn-login').onclick = function(){
-  proxyFetch(`https://discord.com/api/v10/auth/login`, {
-    method: 'POST',
-    headers: {
-      'content-type': 'application/json'
-    },
-    body: JSON.stringify({
-      login: document.getElementById('u-login').value,
-      password: document.getElementById('u-password').value,
-      undelete: true
-    })
-  })
-    .then(res=>res.json())
-    .then(res=>{
-      handleResponse(JSON.parse(res.content));
-    });
+document.getElementById('btn-login').onclick = ()=>{
+  login();
 };
 document.getElementById('btn-login-token').onclick = ()=>{
   localStorage.setItem('token', document.getElementById('u-token').value);
@@ -142,7 +134,7 @@ document.getElementById('btn-login-totp').onclick = ()=>{
   let inst = document.getElementById('btn-login-totp').getAttribute('data-inst');
   inst = inst==='null'?null:inst;
 
-  proxyFetch(`https://discord.com/api/v10/auth/mfa/totp`, {
+  proxyFetch('https://discord.com/api/v9/auth/mfa/totp', {
     method: 'POST',
     headers: {
       'content-type': 'application/json'
@@ -150,6 +142,8 @@ document.getElementById('btn-login-totp').onclick = ()=>{
     body: JSON.stringify({
       code: document.getElementById('u-code').value,
       ticket,
+      login_source: null,
+      gift_code_sku_id: null,
       login_instance_id: inst
     })
   })
@@ -164,7 +158,7 @@ document.getElementById('btn-login-totp').onclick = ()=>{
     });
 };
 
-document.getElementById('btn-back').onclick = function(){
+document.getElementById('btn-back').onclick = ()=>{
   document.getElementById('login').style.display = '';
   document.getElementById('captcha').style.display = 'none';
   document.getElementById('totp').style.display = 'none';
