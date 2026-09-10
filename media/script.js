@@ -417,7 +417,7 @@ function renderEmbed(embed) {
 22 Checkbox Group
 23 Checkbox
 */
-function componentInteraction(type, cid, data) {
+function componentInteraction(type, cid, data, values=null) {
   data = JSON.parse(data.replaceAll("'",'"'));
   proxyFetch('https://discord.com/api/v10/interactions', {
     method: 'POST',
@@ -431,7 +431,8 @@ function componentInteraction(type, cid, data) {
       session_id: window.data.ws.session_id,
       data: {
         component_type: type,
-        custom_id: cid
+        custom_id: cid,
+        ...(values?{values}:{})
       }
     })
   });
@@ -447,15 +448,15 @@ function renderComponents(comp, data) {
 ${comp.style===5?'</a>':''}`;
     case 3:
       return `<div class="component c3">
-  <button class="preview" popovertarget="c3o-${comp.id}">
+  <button class="preview" onclick="document.getElementById('c3o-${comp.id}').classList.toggle('hidden')">
     ${comp.options.filter(opt=>opt.default)[0]?
       '':
       `<span style="color:var(--text-2)">${sanitizeHTML(comp.placeholder)??'Select'}</span>`
     }
     <span style="color:var(--text-1)">v</span>
   </button>
-  <div class="menu" id="c3o-${comp.id}" popover>
-    ${comp.options.map(opt=>`<div class="opt" data-value="${opt.value}">
+  <div class="menu hidden" id="c3o-${comp.id}">
+    ${comp.options.map(opt=>`<div class="opt" onclick="componentInteraction(3, '${comp.custom_id}', \`${JSON.stringify(data).replaceAll('"',"'")}\`, ['${opt.value}'])">
   ${opt.emoji?.name?(opt.emoji.id?`<img src="https://cdn.discordapp.com/emojis/${opt.emoji.id}.webp?size=44" loading="lazy">`:opt.emoji.name):''}
   <span>
     <b>${sanitizeHTML(opt.label)}</b>
@@ -464,13 +465,7 @@ ${comp.style===5?'</a>':''}`;
 </div>`).join('')}
   </div>
 </div>`;
-/*
-{
-  "min_values": 1,
-  "max_values": 1,
-  "custom_id": "help%816691475844694047%"
-}
-*/
+/* min_values: 1, max_values: 1 }*/
     case 9:
       return `<div class="component c9"><div class="c9-inner">${renderComponents(comp.components, data)}</div>${comp.accessory?`<div class="accessory">${renderComponents(comp.accessory, data)}</div>`:''}</div>`;
     case 10:
@@ -935,11 +930,11 @@ function showServers(list) {
   document.getElementById('server-list').innerHTML = list.map(s=>{
     if (s?.type==='folder') {
       return `<div aria-label="${sanitizeHTML(s.name??'Folder')}" aria-role="button" class="server-folder" style="--folder-color:${colorToRGB(s.color??1579032)}">
-  <svg onclick="let op=(this.getAttribute('open')==='true');this.setAttribute('open', !op);this.parentElement.style.height=(!op?'${(s.guilds.length+1)*50+s.guilds.length*10}px':'50px')" open="false"${getIcon('folder', 50).replace('<svg','').replace('viewBox="0 0 256 256"','viewBox="-64 -64 384 384"')}
-  ${s.guilds.map(g=>`<button aria-label="${sanitizeHTML(g.properties?.name??g.name)}" data-id="${g.id}" class="server-clicky">${(g.properties?.icon??g.icon) == null ? (g.properties?.name??g.name).trim().split(/\s+/).map(word=>word[0]??'').join('') : `<img src="https://cdn.discordapp.com/icons/${g.id}/${g.properties?.icon??g.icon}.png?size=64" alt="${g.properties?.name??g.name}" loading="lazy">`}</button>`).join('')}
+  <svg onclick="let op=(this.getAttribute('open')==='true');this.setAttribute('open', !op);this.parentElement.style.height=(!op?'${60+s.guilds.length*55}px':'50px')" open="false"${getIcon('folder', 50).replace('<svg','').replace('viewBox="0 0 256 256"','viewBox="-64 -64 384 384"')}
+  ${s.guilds.map(g=>`<button aria-label="${sanitizeHTML(g.properties?.name??g.name)}" data-id="${g.id}" class="server-clicky">${(g.properties?.icon??g.icon) == null ? (g.properties?.name??g.name).trim().split(/\s+/).map(word=>word[0]??'').join('') : `<img src="https://cdn.discordapp.com/icons/${g.id}/${g.properties?.icon??g.icon}.png?size=64" width="45" height="45" alt="${g.properties?.name??g.name}" loading="lazy">`}</button>`).join('')}
 </div>`;
     }
-    return `<button aria-label="${sanitizeHTML(s.properties?.name??s.name??'Server')}" data-id="${s.id}" class="server-clicky">${(s.properties?.icon??s.icon??null) == null ? sanitizeHTML((s.properties?.name??s.name??'Server').trim().split(/\s+/).map(word=>word[0]??'').join('')) : `<img src="https://cdn.discordapp.com/icons/${s.id}/${s.properties?.icon??s.icon}.png?size=64" alt="${sanitizeHTML(s.properties?.name??s.name??'Server')}" loading="lazy">`}${(new Date(s.incidents_data?.dms_disabled_until)>new Date())||(new Date(s.incidents_data?.invites_disabled_until)>new Date())?'<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 256 256" class="paused-invites" title="Server has security actions enabled."><rect x="19" width="64" height="256" rx="15"/><rect x="173" width="64" height="256" rx="15"/></svg>':''}</button>`;
+    return `<button aria-label="${sanitizeHTML(s.properties?.name??s.name??'Server')}" data-id="${s.id}" class="server-clicky">${(s.properties?.icon??s.icon??null) == null ? sanitizeHTML((s.properties?.name??s.name??'Server').trim().split(/\s+/).map(word=>word[0]??'').join('')) : `<img src="https://cdn.discordapp.com/icons/${s.id}/${s.properties?.icon??s.icon}.png?size=64" width="45" height="45" alt="${sanitizeHTML(s.properties?.name??s.name??'Server')}" loading="lazy">`}${(new Date(s.incidents_data?.dms_disabled_until)>new Date())||(new Date(s.incidents_data?.invites_disabled_until)>new Date())?'<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 256 256" class="paused-invites" title="Server has security actions enabled."><rect x="19" width="64" height="256" rx="15"/><rect x="173" width="64" height="256" rx="15"/></svg>':''}</button>`;
   }).join('');
   Array.from(document.querySelectorAll('#server button'))
     .forEach(b=>{
