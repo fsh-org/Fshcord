@@ -556,16 +556,8 @@ function loading(text, empty=false) {
     }
   }).showToast();
 }
-let lastReport = '';
 function report(text, obj) {
-  window.data.localReport = true; // TODO: Fix tel
-  if (window.data.localReport) {
-    console.log(text, obj);
-  } else {
-    if (lastReport===text) return;
-    lastReport = text;
-    fetch(`https://telemetry.fsh.plus?url=${encodeURIComponent(location.href)}&text=${text}&context=${encodeURIComponent(JSON.stringify(obj, null, 2))}`, { method: 'POST' })
-  }
+  console.log(text, obj);
 }
 function copy(text) {
   navigator.clipboard.writeText(text);

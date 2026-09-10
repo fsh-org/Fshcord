@@ -4,7 +4,6 @@ if (!localStorage.getItem('token')) {
 
 // Main
 window.data = {};
-window.data.localReport = false;
 
 // Extra settings
 window.data.extra_settings = {

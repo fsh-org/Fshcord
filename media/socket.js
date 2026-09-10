@@ -56,7 +56,13 @@ loading('gateway');
 
 // Ws handle
 function wsstart(url) {
+  if (window.data.ws.socket) {
+    window.data.ws.socket.onclose = ()=>{};
+    if (window.data.ws.socket.readyState === WebSocket.OPEN) window.data.ws.socket.close();
+  }
+  if (window.data.ws.heartbeat_timer) clearInterval(window.data.ws.heartbeat_timer);
   if (!url) url = window.data.ws.default;
+  loading('Reconecting socket', true);
   let ws = new WebSocket(url);
   window.data.ws.socket = ws;
   ws.onmessage = (evt)=>{wsmessage(JSON.parse(evt.data))};
@@ -68,7 +74,7 @@ function wsstart(url) {
       loading('Cannot reconect socket', true);
       return;
     }
-    wsstart(window.data.ws.resume_url);
+    wsstart(window.data.ws.session_id?window.data.ws.resume_url:window.data.ws.default);
   };
 }
 function wsheartbeat() {
@@ -280,8 +286,8 @@ function wsmessage(wsd) {
     case 1: // Heartbeat
       wsheartbeat();
       break;
-    case 7: // About to disconect
-      loading('Reconecting socket', true);
+    case 7: // Reconect
+      wsstart(window.data.ws.resume_url);
       break;
     case 9: // Invalid session
       window.data.ws.failedResumes += 5;
@@ -334,7 +340,7 @@ function wsmessage(wsd) {
       break;
     case 11: // Heartbeat ACK
       // Wait and heartbeat
-      setTimeout(wsheartbeat, window.data.ws.heartbeat_interval);
+      window.data.ws.heartbeat_timer = setTimeout(wsheartbeat, window.data.ws.heartbeat_interval);
       break;
     default:
       report('Unknown gateway op: '+wsd.op, wsd)
