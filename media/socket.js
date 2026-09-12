@@ -50,7 +50,7 @@ function GenerateLaunchSignature() {
 }
 
 // Data
-window.data.ws = { default: 'wss://gateway.discord.gg/?v=10&encoding=json', log: false, logUnhandled: false, socket: undefined, d: undefined, session_id: undefined, resume_url: undefined, failedResumes: 0, maxFailedResumes: 50 };
+window.data.ws = { default: 'wss://gateway.discord.gg/?v=10&encoding=json', log: false, logUnhandled: false, socket: undefined, d: undefined, sessionId: undefined, resumeUrl: undefined, failedResumes: 0, maxFailedResumes: 50 };
 
 loading('gateway');
 
@@ -74,7 +74,7 @@ function wsstart(url) {
       loading('Cannot reconect socket', true);
       return;
     }
-    wsstart(window.data.ws.session_id?window.data.ws.resume_url:window.data.ws.default);
+    wsstart(window.data.ws.sessionId?window.data.ws.resumeUrl:window.data.ws.default);
   };
 }
 function wsheartbeat() {
@@ -86,8 +86,8 @@ function wsmessage(wsd) {
     case 0: // Just anything
       if (wsd.s) window.data.ws.d = wsd.s;
       if (wsd.t === 'READY') {// Resume
-        window.data.ws.resume_url = wsd.d.resume_gateway_url;
-        window.data.ws.session_id = wsd.d.session_id;
+        window.data.ws.resumeUrl = wsd.d.resume_gateway_url;
+        window.data.ws.sessionId = wsd.d.session_id;
         init(wsd.d);
       } else if (wsd.t === 'READY_SUPPLEMENTAL') {// Resume
         wsd.d.merged_presences.guilds.forEach(g=>{
@@ -100,10 +100,10 @@ function wsmessage(wsd) {
         });
       } else if (wsd.t === 'RATE_LIMITED') {
         setTimeout(()=>{
-          window.data.ws.socket.send(`{
-  "op": ${wsd.d.opcode},
-  "d": ${JSON.stringify(wsd.d.meta, null, 2)}
-}`);
+          window.data.ws.socket.send(JSON.stringify({
+            op: wsd.d.opcode,
+            d: JSON.stringify(wsd.d.meta, null, 2)
+          }));
         }, wsd.d.retry_after*1000);
       } else if (wsd.t === 'GUILD_CREATE') {// Guilds
         proxyFetch(`https://discord.com/api/v10/guilds/${wsd.d.id}`)
@@ -173,6 +173,11 @@ function wsmessage(wsd) {
         });
       } else if (wsd.t === 'MESSAGE_CREATE') {// Messages
         if (!window.data.messageCache[wsd.d.channel_id]) return;
+        // Modifications
+        if (wsd.d.poll) wsd.d.poll.results ??= {
+          answer_counts: [],
+          is_finalized: false
+        };
         // Add to cache
         window.data.messageCache[wsd.d.channel_id].unshift(wsd.d);
         // If current, show new
@@ -209,11 +214,7 @@ function wsmessage(wsd) {
         if (same) {
           // Count up
           same.count += 1;
-          if (wsd.d.type===0) {
-            same.count_details.normal += 1;
-          } else {
-            same.count_details.burst += 1;
-          }
+          same.count_details[wsd.d.type===0?'normal':'burst'] += 1;
           // If user set me :3
           if (wsd.d.user_id===window.data.user.id) {
             same.me = true;
@@ -235,9 +236,7 @@ function wsmessage(wsd) {
         }
         // If current, show new
         if (window.data.currentChannel===wsd.d.channel_id) {
-          if (channelType.text.includes(window.data.currentChannelType)) {
-            showMessages(window.data.messageCache[wsd.d.channel_id]);
-          }
+          if (channelType.text.includes(window.data.currentChannelType)) showMessages(window.data.messageCache[wsd.d.channel_id]);
         }
       } else if (wsd.t === 'MESSAGE_REACTION_REMOVE') {
         if (!window.data.messageCache[wsd.d.channel_id]) return;
@@ -246,11 +245,7 @@ function wsmessage(wsd) {
         if (same) {
           // Count down
           same.count -= 1;
-          if (wsd.d.type===0) {
-            same.count_details.normal -= 1;
-          } else {
-            same.count_details.burst -= 1;
-          }
+          same.count_details[wsd.d.type===0?'normal':'burst'] -= 1;
           if (wsd.d.user_id===window.data.user.id) {
             same.me = false;
             same.me_burst = false;
@@ -262,9 +257,26 @@ function wsmessage(wsd) {
         }
         // If current, show new
         if (window.data.currentChannel===wsd.d.channel_id) {
-          if (channelType.text.includes(window.data.currentChannelType)) {
-            showMessages(window.data.messageCache[wsd.d.channel_id]);
-          }
+          if (channelType.text.includes(window.data.currentChannelType)) showMessages(window.data.messageCache[wsd.d.channel_id]);
+        }
+      } else if (wsd.t === 'MESSAGE_POLL_VOTE_ADD' || wsd.t === 'MESSAGE_POLL_VOTE_REMOVE') {
+        if (!window.data.messageCache[wsd.d.channel_id]) return;
+        let message = window.data.messageCache[wsd.d.channel_id].find(m=>m.id===wsd.d.message_id);
+        if (!message) return;
+        let answer = message.poll.results.answer_counts.find(ans=>ans.id===wsd.d.answer_id);
+        if (answer) {
+          answer.count += (wsd.t==='MESSAGE_POLL_VOTE_ADD'?1:-1);
+          if (wsd.d.user_id===window.data.user.id) answer.me_voted = wsd.t==='MESSAGE_POLL_VOTE_ADD';
+        } else {
+          message.poll.results.answer_counts.push({
+            id: wsd.d.answer_id,
+            count: 1,
+            me_voted: wsd.d.user_id===window.data.user.id
+          });
+        }
+        // If current, show new
+        if (window.data.currentChannel===wsd.d.channel_id) {
+          if (channelType.text.includes(window.data.currentChannelType)) showMessages(window.data.messageCache[wsd.d.channel_id]);
         }
       } else if (wsd.t === 'MESSAGE_ACK') {
         let idx = window.data.channelRead.findIndex(chr=>chr.id===wsd.d.channel_id);
@@ -272,11 +284,13 @@ function wsmessage(wsd) {
         delete wsd.d.message_id;
         delete wsd.d.channel_id;
         Object.merge(window.data.channelRead[idx], wsd.d);
-      } else if (wsd.t === 'USER_SETTINGS_UPDATE') {// Settings
+      } else if (wsd.t === 'USER_UPDATE') { // User
+        Object.merge(window.data.user, wsd.d);
+      } else if (wsd.t === 'USER_SETTINGS_UPDATE') {
         Object.merge(window.data.settings, wsd.d);
         if (wsd.d.guild_folders) switchServers();
       } else if (wsd.t === 'USER_SETTINGS_PROTO_UPDATE') {
-        // For future
+        // TODO: For future use
       } else if (wsd.t === 'PRESENCE_UPDATE') {// Presences
         window.data.presences[wsd.d.user.id] = wsd.d
       } else {
@@ -287,24 +301,24 @@ function wsmessage(wsd) {
       wsheartbeat();
       break;
     case 7: // Reconect
-      wsstart(window.data.ws.resume_url);
+      wsstart(window.data.ws.resumeUrl);
       break;
     case 9: // Invalid session
       window.data.ws.failedResumes += 5;
-      window.data.ws.resume_url = undefined;
-      window.data.ws.session_id = undefined;
+      window.data.ws.resumeUrl = undefined;
+      window.data.ws.sessionId = undefined;
       wsstart(window.data.ws.default);
       break;
     case 10: // Hewwo
       window.data.ws.heartbeat_interval = wsd.d.heartbeat_interval;
       // Have we been here before?
-      if (window.data.ws.session_id) {
+      if (window.data.ws.sessionId) {
         // Resume
         window.data.ws.socket.send(JSON.stringify({
           op: 6,
           d: {
             token: localStorage.getItem('token'),
-            session_id: window.data.ws.session_id,
+            session_id: window.data.ws.sessionId,
             seq: window.data.ws.d
           }
         }));
