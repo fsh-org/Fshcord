@@ -42,6 +42,26 @@ const userFlags = {
   COLLABORATOR: 50n,
   RESTRICTED_COLLABORATOR: 51n
 };
+const channelFlags = {
+  GUILD_FEED_REMOVED: 0n,
+  PINNED: 1n,
+  ACTIVE_CHANNELS_REMOVED: 2n,
+  REQUIRE_TAG: 4n,
+  IS_SPAM: 5n,
+  IS_GUILD_RESOURCE_CHANNEL: 7n,
+  CLYDE_AI: 8n,
+  IS_SCHEDULED_FOR_DELETION: 9n,
+  IS_MEDIA_CHANNEL: 10n,
+  SUMMARIES_DISABLED: 11n,
+  APPLICATION_SHELF_CONSENT: 12n,
+  IS_ROLE_SUBSCRIPTION_TEMPLATE_PREVIEW_CHANNEL: 13n,
+  IS_BROADCASTING: 14n,
+  HIDE_MEDIA_DOWNLOAD_OPTIONS: 15n,
+  IS_JOIN_REQUEST_INTERVIEW_CHANNEL: 16n,
+  OBFUSCATED: 17n,
+  IS_MODERATOR_REPORT_CHANNEL: 19n,
+  IS_SPOILER_CHANNEL: 21n
+};
 const messageFlags = {
   CROSSPOSTED: 0n,
   IS_CROSSPOST: 1n,
@@ -451,15 +471,15 @@ function getUserColor(server, mem) {
   }
 }
 
-// Messages
-function getMessageFlags(bitfield) {
+// Flags
+function getFlags(bitfield, object) {
   let flags = {};
   bitfield = BigInt(bitfield);
-  for (const [name, position] of Object.entries(messageFlags)) {
-    flags[name] = (bitfield & (1n << position))>0n;
-  }
+  for (const [name, position] of Object.entries(object)) flags[name] = (bitfield & (1n << position))>0n;
   return flags;
 }
+
+// Messages
 let InviteCache = {};
 async function getInvite(code) {
   if (InviteCache[code]) return InviteCache[code];
@@ -471,14 +491,6 @@ async function getInvite(code) {
 }
 
 // Attachments
-function getAttachmentFlags(bitfield) {
-  let flags = {};
-  bitfield = BigInt(bitfield);
-  for (const [name, position] of Object.entries(attachmentFlags)) {
-    flags[name] = (bitfield & (1n << position))>0n;
-  }
-  return flags;
-}
 function formatBytes(bytes) {
   bytes = Number(bytes);
   if (bytes === 0) return '0 Bytes';

@@ -253,7 +253,7 @@ svg {
 #channel button .avatar, #channel button .avatar img:not(.decoration) {
   border-radius: 2rem;
 }
-.channel-nsfw {
+.channel-notice {
   position: absolute;
 }
 #channel button:hover {
@@ -814,7 +814,7 @@ a:has(.component.c2) {
   min-width: 40%;
   max-width: 100%;
   padding: 5px 10px;
-  border-radius: 1rem;
+  border-radius: 0.5rem;
   background-color: var(--bg-2);
   box-sizing: border-box;
 }

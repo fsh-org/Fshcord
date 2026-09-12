@@ -496,7 +496,7 @@ function renderPoll(poll) {
 </div>`;
 }
 function renderMessage(content, author, m) {
-  return `<div class="message${m.deleted?' deleted':''}${(m.mentions??[]).map(e=>e.id).includes(window.data.user.id)?' mention':''}${getMessageFlags(m.flags).EPHEMERAL?' ephemeral':''}">
+  return `<div class="message${m.deleted?' deleted':''}${(m.mentions??[]).map(e=>e.id).includes(window.data.user.id)?' mention':''}${getFlags(m.flags, messageFlags).EPHEMERAL?' ephemeral':''}">
   ${m.type===19&&m.message_reference?`<div class="reply-preview">
     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 256 256" style="margin-left:20px;flex-shrink:0;"><path d="M0 164H32V240C32 248.837 24.8366 256 16 256V256C7.16344 256 0 248.837 0 240V164Z" fill="#ACACAC"></path><path d="M52 112H240C248.837 112 256 119.163 256 128V128C256 136.837 248.837 144 240 144H52V112Z" fill="#ACACAC"></path><path d="M52 112C45.1713 112 38.4094 113.345 32.1005 115.958C25.7915 118.572 20.0591 122.402 15.2304 127.23C10.4018 132.059 6.57151 137.792 3.95826 144.1C1.34502 150.409 -1.03111e-06 157.171 0 164L31.9854 164C31.9854 161.372 32.5031 158.769 33.5089 156.341C34.5148 153.912 35.989 151.706 37.8476 149.848C39.7061 147.989 41.9125 146.515 44.3408 145.509C46.769 144.503 49.3716 143.985 52 143.985V112Z" fill="#ACACAC"></path></svg>
     ${m.referenced_message?`<img src="${getUserAvatar(m.referenced_message.author.id, m.referenced_message.author.avatar)}" width="20" height="20" loading="lazy" aria-hidden="true" onclick="showMinifiedProfile(this, '${m.referenced_message.author.id}')">`:''}
@@ -520,7 +520,7 @@ function renderMessage(content, author, m) {
     ${m.attachments?.length?m.attachments.map(attach=>{
       if (!attach.content_type) attach.content_type=`image/${attach.url.split('?')[0].split('.').slice(-1)[0]}`;
       if (attach.content_type.startsWith('image')&&!attach.width) attach.content_type=`application/${attach.content_type.split('/')[1]}`;
-      return `<${attach.content_type.startsWith('image/')?'img':attach.content_type.startsWith('audio/')?'audio':attach.content_type.startsWith('video/')?'video':'div'} src="${attach.url}" width="${Math.floor(attach.width/2)}" height="${Math.floor(attach.height/2)}" class="message-attach${attach.flags?(getAttachmentFlags(attach.flags).SPOILER?` spoiler"onclick="this.classList.remove('spoiler')`:''):''}" controls>${attach.content_type.startsWith('image/')?'':attach.content_type.startsWith('audio/')?'</audio>':attach.content_type.startsWith('video/')?'</video>':`<a download="${sanitizeHTML(attach.filename)}">${sanitizeHTML(attach.filename)}</a> · ${formatBytes(attach.size)}</div>`}`;
+      return `<${attach.content_type.startsWith('image/')?'img':attach.content_type.startsWith('audio/')?'audio':attach.content_type.startsWith('video/')?'video':'div'} src="${attach.url}" width="${Math.floor(attach.width/2)}" height="${Math.floor(attach.height/2)}" class="message-attach${attach.flags?(getFlags(attach.flags, attachmentFlags).SPOILER?` spoiler"onclick="this.classList.remove('spoiler')`:''):''}" controls>${attach.content_type.startsWith('image/')?'':attach.content_type.startsWith('audio/')?'</audio>':attach.content_type.startsWith('video/')?'</video>':`<a download="${sanitizeHTML(attach.filename)}">${sanitizeHTML(attach.filename)}</a> · ${formatBytes(attach.size)}</div>`}`;
     }).join(''):''}
     ${m.embeds?.length?m.embeds.map(embed=>renderEmbed(embed)).join(''):''}
     ${renderComponents(m.components??[], { id: m.id, app: author.id, flags: m.flags })}
@@ -535,7 +535,7 @@ function renderMessage(content, author, m) {
     ${m.thread?`<div class="thread">
       <span>${sanitizeHTML(m.thread.name)} · ${m.thread.message_count} messages</span>
     </div>`:''}
-    ${getMessageFlags(m.flags).EPHEMERAL?`<span>Only you can see this · <button style="font-weight:normal;padding:2px;border:none;border-radius:0.25rem;" onclick="window.data.messageCache[window.data.currentChannel]=window.data.messageCache[window.data.currentChannel].filter(msg=>msg.id!=='${m.id}');switchMessage(window.data.currentChannel,window.data.currentChannelType)">Delete this message</button></span>`:''}
+    ${getFlags(m.flags, messageFlags).EPHEMERAL?`<span>Only you can see this · <button style="font-weight:normal;padding:2px;border:none;border-radius:0.25rem;" onclick="window.data.messageCache[window.data.currentChannel]=window.data.messageCache[window.data.currentChannel].filter(msg=>msg.id!=='${m.id}');switchMessage(window.data.currentChannel,window.data.currentChannelType)">Delete this message</button></span>`:''}
   </span>
 </div>`;
 }
@@ -795,7 +795,8 @@ function showChannels(list, server) {
   ${c.type===1&&window.data.extra_settings.nameplates&&getUser(c.recipient_ids[0]).collectibles?.nameplate?`<video class="nameplate" src="https://cdn.discordapp.com/assets/collectibles/${getUser(c.recipient_ids[0]).collectibles.nameplate.asset}asset.webm" muted loop aria-hidden="true"></video>`:''}
   ${c.type===1?`<div class="avatar" aria-hidden="true"><img src="${getUserAvatar(c.recipient_ids[0], getUser(c.recipient_ids[0]).avatar, 32)}" width="20" height="20" loading="lazy" aria-hidden="true">${c.type===1&&window.data.extra_settings.avatar_deco?`<img src="${getUserDeco(getUser(c.recipient_ids[0])?.avatar_decoration_data?.asset)}" class="decoration" width="25" height="25" loading="lazy" aria-hidden="true" onerror="this.remove()">`:''}</div>`:''}
   ${c.type!==1?(c.type===3&&c.icon?`<div class="avatar" aria-hidden="true"><img src="https://cdn.discordapp.com/channel-icons/${c.id}/${c.icon}.png?size=32" width="20" height="20" loading="lazy" aria-hidden="true"></div>`:(rules===c.id?getIcon('rules', 20):getIcon(c.type, 20))):''}
-  ${c.nsfw?getIcon('nsfw', 20).replace('>',' class="channel-nsfw">'):''}
+  ${c.nsfw?getIcon('nsfw', 20).replace('>',' class="channel-notice">'):''}
+  ${getFlags(c.flags, channelFlags).IS_SPOILER_CHANNEL?getIcon('spoiler', 20).replace('>',' class="channel-notice">'):''}
   <span class="name">${sanitizeHTML(name)}</span>
   ${window.data.extra_settings.tags&&c.type===1?getUserClan(getUser(c.recipient_ids[0]).clan??getUser(c.recipient_ids[0]).user?.clan, true):''}
 </button>`;

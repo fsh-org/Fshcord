@@ -417,11 +417,14 @@ async function init(d) {
       fetchIcon(2),
       fetchIcon(3),
       fetchIcon(5),
+      fetchIcon(6),
+      fetchIcon(7),
       fetchIcon(13),
       fetchIcon(15),
       fetchIcon(16),
       fetchIcon('rules'),
-      fetchIcon('nsfw')
+      fetchIcon('nsfw'),
+      fetchIcon('spoiler')
     ]);
   }
 
