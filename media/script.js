@@ -622,14 +622,16 @@ function switchMessage(id, type) {
   type = Number(type);
   document.querySelector('main .input-bar').style.display = 'none';
   document.getElementById('messages').style.flexDirection = '';
-  // How??
+  // How?
   if (channelType.invalid.includes(type)) {
-    report('User either entered a category or a channel that has not existed for over 3 years?', [id, type])
+    report('User either entered a category or a unknow channel type?', [id, type])
     return;
   }
   // Set current
   window.data.currentChannel = id;
   window.data.currentChannelType = type;
+  document.querySelector('#channel > button[selected]')?.removeAttribute?.('selected');
+  document.querySelector(`#channel > button[data-id="${id}"]`)?.setAttribute?.('selected', true);
   // Set last
   window.data.serverLastChannel[window.data.currentServer] = id;
   localStorage.setItem('slc',JSON.stringify(window.data.serverLastChannel));

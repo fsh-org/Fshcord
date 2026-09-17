@@ -221,14 +221,19 @@ svg {
   background-color: var(--bg-1);
 }
 #channel button {
+  flex-shrink: 0;
   position: relative;
   display: flex;
   gap: 5px;
   align-items: center;
-  flex-shrink: 0;
+  color: var(--text-2);
   border: none;
   text-align: left;
   border-radius: 0.5rem;
+}
+#channel button[selected] {
+  color: var(--text-1);
+  background-color: var(--bg-2);
 }
 #channel button .name {
   white-space: nowrap;
@@ -271,7 +276,6 @@ svg {
 
 #channel .cat {
   flex-shrink: 0;
-  color: var(--text-2);
   font-size: 80%;
   white-space: nowrap;
   text-overflow: ellipsis;
