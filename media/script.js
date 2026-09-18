@@ -1,6 +1,4 @@
-if (!localStorage.getItem('token')) {
-  window.location.replace('/login');
-}
+if (!localStorage.getItem('token')) window.location.replace('/login');
 
 // Main
 window.data = {};
@@ -18,17 +16,18 @@ try {
   // Ignore :3
 }
 
-window.data.users = {};
+window.data.users = {
+  '0': SystemAuthor,
+  '1': UnknownAuthor,
+  '2': AutoModAuthor
+};
 window.data.presences = {};
 window.data.servers = [];
 window.data.dms = [];
 window.data.slash = {};
 
-window.data.users['0'] = SystemAuthor;
-window.data.users['1'] = UnknownAuthor;
-window.data.users['2'] = AutoModAuthor;
-
 window.data.messageCache = {};
+window.data.fullChannel = {};
 window.data.channelTyping = {};
 
 window.data.currentServer = '0';
@@ -43,6 +42,8 @@ try {
   // Ignore :3
 }
 
+let messageContainer = document.getElementById('messages');
+
 // Menus
 function showContextMenu(event, type, data) {
   event.preventDefault();
@@ -52,9 +53,6 @@ function showContextMenu(event, type, data) {
   menu.style.top = event.y+'px';
   switch(type) {
     case 'server':
-      menu.innerHTML = `<button onclick="copy('${sanitizeHTML(data.name)}')">Copy name</button>
-<button onclick="copy('${data.id}')">Copy id</button>`;
-      break;
     case 'channel':
       menu.innerHTML = `<button onclick="copy('${sanitizeHTML(data.name)}')">Copy name</button>
 <button onclick="copy('${data.id}')">Copy id</button>`;
@@ -89,11 +87,7 @@ async function showMinifiedProfile(element, user) {
   menu.innerText = 'Loading user data...';
   menu.show();
   let menubound = menu.getBoundingClientRect();
-  if (bound.left>window.innerWidth/2) {
-    menu.style.left = bound.left-menubound.width-10+'px';
-  } else {
-    menu.style.left = bound.left+bound.width+10+'px';
-  }
+  menu.style.left = bound.left-(bound.left>window.innerWidth/2?menubound.width-10:bound.width+10)+'px';
   menu.style.top = bound.top+'px';
   if (window.innerHeight<menubound.bottom) {
     menu.style.top = bound.top-(menubound.bottom-window.innerHeight)+'px';
@@ -305,6 +299,7 @@ auto_moderation_notification
     "content_scan_version": 0
   }
 ]
+components
 gift
 gifv -
 image -
@@ -395,7 +390,7 @@ function renderEmbed(embed) {
 /*
 1  Action Row -
 2  Button -partial style6
-3  String Select -partial interaction, select, menu placement
+3  String Select -partial multi select { min_values: 1, max_values: 1 }
 4  Text Input
 5  User Select
 6  Role Select
@@ -464,7 +459,6 @@ ${comp.style===5?'</a>':''}`;
 </div>`).join('')}
   </div>
 </div>`;
-/* min_values: 1, max_values: 1 }*/
     case 9:
       return `<div class="component c9"><div class="c9-inner">${renderComponents(comp.components, data)}</div>${comp.accessory?`<div class="accessory">${renderComponents(comp.accessory, data)}</div>`:''}</div>`;
     case 10:
@@ -540,7 +534,7 @@ function renderMessage(content, author, m) {
 </div>`;
 }
 function showMessages(list) {
-  document.getElementById('messages').innerHTML = list.map((m,i,a)=>{
+  messageContainer.innerHTML = list.map((m,i,a)=>{
     if ((/(^|\s|https?:\/\/|localhost:)discord.gg\/[a-zA-Z0-9]+/m).test(m.content)) {
       if (!m.embeds.filter(em=>em.type==='invite')[0]) {
         Array.from(m.content.matchAll(/(^|\s|https?:\/\/|localhost:)discord.gg\/[a-zA-Z0-9]+/gm))
@@ -567,19 +561,19 @@ function showMessages(list) {
     }
     // User join
     if (m.type===7) {
-      const messages = ["{author} joined the party.",
-"{author} is here.",
-"Welcome, {author}. We hope you brought pizza.",
-"A wild {author} appeared.",
-"{author} just landed.",
-"{author} just slid into the server.",
-"{author} just showed up!",
-"Welcome {author}. Say hi!",
-"{author} hopped into the server.",
-"Everyone welcome {author}!",
+      const messages = ['{author} joined the party.',
+'{author} is here.',
+'Welcome, {author}. We hope you brought pizza.',
+'A wild {author} appeared.',
+'{author} just landed.',
+'{author} just slid into the server.',
+'{author} just showed up!',
+'Welcome {author}. Say hi!',
+'{author} hopped into the server.',
+'Everyone welcome {author}!',
 "Glad you're here, {author}.",
-"Good to see you, {author}.",
-"Yay you made it, {author}!"];
+'Good to see you, {author}.',
+'Yay you made it, {author}!'];
       return renderMessage(messages[new Date(m.timestamp).getTime()%13].replace('{author}',(getUserDisplay(m.author))), SystemAuthor, m);
     }
     // AutoMod
@@ -615,13 +609,25 @@ function showMessages(list) {
         path: `https://api.fsh.plus/file?url=${encodeURIComponent(`https://discord.com/stickers/${s.getAttribute('data-id')}.json`)}`
       });
     });
-  // Scroll to top
-  document.getElementById('messages').scrollTop = 0;
+  // Scroll
+  if (!window.data.fullChannel[window.data.currentChannel]) messageContainer.onscroll = ()=>{
+    if (messageContainer.scrollHeight-messageContainer.clientHeight+messageContainer.scrollTop>200) return;
+    messageContainer.onscroll = ()=>{};
+    proxyFetch(`https://discord.com/api/v10/channels/${window.data.currentChannel}/messages?before=${list.slice(-1)[0].id}&limit=26`)
+      .then(res=>res.json())
+      .then(res=>{
+        let con = JSON.parse(res.content);
+        if (con.code === 50001) return;
+        if (con.length<26) window.data.fullChannel[window.data.currentChannel] = true;
+        window.data.messageCache[window.data.currentChannel] = window.data.messageCache[window.data.currentChannel].concat(con);
+        showMessages(window.data.messageCache[window.data.currentChannel]);
+      });
+  };
 }
 function switchMessage(id, type) {
   type = Number(type);
   document.querySelector('main .input-bar').style.display = 'none';
-  document.getElementById('messages').style.flexDirection = '';
+  messageContainer.style.flexDirection = '';
   // How?
   if (channelType.invalid.includes(type)) {
     report('User either entered a category or a unknow channel type?', [id, type])
@@ -635,15 +641,15 @@ function switchMessage(id, type) {
   // Set last
   window.data.serverLastChannel[window.data.currentServer] = id;
   localStorage.setItem('slc',JSON.stringify(window.data.serverLastChannel));
-  // Text
-  if (channelType.text.includes(type)) {
+  if (channelType.text.includes(type)) { // Text
     document.querySelector('main .input-bar').style.display = '';
     if (window.data.messageCache[id]) {
+      messageContainer.scrollTop = 0;
       showMessages(window.data.messageCache[id]);
       return;
     }
     showMessages([]);
-    proxyFetch(`https://discord.com/api/v10/channels/${id}/messages?limit=50`)
+    proxyFetch(`https://discord.com/api/v10/channels/${id}/messages?limit=13`)
       .then(res=>res.json())
       .then(res=>{
         let con = JSON.parse(res.content);
@@ -652,20 +658,15 @@ function switchMessage(id, type) {
           return;
         }
         window.data.messageCache[id] = con;
+        messageContainer.scrollTop = 0;
         showMessages(con);
-      })
+      });
     return;
-  }/*
-  // Forum
-  if (channelType.forum.includes(type)) {
+  }/* else if (channelType.forum.includes(type)) { // Forum
     return;
-  }
-  // Voice
-  if (channelType.voice.includes(type)) {
+  }/* else if (channelType.voice.includes(type)) { // Voice
     return;
-  }
-  // Store
-  if (channelType.store.includes(type)) {
+  }/* else if (channelType.store.includes(type)) { // Store
     return;
   }*/
   report(`Unhandled channel type: ${type}`, [id, type]);
@@ -721,17 +722,17 @@ function showMembers(members) {
       };
     });
 }
-function getMembers(id) {
-  // TODO: Support any server (currently only for servers where user has perms)
-  window.data.ws.socket.send(`{
-  "op": 8,
-  "d": {
-    "guild_id": "${id}",
-    "query": "",
-    "limit": 0
-  }
-}`);
-  window.data.servers[window.data.servers.findIndex(e=>e.id===id)].all_members = true;
+function getMembers(guild_id) {
+  // TODO: Support any server (currently only for servers where user has perms), user_ids: [100 ids]
+  window.data.ws.socket.send(JSON.stringify({
+    op: 8,
+    d: {
+      guild_id,
+      query: '',
+      limit: 0
+    }
+  }));
+  window.data.servers.find(e=>e.id===guild_id).all_members = true;
 }
 
 /*
@@ -832,12 +833,11 @@ ${(server.properties.banner??server.banner)?`<div><img src="https://cdn.discorda
   }
 }
 function showUserChannel(id) {
-  let m = document.getElementById('messages');
   document.querySelector('main .input-bar').style.display = 'none';
-  m.style.flexDirection = 'column';
+  messageContainer.style.flexDirection = 'column';
   switch(id) {
     case 'overview':
-      m.innerHTML = `<div>
+      messageContainer.innerHTML = `<div>
   <div>
     ${getUserBanner(window.data.user.id, window.data.user.banner, window.data.user.banner_color??colorToRGB(window.data.user.accent_color??0))}
     <div class="avatar">
@@ -852,7 +852,7 @@ function showUserChannel(id) {
       window.saveExtra = ()=>{
         localStorage.setItem('extra', JSON.stringify(window.data.extra_settings));
       };
-      m.innerHTML = `<p>Some extra settings not available in normal discord.</p>
+      messageContainer.innerHTML = `<p>Some extra settings not available in normal discord.</p>
 <hr style="width:100%;box-sizing:border-box;">
 <label>Display avatar decorations?: <input name="avatar-deco" type="checkbox"${window.data.extra_settings.avatar_deco?' checked':''} onchange="window.data.extra_settings.avatar_deco=this.checked;saveExtra()"></label>
 <label>Display nameplates?: <input name="nameplate" type="checkbox"${window.data.extra_settings.nameplates?' checked':''} onchange="window.data.extra_settings.nameplates=this.checked;saveExtra()"></label>
