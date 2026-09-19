@@ -274,12 +274,11 @@ Message types
 66: GUILD_BOOST_UPSELL
 67: FRIEND_REQUEST_ACCEPTED
 68: MEDIA_MENTION_MESSAGE
+69: GUILD_SPACE_MESSAGE
 */
 /*
 age_verification_system_notification
 application_news x
-article -
-auto_moderation_message -
 auto_moderation_notification
 [
   {
@@ -299,24 +298,19 @@ auto_moderation_notification
     "content_scan_version": 0
   }
 ]
-components
 gift
-gifv -
-image -
-link -
-poll_result -
 post_preview
-rich -
 safety_policy_notice
 safety_system_notification
-video -
 */
-function renderEmbed(embed) {
+function renderEmbed(embed, data) {
   let c;
   switch (embed.type) {
     case 'auto_moderation_message':
       return `${renderMessage(embed.description.replace(embed.fields.find(field=>field.name==='keyword_matched_content').value, '***$&***'), embed.user, { flags: 0 })}
 <span>Keyword: ${embed.fields.find(field=>field.name==='keyword').value} &nbsp; Rule: ${embed.fields.find(field=>field.name==='rule_name').value} &nbsp; ${embed.fields.find(field=>field.name==='timeout_duration')?.value?`Timeout: ${embed.fields.find(field=>field.name==='timeout_duration').value} seconds`:''}</span>`;
+    case 'components':
+      return renderComponents(embed.components??[], data);
     case 'gifv':
       return `<video src="${embed.video.proxy_url}" width="${Math.floor(embed.video.width/2)}" height="${Math.floor(embed.video.height/2)}" muted autoplay loop class="message-attach"></video>`;
     case 'image':
@@ -388,7 +382,6 @@ function renderEmbed(embed) {
   }
 }
 /*
-1  Action Row -
 2  Button -partial style6
 3  String Select -partial multi select { min_values: 1, max_values: 1 }
 4  Text Input
@@ -396,12 +389,7 @@ function renderEmbed(embed) {
 6  Role Select
 7  Mentionable Select
 8  Channel Select
-9  Section -
-10 Text Display -
-11 Thumbnail -
-12 Media Gallery -
 13 File
-14 Separator -
 16 Content Inventory Entry
 17 Container -partial spoiler
 18 Label (label, description)
@@ -434,7 +422,7 @@ function componentInteraction(type, cid, data, values=null) {
 function renderComponents(comp, data) {
   if (Array.isArray(comp)) return comp.map(com=>renderComponents(com, data)).join('');
   switch(comp.type) {
-    case 1:
+    case 1: // Action Row
       return `<div class="component c1">${renderComponents(comp.components, data)}</div>`;
     case 2:
       return `${comp.style===5?`<a href="${comp.url}" target="_blank">`:''}
@@ -459,18 +447,18 @@ ${comp.style===5?'</a>':''}`;
 </div>`).join('')}
   </div>
 </div>`;
-    case 9:
+    case 9: // Section
       return `<div class="component c9"><div class="c9-inner">${renderComponents(comp.components, data)}</div>${comp.accessory?`<div class="accessory">${renderComponents(comp.accessory, data)}</div>`:''}</div>`;
-    case 10:
+    case 10: // Text Display
       return `<span class="component c10">${parseMD(comp.content)}</span>`;
-    case 11:
-      return `<img class="component c11${comp.spoiler?' spoiler" onclick="this.classList.remove(`spoiler`)':''}" src="${comp.media.proxy_url}"${comp.description?` alt="${comp.description}"`:''} width="60" height="60" loading="lazy">`;
-    case 12:
-      return `<div class="gallery">${comp.items.map(item=>`<${item.media.content_type?.startsWith('video/')?'video':'img'}${item.spoiler?' class="spoiler" onclick="this.classList.remove(`spoiler`)"':''} src="${item.media.proxy_url}"${item.description?` alt="${item.description}"`:''} controls loading="lazy">${item.media.content_type?.startsWith('video/')?'</video>':''}`).join('')}</div>`;
-    case 14:
+    case 11: // Thumbnail
+      return `<smart-media class="component c11" data-type="image" data-width="60" data-height="60" data-placeholder="${comp.media.placeholder}" data-full="${comp.media.proxy_url}"${comp.description?` data-alt="${comp.description}"`:''}${comp.spoiler?' data-spoiler="true"':''}></smart-media>`;
+    case 12: // Media Gallery
+      return `<div class="gallery">${comp.items.map(item=>`<smart-media data-type="${(item.media.content_type??'image/png').split('/')[0]}" data-width="${item.media.width}" data-height="${item.media.height}" data-placeholder="${item.media.placeholder}" data-full="${item.media.proxy_url}"${item.description?` data-alt="${item.description}"`:''}${item.spoiler?' data-spoiler="true"':''}></smart-media>`).join('')}</div>`;
+    case 14: // Separator
       return `<div class="component c14" style="--divider:${comp.divider?'var(--bg-3)':'transparent'};--spacing:${comp.spacing===1?'10px':'20px'}"></div>`;
     case 17:
-      return `<div class="component c17" style="--color:${colorToRGB(comp.accent_color||0)}">${renderComponents(comp.components, data)}</div>`;
+      return `<div class="component c17"${comp.accent_color?` style="--color:${colorToRGB(comp.accent_color||0)}"`:''}>${renderComponents(comp.components, data)}</div>`;
     default:
       report(`Unknown component type: ${comp.type}`, comp);
       return `<span>Unknown component type: ${comp.type}</span>`;
@@ -490,6 +478,7 @@ function renderPoll(poll) {
 </div>`;
 }
 function renderMessage(content, author, m) {
+  let compdata = { id: m.id, app: author.id, flags: m.flags };
   return `<div class="message${m.deleted?' deleted':''}${(m.mentions??[]).map(e=>e.id).includes(window.data.user.id)?' mention':''}${getFlags(m.flags, messageFlags).EPHEMERAL?' ephemeral':''}">
   ${m.type===19&&m.message_reference?`<div class="reply-preview">
     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 256 256" style="margin-left:20px;flex-shrink:0;"><path d="M0 164H32V240C32 248.837 24.8366 256 16 256V256C7.16344 256 0 248.837 0 240V164Z" fill="#ACACAC"></path><path d="M52 112H240C248.837 112 256 119.163 256 128V128C256 136.837 248.837 144 240 144H52V112Z" fill="#ACACAC"></path><path d="M52 112C45.1713 112 38.4094 113.345 32.1005 115.958C25.7915 118.572 20.0591 122.402 15.2304 127.23C10.4018 132.059 6.57151 137.792 3.95826 144.1C1.34502 150.409 -1.03111e-06 157.171 0 164L31.9854 164C31.9854 161.372 32.5031 158.769 33.5089 156.341C34.5148 153.912 35.989 151.706 37.8476 149.848C39.7061 147.989 41.9125 146.515 44.3408 145.509C46.769 144.503 49.3716 143.985 52 143.985V112Z" fill="#ACACAC"></path></svg>
@@ -511,18 +500,18 @@ function renderMessage(content, author, m) {
   <span>
     ${author.hide?'':`<span><span class="name" onclick="showMinifiedProfile(this, '${author.id}')"${window.data.currentServer!=='0'?` style="--rc:${getUserColor(window.data.currentServer, data.servers.find(e=>e.id===window.data.currentServer).members?.find(mem=>mem.user.id===author.id))}"`:''}>${getUserDisplay(author)}</span>${[author.system,m.webhook_id,author.bot].filter(e=>!!e).length?`<span class="tag">${author.system?'SYSTEM':(m.webhook_id?'WEBHOOK':(author.bot?`BOT${getUserFlags(author.flags??author.public_flags).VERIFIED_BOT?' ✔':''}`:''))}</span>`:''}${window.data.extra_settings.tags&&author.clan?getUserClan(author.clan):''}<span class="timestamp">${formatDate(m.timestamp, 'r')}</span>${!m.webhook_id&&getUserFlags(author.flags??author.public_flags).SPAMMER?'<span>· Possible spammer</span>':''}</span>`}
     <span class="inner">${parseMD(content)}${m.edited_timestamp?'<span class="edited"> (edited)</span>':''}</span>
-    ${m.attachments?.length?m.attachments.map(attach=>{
+    ${m.attachments?.length?'<div class="gallery">'+m.attachments.map(attach=>{
       if (!attach.content_type) attach.content_type=`image/${attach.url.split('?')[0].split('.').slice(-1)[0]}`;
-      if (attach.content_type.startsWith('image')&&!attach.width) attach.content_type=`application/${attach.content_type.split('/')[1]}`;
-      return `<${attach.content_type.startsWith('image/')?'img':attach.content_type.startsWith('audio/')?'audio':attach.content_type.startsWith('video/')?'video':'div'} src="${attach.url}" width="${Math.floor(attach.width/2)}" height="${Math.floor(attach.height/2)}" class="message-attach${attach.flags?(getFlags(attach.flags, attachmentFlags).SPOILER?` spoiler"onclick="this.classList.remove('spoiler')`:''):''}" controls>${attach.content_type.startsWith('image/')?'':attach.content_type.startsWith('audio/')?'</audio>':attach.content_type.startsWith('video/')?'</video>':`<a download="${sanitizeHTML(attach.filename)}">${sanitizeHTML(attach.filename)}</a> · ${formatBytes(attach.size)}</div>`}`;
-    }).join(''):''}
-    ${m.embeds?.length?m.embeds.map(embed=>renderEmbed(embed)).join(''):''}
-    ${renderComponents(m.components??[], { id: m.id, app: author.id, flags: m.flags })}
+      if (attach.content_type.startsWith('image/')&&!attach.width) attach.content_type=`application/${attach.content_type.split('/')[1]}`;
+      let flags = getFlags(attach.flags??'0', attachmentFlags);
+      if (!attach.content_type.startsWith('image/')&&!attach.content_type.startsWith('video/')) return `<${attach.content_type.startsWith('image/')?'img':attach.content_type.startsWith('audio/')?'audio':attach.content_type.startsWith('video/')?'video':'div'} src="${attach.url}" width="${Math.floor(attach.width/2)}" height="${Math.floor(attach.height/2)}" class="message-attach${flags.SPOILER?` spoiler" onclick="this.classList.remove('spoiler')`:''}" loading="lazy" controls>${attach.content_type.startsWith('image/')?'':attach.content_type.startsWith('audio/')?'</audio>':attach.content_type.startsWith('video/')?'</video>':`<a download="${sanitizeHTML(attach.filename)}">${sanitizeHTML(attach.filename)}</a> · ${formatBytes(attach.size)}</div>`}`;
+      return `<smart-media data-type="${(attach.content_type??'image/png').split('/')[0]}" data-width="${attach.width}" data-height="${attach.height}" data-placeholder="${attach.placeholder}" data-full="${attach.url}"${flags.SPOILER?' data-spoiler="true"':''}></smart-media>`;
+    }).join('')+'</div>':''}
+    ${m.embeds?.length?m.embeds.map(embed=>renderEmbed(embed, compdata)).join(''):''}
+    ${renderComponents(m.components??[], compdata)}
     ${m.poll?renderPoll(m.poll):''}
     ${m.sticker_items?.length?m.sticker_items.map(sticker=>{
-      if (sticker.format_type===3) {
-        return `<lottie-sticker class="message-attach" data-id="${sticker.id}"></lottie-sticker>`;
-      }
+      if (sticker.format_type===3) return `<lottie-sticker class="message-attach" data-id="${sticker.id}"></lottie-sticker>`;
       return `<img src="https://media.discordapp.net/stickers/${sticker.id}.${['webp','png','png','webp','gif'][sticker.format_type]}?size=160&quality=lossless" width="160" height="160" loading="lazy" class="message-attach">`;
     }).join(''):''}
     ${m.reactions?.length?`<div class="reactions">${m.reactions.map(reaction=>`<button${reaction.me?' class="me"':''}>${reaction.emoji.id?`<img src="https://cdn.discordapp.com/emojis/${reaction.emoji.id}.${reaction.emoji.animated?'gif':'webp'}?size=96" width="16" height="16" loading="lazy">`:twemoji.parse(reaction.emoji.name, twemojiConfig)}${reaction.count}</button>`).join('')}</div>`:''}

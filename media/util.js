@@ -242,6 +242,49 @@ function toBinaryString(numString) {
   return result;
 }
 
+// Code from https://github.com/evanw/thumbhash MIT
+function thumbHashToRGBA(_){let{PI:$,min:t,max:e,cos:o,round:r}=Math,l=_[0]|_[1]<<8|_[2]<<16,a=_[3]|_[4]<<8,f=(63&l)/63,u=(l>>6&63)/31.5-1,h=(l>>12&63)/31.5-1,n=l>>23,s=a>>15,p=e(3,s?n?5:7:7&a),i=e(3,s?7&a:n?5:7),b=n?(15&_[5])/15:1,m=(_[5]>>4)/15,R=n?6:5,T=0,c=($,t,e)=>{let o=[];for(let r=0;r<t;r++)for(let l=r?0:1;l*t<$*(t-r);l++)o.push(((_[R+(T>>1)]>>((1&T++)<<2)&15)/7.5-1)*e);return o},A=c(p,i,(l>>18&31)/31),g=c(3,3,1.25*((a>>3&63)/63)),H=c(3,3,1.25*((a>>9&63)/63)),x=n&&c(5,5,m),D=thumbHashToApproximateAspectRatio(_),L=r(D>1?32:32*D),U=r(D>1?32/D:32),d=new Uint8Array(L*U*4),w=[],B=[];for(let C=0,G=0;C<U;C++)for(let j=0;j<L;j++,G+=4){let k=f,q=u,v=h,y=b;for(let z=0,E=e(p,n?5:3);z<E;z++)w[z]=o($/L*(j+.5)*z);for(let F=0,I=e(i,n?5:3);F<I;F++)B[F]=o($/U*(C+.5)*F);for(let J=0,K=0;J<i;J++)for(let M=J?0:1,N=2*B[J];M*i<p*(i-J);M++,K++)k+=A[K]*w[M]*N;for(let O=0,P=0;O<3;O++)for(let Q=O?0:1,S=2*B[O];Q<3-O;Q++,P++){let V=w[Q]*S;q+=g[P]*V,v+=H[P]*V}if(n)for(let W=0,X=0;W<5;W++)for(let Y=W?0:1,Z=2*B[W];Y<5-W;Y++,X++)y+=x[X]*w[Y]*Z;let _3=k-2/3*q,__=(3*k-_3+v)/2,_$=__-v;d[G]=e(0,255*t(1,__)),d[G+1]=e(0,255*t(1,_$)),d[G+2]=e(0,255*t(1,_3)),d[G+3]=e(0,255*t(1,y))}return{w:L,h:U,rgba:d}}
+function thumbHashToApproximateAspectRatio(_){let $=_[3],t=128&_[2],e=128&_[4];return(e?t?5:7:7&$)/(e?7&$:t?5:7)}
+function thumbHashrgbaToDataURL(_,$,t){let e=4*_+1,o=6+$*(5+e),r=[137,80,78,71,13,10,26,10,0,0,0,13,73,72,68,82,0,0,_>>8,255&_,0,0,$>>8,255&$,8,6,0,0,0,0,0,0,0,o>>>24,o>>16&255,o>>8&255,255&o,73,68,65,84,120,1],l=[0,498536548,997073096,651767980,1994146192,1802195444,1303535960,1342533948,-306674912,-267414716,-690576408,-882789492,-1687895376,-2032938284,-1609899400,-1111625188],a=1,f=0;for(let u=0,h=0,n=e-1;u<$;u++,n+=e-1)for(r.push(u+1<$?0:1,255&e,e>>8,255&~e,e>>8^255,0),f=(f+a)%65521;h<n;h++){let s=255&t[h];r.push(s),f=(f+(a=(a+s)%65521))%65521}for(let[p,i]of(r.push(f>>8,255&f,a>>8,255&a,0,0,0,0,0,0,0,0,73,69,78,68,174,66,96,130),[[12,29],[37,41+o]])){let b=-1;for(let m=p;m<i;m++)b^=r[m],b=(b=b>>>4^l[15&b])>>>4^l[15&b];b=~b,r[i++]=b>>>24,r[i++]=b>>16&255,r[i++]=b>>8&255,r[i++]=255&b}return"data:image/png;base64,"+btoa(String.fromCharCode(...r))}
+function thumbHashToDataURL(_){let $=thumbHashToRGBA(_);return thumbHashrgbaToDataURL($.w,$.h,$.rgba)}
+
+class SmartMedia extends HTMLElement {
+  static observedAttributes = ['data-type', 'data-width', 'data-height', 'data-alt', 'data-placeholder', 'data-full', 'data-spoiler'];
+  constructor() {
+    super();
+    this.observer = new IntersectionObserver((entries)=>{
+      if (entries.some(entry=>entry.isIntersecting)) {
+        this.observer.disconnect();
+        this.load();
+      }
+    }, { rootMargin: '200px 0px' });
+  }
+  connectedCallback() {
+    let present = attr=>this.dataset[attr]?` ${attr}="${this.dataset[attr]}"`:'';
+    if (this.dataset.width) this.style.width = this.dataset.width+'px';
+    if (this.dataset.height) this.style.height = this.dataset.height+'px';
+    this.innerHTML = `<img class="placeholder"${present('width')}${present('height')} style="opacity:1" aria-hidden="true" decoding="async" src="${thumbHashToDataURL(Uint8Array.from(atob(this.dataset.placeholder),c=>c.charCodeAt(0)))}">
+<${this.dataset.type.replace('image','img')} class="full${this.dataset.spoiler==='true'?' spoiler" onclick="this.classList.remove(`spoiler`)':''}"${present('width')}${present('height')}${present('alt')} style="opacity:0" decoding="async" controls>${this.dataset.type!=='image'?`</${this.dataset.type}>`:''}`;
+    this.observer.observe(this);
+  }
+  disconnectedCallback() {
+    this.observer.disconnect();
+  }
+  load() {
+    let placeholder = this.querySelector('.placeholder');
+    let full = this.querySelector('.full');
+    full.src = this.dataset.full;
+    full[this.dataset.type==='image'?'onload':'oncanplaythrough'] = ()=>{
+      requestAnimationFrame(()=>{
+        placeholder.style.opacity = 0;
+        full.style.opacity = 1;
+        full.addEventListener('transitionend', ()=>{ placeholder.remove() }, { once: true });
+      });
+    };
+  }
+}
+customElements.define('smart-media', SmartMedia);
+
 // Fetching
 function proxyFetch(url, o) {
   let opts = {

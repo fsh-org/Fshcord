@@ -198,6 +198,7 @@ function wsmessage(wsd) {
       } else if (wsd.t === 'MESSAGE_DELETE') {
         if (!window.data.messageCache[wsd.d.channel_id]) return;
         let message = window.data.messageCache[wsd.d.channel_id].find(m=>m.id===wsd.d.id);
+        if (!message) return;
         message.deleted = true;
         // If current, show new
         if (window.data.currentChannel===wsd.d.channel_id) {
