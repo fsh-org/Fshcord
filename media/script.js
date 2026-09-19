@@ -599,19 +599,25 @@ function showMessages(list) {
       });
     });
   // Scroll
-  if (!window.data.fullChannel[window.data.currentChannel]) messageContainer.onscroll = ()=>{
-    if (messageContainer.scrollHeight-messageContainer.clientHeight+messageContainer.scrollTop>200) return;
-    messageContainer.onscroll = ()=>{};
+  function loadMore() {
     proxyFetch(`https://discord.com/api/v10/channels/${window.data.currentChannel}/messages?before=${list.slice(-1)[0].id}&limit=26`)
       .then(res=>res.json())
       .then(res=>{
         let con = JSON.parse(res.content);
-        if (con.code === 50001) return;
+        if (con.code===50001) return;
         if (con.length<26) window.data.fullChannel[window.data.currentChannel] = true;
         window.data.messageCache[window.data.currentChannel] = window.data.messageCache[window.data.currentChannel].concat(con);
         showMessages(window.data.messageCache[window.data.currentChannel]);
       });
-  };
+  }
+  if (!window.data.fullChannel[window.data.currentChannel]&&list.length>0) {
+    if (messageContainer.scrollHeight<=messageContainer.clientHeight) loadMore();
+    messageContainer.onscroll = ()=>{
+      if (messageContainer.scrollHeight-messageContainer.clientHeight+messageContainer.scrollTop>200) return;
+      messageContainer.onscroll = ()=>{};
+      loadMore();
+    };
+  }
 }
 function switchMessage(id, type) {
   type = Number(type);

@@ -252,14 +252,18 @@ class SmartMedia extends HTMLElement {
   static observedAttributes = ['data-type', 'data-width', 'data-height', 'data-alt', 'data-placeholder', 'data-full', 'data-spoiler'];
   constructor() {
     super();
+    this.loaded = false;
     this.observer = new IntersectionObserver((entries)=>{
+      if (this.loaded) return;
       if (entries.some(entry=>entry.isIntersecting)) {
         this.observer.disconnect();
         this.load();
+        this.loaded = true;
       }
     }, { rootMargin: '200px 0px' });
   }
   connectedCallback() {
+    if (this.loaded) return;
     let present = attr=>this.dataset[attr]?` ${attr}="${this.dataset[attr]}"`:'';
     if (this.dataset.width) this.style.width = this.dataset.width+'px';
     if (this.dataset.height) this.style.height = this.dataset.height+'px';
@@ -276,9 +280,9 @@ class SmartMedia extends HTMLElement {
     full.src = this.dataset.full;
     full[this.dataset.type==='image'?'onload':'oncanplaythrough'] = ()=>{
       requestAnimationFrame(()=>{
+        full.addEventListener('transitionend', ()=>{ placeholder.remove() }, { once: true });
         placeholder.style.opacity = 0;
         full.style.opacity = 1;
-        full.addEventListener('transitionend', ()=>{ placeholder.remove() }, { once: true });
       });
     };
   }

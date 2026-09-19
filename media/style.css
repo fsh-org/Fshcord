@@ -854,7 +854,7 @@ a:has(.component.c2) {
   white-space: break-spaces;
   padding: 2px 6px;
   border-radius: 0.25rem;
-  background-color: var(--bg-0);
+  background-color: var(--bg-3);
 }
 .message code.block {
   display: inline-block;
