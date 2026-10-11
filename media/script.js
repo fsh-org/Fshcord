@@ -770,7 +770,7 @@ function channelName(c) {
   return name;
 }
 function setTop(text, type) {
-  document.getElementById('top-name').innerHTML = (type==='none'?'':getIcon(type, 20))+text;
+  document.getElementById('top-name').innerHTML = (type==='none'?'':getIcon(type, 20))+sanitizeHTML(text);
 }
 function showChannels(list, server) {
   let rules;
