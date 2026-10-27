@@ -631,8 +631,8 @@ function switchMessage(id, type) {
   // Set current
   window.data.currentChannel = id;
   window.data.currentChannelType = type;
-  document.querySelector('#channel > button[selected]')?.removeAttribute?.('selected');
-  document.querySelector(`#channel > button[data-id="${id}"]`)?.setAttribute?.('selected', true);
+  document.querySelector('#channel button[selected]')?.removeAttribute?.('selected');
+  document.querySelector(`#channel button[data-id="${id}"]`)?.setAttribute?.('selected', true);
   // Set last
   window.data.serverLastChannel[window.data.currentServer] = id;
   localStorage.setItem('slc',JSON.stringify(window.data.serverLastChannel));
@@ -755,51 +755,61 @@ Channel types
 20: GUILD_SPACE
 21: GUILD_APP
 */
-function channelName(c) {
-  let name = c.id;
-  if (c.type === 1) {
-    name = getUserDisplay(getUser(c.recipient_ids[0]));
-  } else if (c.type === 3) {
-    name = c.name ?? (c.recipient_ids.map(r=>getUserDisplay(getUser(r))).join(', '));
+function channelName(ch) {
+  let name = ch.id;
+  if (ch.type === 1) {
+    name = getUserDisplay(getUser(ch.recipient_ids[0]));
+  } else if (ch.type === 3) {
+    name = ch.name ?? (ch.recipient_ids.map(r=>getUserDisplay(getUser(r))).join(', '));
   } else {
-    name = c.name ?? c.id;
-  }
-  if (c.type === 4) {
-    name = name.toUpperCase();
+    name = ch.name ?? ch.id;
   }
   return name;
 }
 function setTop(text, type) {
   document.getElementById('top-name').innerHTML = (type==='none'?'':getIcon(type, 20))+sanitizeHTML(text);
 }
-function showChannels(list, server) {
-  let rules;
+function renderChannel(ch) {
+  let name = channelName(ch);
+  if (ch.type===4) return `<button class="cat"><span title="${sanitizeHTML(name)}">${sanitizeHTML(name)}</span> <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 256 256"><path d="M222.048 60.6656C229.965 52.9629 242.627 53.1361 250.33 61.0523C258.032 68.9688 257.859 81.6306 249.943 89.3336L142.031 194.334C138.121 198.138 133.053 200.02 127.998 199.998C122.942 200.02 117.874 198.138 113.964 194.334L6.05228 89.3336C-1.86377 81.6306 -2.03716 68.9687 5.66556 61.0523C13.3684 53.136 26.0302 52.9631 33.9468 60.6656L127.998 152.177L222.048 60.6656Z"></path></svg></button>`;
+  return `<button data-id="${ch.id}" data-type="${ch.type}" data-name="${sanitizeHTML(name)}">
+  ${ch.type===1&&window.data.extra_settings.nameplates&&getUser(ch.recipient_ids[0]).collectibles?.nameplate?`<video class="nameplate" src="https://cdn.discordapp.com/assets/collectibles/${getUser(ch.recipient_ids[0]).collectibles.nameplate.asset}asset.webm" muted loop aria-hidden="true"></video>`:''}
+  ${ch.type===1?`<div class="avatar" aria-hidden="true"><img src="${getUserAvatar(ch.recipient_ids[0], getUser(ch.recipient_ids[0]).avatar, 32)}" width="20" height="20" loading="lazy" aria-hidden="true">${ch.type===1&&window.data.extra_settings.avatar_deco?`<img src="${getUserDeco(getUser(ch.recipient_ids[0])?.avatar_decoration_data?.asset)}" class="decoration" width="25" height="25" loading="lazy" aria-hidden="true" onerror="this.remove()">`:''}</div>`:''}
+  ${ch.type!==1?(ch.type===3&&ch.icon?`<div class="avatar" aria-hidden="true"><img src="https://cdn.discordapp.com/channel-icons/${ch.id}/${ch.icon}.png?size=32" width="20" height="20" loading="lazy" aria-hidden="true"></div>`:getIcon(ch.rules?'rules':ch.type, 20)):''}
+  ${ch.nsfw?getIcon('nsfw', 20).replace('>',' class="channel-notice">'):''}
+  ${getFlags(ch.flags, channelFlags).IS_SPOILER_CHANNEL?getIcon('spoiler', 20).replace('>',' class="channel-notice">'):''}
+  <span class="name">${sanitizeHTML(name)}</span>
+  ${window.data.extra_settings.tags&&ch.type===1?getUserClan(getUser(ch.recipient_ids[0]).clan??getUser(ch.recipient_ids[0]).user?.clan, true):''}
+</button>`;
+}
+function showChannels(list, changechannel=true, channelid) {
+  let cat = {'':[]};
   showMembers([]);
-  if (server) {
-    server = window.data.servers.find(e=>e.id===server);
-    // Rules
+  let rules;
+  let server;
+  if (channelid>10) {
+    server = window.data.servers.find(e=>e.id===channelid);
     rules = server.rules_channel_id;
     // Members
-    if (server.all_members) {
-      showMembers(server.members??[]);
-    } else {
-      getMembers(server.id);
-    }
+    server.all_members?showMembers(server.members??[]):getMembers(server.id);
+    // Sort channels
+    list = list.toSorted((a,b)=>(a.position+(channelType.voice.includes(a.type)?9999:0))-(b.position+(channelType.voice.includes(b.type)?9999:0)));
   }
-  document.getElementById('channel').innerHTML = (server?'<div id="channels-server-header"></div>':'')+list.map(c=>{
-    let name = channelName(c);
-    if (c.type===4) return `<span class="cat">${sanitizeHTML(name)}</span>`;
-    return `<button data-id="${c.id}" data-type="${c.type}" data-name="${sanitizeHTML(name)}">
-  ${c.type===1&&window.data.extra_settings.nameplates&&getUser(c.recipient_ids[0]).collectibles?.nameplate?`<video class="nameplate" src="https://cdn.discordapp.com/assets/collectibles/${getUser(c.recipient_ids[0]).collectibles.nameplate.asset}asset.webm" muted loop aria-hidden="true"></video>`:''}
-  ${c.type===1?`<div class="avatar" aria-hidden="true"><img src="${getUserAvatar(c.recipient_ids[0], getUser(c.recipient_ids[0]).avatar, 32)}" width="20" height="20" loading="lazy" aria-hidden="true">${c.type===1&&window.data.extra_settings.avatar_deco?`<img src="${getUserDeco(getUser(c.recipient_ids[0])?.avatar_decoration_data?.asset)}" class="decoration" width="25" height="25" loading="lazy" aria-hidden="true" onerror="this.remove()">`:''}</div>`:''}
-  ${c.type!==1?(c.type===3&&c.icon?`<div class="avatar" aria-hidden="true"><img src="https://cdn.discordapp.com/channel-icons/${c.id}/${c.icon}.png?size=32" width="20" height="20" loading="lazy" aria-hidden="true"></div>`:(rules===c.id?getIcon('rules', 20):getIcon(c.type, 20))):''}
-  ${c.nsfw?getIcon('nsfw', 20).replace('>',' class="channel-notice">'):''}
-  ${getFlags(c.flags, channelFlags).IS_SPOILER_CHANNEL?getIcon('spoiler', 20).replace('>',' class="channel-notice">'):''}
-  <span class="name">${sanitizeHTML(name)}</span>
-  ${window.data.extra_settings.tags&&c.type===1?getUserClan(getUser(c.recipient_ids[0]).clan??getUser(c.recipient_ids[0]).user?.clan, true):''}
-</button>`;
-  }).join('');
-  Array.from(document.querySelectorAll('#channel button'))
+
+  list.forEach(ch=>{
+    if (ch.type===4) cat[ch.id] = [ch];
+  });
+  list.forEach(ch=>{
+    if (ch.type===4) return;
+    cat[ch.parent_id??''].push(ch);
+    if (ch.id===rules) ch.rules = true;
+  });
+
+  document.getElementById('channel').innerHTML = (server?'<div id="channels-server-header"></div>':'')+
+    Object.values(cat).map(ct=>`<div>${ct.map(renderChannel).join('')}</div>`).join('');
+  Array.from(document.querySelectorAll('#channel button.cat'))
+    .forEach(btn=>btn.onclick = ()=>{ btn.parentElement.classList.toggle('collapsed') });
+  Array.from(document.querySelectorAll('#channel button[data-id]'))
     .forEach(b=>{
       b.onclick = ()=>{
         loading(b.getAttribute('data-name'));
@@ -825,6 +835,17 @@ function showChannels(list, server) {
     // Server banner
     document.getElementById('channels-server-header').innerHTML = `<span class="name">${sanitizeHTML(server.properties.name??server.name)}</span>
 ${(server.properties.banner??server.banner)?`<div><img src="https://cdn.discordapp.com/banners/${server.id}/${server.properties.banner??server.banner}.webp?size=240"></div>`:''}`;
+  }
+  if (changechannel) {
+    let first = Object.entries(cat).filter(ct=>ct[0]===''?ct[1].length>0:ct[1].length>1)[0][1][1];
+    // Saved poss?
+    if (window.data.serverLastChannel[channelid]) {
+      let sav = list.find(ch=>ch.id===window.data.serverLastChannel[channelid]);
+      if (sav) first = sav;
+    }
+    loading(channelName(first));
+    setTop(channelName(first), first.type);
+    switchMessage(first.id, first.type);
   }
 }
 function showUserChannel(id) {
@@ -858,18 +879,7 @@ function showUserChannel(id) {
 function switchChannel(id, changechannel=true) {
   if (id == 0) {
     // Show dms
-    showChannels(window.data.dms);
-    if (changechannel) {
-      let first = window.data.dms[0]; // First channel
-      // Saved poss?
-      if (window.data.serverLastChannel[id]) {
-        let sav = window.data.dms.find(dm=>dm.id===window.data.serverLastChannel[id]);
-        if (sav) first = sav;
-      }
-      loading(channelName(first));
-      setTop(channelName(first), first.type);
-      switchMessage(first.id, first.type);
-    }
+    showChannels(window.data.dms, changechannel, id);
   } else if (id == 1) {
     // User
     const user_channels = [
@@ -879,7 +889,7 @@ function switchChannel(id, changechannel=true) {
     document.getElementById('channel').innerHTML = user_channels.map(c=>`<button data-id="${c.id}" data-name="${c.name}">
   <span>${c.name}</span>
 </button>`).join('');
-    Array.from(document.querySelectorAll('#channel button'))
+    Array.from(document.querySelectorAll('#channel button[data-id]'))
       .forEach(b=>{
         b.onclick = ()=>{
           setTop(b.getAttribute('data-name'), 'none')
@@ -890,29 +900,7 @@ function switchChannel(id, changechannel=true) {
     showUserChannel(user_channels[0].id);
   } else {
     let server = window.data.servers.find(e=>e.id===id);
-    // Get and sort the channels
-    let channels = structuredClone(server.channels).sort((a,b)=>(a.position+([2,13].includes(a.type)?999:0))-(b.position+([2,13].includes(b.type)?999:0)));
-    let sorted = [];
-    let cat = {'':[]};
-    Object.values(channels.filter(c=>c.type===4).map(c=>c.id)).forEach(id=>cat[id]=[]);
-    channels.filter(c=>c.type!==4).forEach(c=>cat[c.parent_id??''].push(c));
-    Object.keys(cat).forEach(k=>{
-      if (k!='') sorted.push(channels.find(cc=>cc.id===k));
-      sorted.push(...cat[k]);
-    });
-    showChannels(sorted, id);
-    let filtered = sorted.filter(c=>c.type!==4);
-    if (changechannel) {
-      let first = filtered[0]; // First channel
-      // Saved poss?
-      if (window.data.serverLastChannel[id]) {
-        let sav = filtered.find(ch=>ch.id===window.data.serverLastChannel[id]);
-        if (sav) first = sav;
-      }
-      loading(channelName(first));
-      setTop(channelName(first), first.type);
-      switchMessage(first.id, first.type);
-    }
+    showChannels(server.channels, changechannel, id);
     if (!window.data.slash[id]) {
       proxyFetch(`https://discord.com/api/v10/guilds/${id}/application-command-index`)
         .then(res=>res.json())

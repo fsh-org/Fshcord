@@ -234,6 +234,10 @@ smart-media > * {
   border-right: 4px var(--bg-2) solid;
   background-color: var(--bg-1);
 }
+#channel > div {
+  display: flex;
+  flex-direction: column;
+}
 #channel button {
   flex-shrink: 0;
   position: relative;
@@ -249,6 +253,9 @@ smart-media > * {
   color: var(--text-1);
   background-color: var(--bg-2);
 }
+#channel div.collapsed button:not(.cat, [selected]) {
+  display: none;
+}
 #channel button .name {
   white-space: nowrap;
   overflow: hidden;
@@ -263,7 +270,7 @@ smart-media > * {
   border-radius: 0.25rem;
   background-color: var(--bg-3);
 }
-#channel button .avatar, #channel button svg {
+#channel button .avatar, #channel button:not(.cat) svg {
   flex-shrink: 0;
   width: 20px;
   height: 20px;
@@ -290,10 +297,16 @@ smart-media > * {
 
 #channel .cat {
   flex-shrink: 0;
-  font-size: 80%;
+  background: none !important;
+}
+#channel .cat span {
   white-space: nowrap;
   text-overflow: ellipsis;
+  text-transform: uppercase;
   overflow: hidden;
+}
+#channel div.collapsed .cat svg {
+  transform: rotateZ(-90deg);
 }
 
 .avatar {
