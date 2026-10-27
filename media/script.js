@@ -121,11 +121,11 @@ async function showMinifiedProfile(element, user) {
   user = window.data.users[user];
   menu.innerHTML = `<div>
   <div class="avatar">
-    <img src="${getUserAvatar((user.user??user).id, (user.user??user).avatar, 80)}" width="80" height="80" loading="lazy" aria-hidden="true" style="border-radius:5rem">
-    ${window.data.extra_settings.avatar_deco?`<img src="${getUserDeco((user.user??user)?.avatar_decoration_data?.asset)}" class="decoration" width="100" height="100" loading="lazy" aria-hidden="true" onerror="this.remove()">`:''}
+    <img src="${getUserAvatar((user.user??user).id, (user.user??user).avatar, 80)}" width="80" height="80" draggable="false" loading="lazy" aria-hidden="true" style="border-radius:5rem">
+    ${window.data.extra_settings.avatar_deco?`<img src="${getUserDeco((user.user??user)?.avatar_decoration_data?.asset)}" class="decoration" width="100" height="100" draggable="false" loading="lazy" aria-hidden="true" onerror="this.remove()">`:''}
     <div class="badges">
-      ${user.user?'':'<img src="/media/icon/limited.svg" width="25" height="25" alt="This profile has limited info" title="This profile has limited info">'}
-      ${(user.badges??[]).map(b=>`<a${b.link?` href="${b.link}"`:''} target="_blank" title="${sanitizeHTML(b.description)}" aria-hidden="true"><img src="https://cdn.discordapp.com/badge-icons/${b.icon}.png" width="25" height="25" alt="${sanitizeHTML(b.description)}" aria-hidden="true"></a>`).join('')}
+      ${user.user?'':'<img src="/media/icon/limited.svg" width="25" height="25" draggable="false" loading="lazy" alt="This profile has limited info" title="This profile has limited info">'}
+      ${(user.badges??[]).map(b=>`<a${b.link?` href="${b.link}"`:''} target="_blank" title="${sanitizeHTML(b.description)}" aria-hidden="true"><img src="https://cdn.discordapp.com/badge-icons/${b.icon}.png" width="25" height="25" alt="${sanitizeHTML(b.description)}" draggable="false" loading="lazy" aria-hidden="true"></a>`).join('')}
     </div>
   </div>
   ${getUserBanner((user.user??user).id, user?.user?.banner, user?.user?.banner_color??colorToRGB(user?.user?.accent_color??5595886))}
@@ -188,7 +188,7 @@ MessageField.onkeyup = MessageField.onkeydown = (evt)=>{
       .filter(cmd=>cmd.name.includes(query))
       .forEach(cmd=>sections[cmd.application_id].push(cmd));
     document.getElementById('slash-bar').innerHTML = `<div class="profiles">
-  ${Object.keys(sections).filter(sec=>sections[sec].length>0).map(sec=>apps.find(app=>app.id===sec)).map(sec=>`<button><img src="https://cdn.discordapp.com/avatars/${sec.id}/${sec.icon}.webp?size=32" alt="${sanitizeHTML(sec.name)}" width="32" height="32"></button>`).join('')}
+  ${Object.keys(sections).filter(sec=>sections[sec].length>0).map(sec=>apps.find(app=>app.id===sec)).map(sec=>`<button><img src="https://cdn.discordapp.com/avatars/${sec.id}/${sec.icon}.webp?size=32" alt="${sanitizeHTML(sec.name)}" width="32" height="32" draggable="false" loading="lazy"></button>`).join('')}
 </div>
 <div class="cmds">
   ${Object.keys(sections).filter(sec=>sections[sec].length>0).map(sec=>`<span>${sanitizeHTML(apps.find(app=>app.id===sec).name)}</span>${sections[sec].map(cmd=>`<button><span>/${sanitizeHTML(cmd.name)}</span><span style="color:var(--text-2)">${sanitizeHTML(cmd.description)}</span></button>`).join('')}`).join('')}
@@ -312,9 +312,9 @@ function renderEmbed(embed, data) {
     case 'components':
       return renderComponents(embed.components??[], data);
     case 'gifv':
-      return `<video src="${embed.video.proxy_url}" width="${Math.floor(embed.video.width/2)}" height="${Math.floor(embed.video.height/2)}" muted autoplay loop class="message-attach"></video>`;
+      return `<video src="${embed.video.proxy_url}" width="${Math.floor(embed.video.width/2)}" height="${Math.floor(embed.video.height/2)}" muted autoplay loop loading="lazy" class="message-attach"></video>`;
     case 'image':
-      return `<img src="${embed.thumbnail.proxy_url}" width="${Math.floor(embed.thumbnail.width/2)}" height="${Math.floor(embed.thumbnail.height/2)}" class="message-attach">`;
+      return `<img src="${embed.thumbnail.proxy_url}" width="${Math.floor(embed.thumbnail.width/2)}" height="${Math.floor(embed.thumbnail.height/2)}" draggable="false" loading="lazy" class="message-attach">`;
     case 'poll_result':
       return `<div class="message-rich-embed message-poll-result">
   ${embed.fields[5]?.value?`<span>${embed.fields[5].value}</span>`:''}
@@ -330,9 +330,9 @@ function renderEmbed(embed, data) {
       // TODO: Add very strange thing where if the embed has url it will allow other embeds with only images to join up to 4
       c=[embed.title, embed.description, embed?.author?.name, embed?.provider?.name].filter(e=>!!e).length;
       return `<div class="message-rich-embed" style="--embed-color:${colorToRGB(embed.color??0)}">
-  ${embed.thumbnail&&embed.type!=='video'?`<img src="${embed.thumbnail.proxy_url}" class="message-attach thumbnail" width="60" height="60" loading="lazy">`:''}
+  ${embed.thumbnail&&embed.type!=='video'?`<img src="${embed.thumbnail.proxy_url}" class="message-attach thumbnail" width="60" height="60" draggable="false" loading="lazy">`:''}
   ${embed?.provider?.name?`<a${embed.provider?.url?` href="${embed.provider.url}"`:''} class="sub">${sanitizeHTML(embed.provider.name)}</a>`:''}
-  ${embed?.author?.name?`<a${embed.author?.url?` href="${embed.author.url}"`:''} class="sub">${embed.author.proxy_icon_url?`<img src="${embed.author.proxy_icon_url}" loading="lazy">`:''}${sanitizeHTML(embed.author.name)}</a>`:''}
+  ${embed?.author?.name?`<a${embed.author?.url?` href="${embed.author.url}"`:''} class="sub">${embed.author.proxy_icon_url?`<img src="${embed.author.proxy_icon_url}" draggable="false" loading="lazy">`:''}${sanitizeHTML(embed.author.name)}</a>`:''}
   ${embed.title?`<a${embed.url?` href="${embed.url}"`:''} class="etitle">${parseMD(embed.title, 0)}</a>`:''}
   ${embed.description&&embed.type!=='video'?`<span class="desc">${parseMD(embed.description)}</span>`:''}
   ${embed.fields?`<div class="fields">${embed.fields.map(f=>`<div style="${f.inline?'':'flex:1 1 100%'}">
@@ -340,8 +340,8 @@ function renderEmbed(embed, data) {
   <span class="desc">${parseMD(f.value, 1)}</span>
 </div>`).join('')}</div>`:''}
   ${embed.video?(embed.video.proxy_url?`<video src="${embed.video.proxy_url}" class="message-attach" style="max-width:100%" controls></video>`:`<iframe src="${embed.video.url}" class="message-attach" allow="autoplay" frameborder="0" scrolling="no" sandbox="allow-forms allow-modals allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts allow-presentation" allowfullscreen></iframe>`):''}
-  ${embed.image&&embed.type!=='video'?`<img src="${embed.image.proxy_url}" loading="lazy" class="message-attach big" style="max-width:100%;margin-top:${embed.thumbnail?(c>2?'0':(c>1?'15':'40')):'0'}px">`:''}
-  ${embed?.footer?.text||embed.timestamp?`<span class="footer">${embed?.footer?.text?`<span class="text">${embed.footer.proxy_icon_url?`<img src="${embed.footer.proxy_icon_url}" loading="lazy">`:''}${sanitizeHTML(embed.footer.text)}</span>`:''}${embed?.footer?.text&&embed.timestamp?'<span class="dot"></span>':''}${embed.timestamp?`<span>${formatDate(embed.timestamp)}</span>`:''}</span>`:''}
+  ${embed.image&&embed.type!=='video'?`<img src="${embed.image.proxy_url}" draggable="false" loading="lazy" class="message-attach big" style="max-width:100%;margin-top:${embed.thumbnail?(c>2?'0':(c>1?'15':'40')):'0'}px">`:''}
+  ${embed?.footer?.text||embed.timestamp?`<span class="footer">${embed?.footer?.text?`<span class="text">${embed.footer.proxy_icon_url?`<img src="${embed.footer.proxy_icon_url}" draggable="false" loading="lazy">`:''}${sanitizeHTML(embed.footer.text)}</span>`:''}${embed?.footer?.text&&embed.timestamp?'<span class="dot"></span>':''}${embed.timestamp?`<span>${formatDate(embed.timestamp)}</span>`:''}</span>`:''}
 </div>`;
     // Custom Internal
     case 'invite':
@@ -357,9 +357,9 @@ function renderEmbed(embed, data) {
             document.getElementById('si-'+id).innerHTML = `<span style="padding:10px">Unhandeled invite type ${res.type}</span>`;
             return;
           }
-          document.getElementById('si-'+id).innerHTML = `<img class="banner" src="${res.guild.splash?`https://cdn.discordapp.com/splashes/${res.guild.id}/${res.guild.splash}.jpg?size=480`:(res.guild.splash?`https://cdn.discordapp.com/banners/${res.guild.id}/${res.guild.banner}.jpg?size=480`:'')}" onerror="this.remove()">
+          document.getElementById('si-'+id).innerHTML = `<img class="banner" src="${res.guild.splash?`https://cdn.discordapp.com/splashes/${res.guild.id}/${res.guild.splash}.jpg?size=480`:(res.guild.splash?`https://cdn.discordapp.com/banners/${res.guild.id}/${res.guild.banner}.jpg?size=480`:'')}" draggable="false" loading="lazy" onerror="this.remove()">
 <div style="padding:10px">
-  <img src="https://cdn.discordapp.com/icons/${res.guild.id}/${res.guild.icon}.png?size=64" loading="lazy">
+  <img src="https://cdn.discordapp.com/icons/${res.guild.id}/${res.guild.icon}.png?size=64" draggable="false" loading="lazy">
   <span>
     <b>${sanitizeHTML(res.guild.name)}</b>
     <span style="font-size:80%;color:var(--text-2);">${res.profile.online_count} online &nbsp; ${res.profile.member_count} members</span>
@@ -426,7 +426,7 @@ function renderComponents(comp, data) {
       return `<div class="component c1">${renderComponents(comp.components, data)}</div>`;
     case 2:
       return `${comp.style===5?`<a href="${comp.url}" target="_blank">`:''}
-<button class="component c2 style-${comp.style}" ${comp.disabled?'disabled':(comp.style!==5?`onclick="componentInteraction(2, '${comp.custom_id}', \`${JSON.stringify(data).replaceAll('"',"'")}\`)"`:'')}>${comp.emoji?(comp.emoji.id?`<img src="https://cdn.discordapp.com/emojis/${comp.emoji.id}.webp?size=96" width="16" height="16" loading="lazy" onerror="this.remove()">`:twemoji.parse(comp.emoji.name, twemojiConfig)):''}${sanitizeHTML(comp.label??'')}${comp.style===5?'<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 256 256"><path d="M109.25 0C119.605 0 128 8.39466 128 18.75V18.75C128 29.1053 119.605 37.5 109.25 37.5H57.5C46.4543 37.5 37.5 46.4543 37.5 57.5V198.5C37.5 209.546 46.4543 218.5 57.5 218.5H198.5C209.546 218.5 218.5 209.546 218.5 198.5V146.75C218.5 136.395 226.895 128 237.25 128V128C247.605 128 256 136.395 256 146.75V226C256 242.569 242.569 256 226 256H30C13.4315 256 0 242.569 0 226V30C0 13.4315 13.4315 0 30 0H109.25Z"></path><path d="M156 18.75C156 8.39466 164.395 0 174.75 0H236C247.046 0 256 8.95431 256 20V81.25C256 91.6053 247.605 100 237.25 100V100C226.895 100 218.5 91.6053 218.5 81.25V57.5C218.5 46.4543 209.546 37.5 198.5 37.5H174.75C164.395 37.5 156 29.1053 156 18.75V18.75Z"></path><path d="M114.742 114.742C107.419 122.064 107.419 133.936 114.742 141.258C122.064 148.581 133.936 148.581 141.258 141.258L114.742 114.742ZM235 21L221.742 7.74175L114.742 114.742L128 128L141.258 141.258L248.258 34.2583L235 21Z"></path></svg>':''}</button>
+<button class="component c2 style-${comp.style}" ${comp.disabled?'disabled':(comp.style!==5?`onclick="componentInteraction(2, '${comp.custom_id}', \`${JSON.stringify(data).replaceAll('"',"'")}\`)"`:'')}>${comp.emoji?(comp.emoji.id?`<img src="https://cdn.discordapp.com/emojis/${comp.emoji.id}.webp?size=96" width="16" height="16" draggable="false" loading="lazy" onerror="this.remove()">`:twemoji.parse(comp.emoji.name, twemojiConfig)):''}${sanitizeHTML(comp.label??'')}${comp.style===5?'<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 256 256"><path d="M109.25 0C119.605 0 128 8.39466 128 18.75V18.75C128 29.1053 119.605 37.5 109.25 37.5H57.5C46.4543 37.5 37.5 46.4543 37.5 57.5V198.5C37.5 209.546 46.4543 218.5 57.5 218.5H198.5C209.546 218.5 218.5 209.546 218.5 198.5V146.75C218.5 136.395 226.895 128 237.25 128V128C247.605 128 256 136.395 256 146.75V226C256 242.569 242.569 256 226 256H30C13.4315 256 0 242.569 0 226V30C0 13.4315 13.4315 0 30 0H109.25Z"></path><path d="M156 18.75C156 8.39466 164.395 0 174.75 0H236C247.046 0 256 8.95431 256 20V81.25C256 91.6053 247.605 100 237.25 100V100C226.895 100 218.5 91.6053 218.5 81.25V57.5C218.5 46.4543 209.546 37.5 198.5 37.5H174.75C164.395 37.5 156 29.1053 156 18.75V18.75Z"></path><path d="M114.742 114.742C107.419 122.064 107.419 133.936 114.742 141.258C122.064 148.581 133.936 148.581 141.258 141.258L114.742 114.742ZM235 21L221.742 7.74175L114.742 114.742L128 128L141.258 141.258L248.258 34.2583L235 21Z"></path></svg>':''}</button>
 ${comp.style===5?'</a>':''}`;
     case 3:
       return `<div class="component c3">
@@ -439,7 +439,7 @@ ${comp.style===5?'</a>':''}`;
   </button>
   <div class="menu hidden" id="c3o-${comp.id}">
     ${comp.options.map(opt=>`<div class="opt" onclick="componentInteraction(3, '${comp.custom_id}', \`${JSON.stringify(data).replaceAll('"',"'")}\`, ['${opt.value}'])">
-  ${opt.emoji?.name?(opt.emoji.id?`<img src="https://cdn.discordapp.com/emojis/${opt.emoji.id}.webp?size=44" loading="lazy">`:opt.emoji.name):''}
+  ${opt.emoji?.name?(opt.emoji.id?`<img src="https://cdn.discordapp.com/emojis/${opt.emoji.id}.webp?size=44" draggable="false" loading="lazy">`:opt.emoji.name):''}
   <span>
     <b>${sanitizeHTML(opt.label)}</b>
     <span style="color:var(--text-2)">${sanitizeHTML(opt.description)}</span>
@@ -470,7 +470,7 @@ function renderPoll(poll) {
   ${poll.results.is_finalized?'':`<span class="small">Select one${poll.allow_multiselect?' or more':''} answers</span>`}
   <div>
     ${poll.answers.map(ans=>`<div>
-  ${ans.poll_media.emoji?(ans.poll_media.emoji.id?`<img src="https://cdn.discordapp.com/emojis/${ans.poll_media.emoji.id}.webp?size=96" width="16" height="16" loading="lazy" onerror="this.remove()">`:twemoji.parse(ans.poll_media.emoji.name, twemojiConfig)):''}
+  ${ans.poll_media.emoji?(ans.poll_media.emoji.id?`<img src="https://cdn.discordapp.com/emojis/${ans.poll_media.emoji.id}.webp?size=96" width="16" height="16" draggable="false" loading="lazy" onerror="this.remove()">`:twemoji.parse(ans.poll_media.emoji.name, twemojiConfig)):''}
   <span>${sanitizeHTML(ans.poll_media.text)}</span>
 </div>`).join('')}
   </div>
@@ -482,20 +482,20 @@ function renderMessage(content, author, m) {
   return `<div class="message${m.deleted?' deleted':''}${(m.mentions??[]).map(e=>e.id).includes(window.data.user.id)?' mention':''}${getFlags(m.flags, messageFlags).EPHEMERAL?' ephemeral':''}">
   ${m.type===19&&m.message_reference?`<div class="reply-preview">
     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 256 256" style="margin-left:20px;flex-shrink:0;"><path d="M0 164H32V240C32 248.837 24.8366 256 16 256V256C7.16344 256 0 248.837 0 240V164Z" fill="#ACACAC"></path><path d="M52 112H240C248.837 112 256 119.163 256 128V128C256 136.837 248.837 144 240 144H52V112Z" fill="#ACACAC"></path><path d="M52 112C45.1713 112 38.4094 113.345 32.1005 115.958C25.7915 118.572 20.0591 122.402 15.2304 127.23C10.4018 132.059 6.57151 137.792 3.95826 144.1C1.34502 150.409 -1.03111e-06 157.171 0 164L31.9854 164C31.9854 161.372 32.5031 158.769 33.5089 156.341C34.5148 153.912 35.989 151.706 37.8476 149.848C39.7061 147.989 41.9125 146.515 44.3408 145.509C46.769 144.503 49.3716 143.985 52 143.985V112Z" fill="#ACACAC"></path></svg>
-    ${m.referenced_message?`<img src="${getUserAvatar(m.referenced_message.author.id, m.referenced_message.author.avatar)}" width="20" height="20" loading="lazy" aria-hidden="true" onclick="showMinifiedProfile(this, '${m.referenced_message.author.id}')">`:''}
+    ${m.referenced_message?`<img src="${getUserAvatar(m.referenced_message.author.id, m.referenced_message.author.avatar)}" width="20" height="20" draggable="false" loading="lazy" aria-hidden="true" onclick="showMinifiedProfile(this, '${m.referenced_message.author.id}')">`:''}
     ${m.referenced_message?`<span class="name" onclick="showMinifiedProfile(this, '${m.referenced_message.author.id}')">${getUserDisplay(m.referenced_message.author)}</span>`:''}
     <span class="inner">${parseMD(window.data.messageCache[m.message_reference.channel_id].find(nm=>nm.id===m.message_reference.message_id)?.content??m?.referenced_message?.content??'Could not find referenced message', 0)}</span>
   </div>`:''}
   ${m.type===20?`<div class="reply-preview">
     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 256 256" style="margin-left:20px;flex-shrink:0;"><path d="M0 164H32V240C32 248.837 24.8366 256 16 256V256C7.16344 256 0 248.837 0 240V164Z" fill="#ACACAC"></path><path d="M52 112H240C248.837 112 256 119.163 256 128V128C256 136.837 248.837 144 240 144H52V112Z" fill="#ACACAC"></path><path d="M52 112C45.1713 112 38.4094 113.345 32.1005 115.958C25.7915 118.572 20.0591 122.402 15.2304 127.23C10.4018 132.059 6.57151 137.792 3.95826 144.1C1.34502 150.409 -1.03111e-06 157.171 0 164L31.9854 164C31.9854 161.372 32.5031 158.769 33.5089 156.341C34.5148 153.912 35.989 151.706 37.8476 149.848C39.7061 147.989 41.9125 146.515 44.3408 145.509C46.769 144.503 49.3716 143.985 52 143.985V112Z" fill="#ACACAC"></path></svg>
-    <img src="${getUserAvatar(m.interaction.user.id, m.interaction.user.avatar)}" width="20" height="20" loading="lazy" aria-hidden="true" onclick="showMinifiedProfile(this, '${m.interaction.user.id}')">
+    <img src="${getUserAvatar(m.interaction.user.id, m.interaction.user.avatar)}" width="20" height="20" draggable="false" loading="lazy" aria-hidden="true" onclick="showMinifiedProfile(this, '${m.interaction.user.id}')">
     <span class="name" onclick="showMinifiedProfile(this, '${m.interaction.user.id}')">${getUserDisplay(m.interaction.user)}</span>
     <span> used </span>
     <span>${sanitizeHTML(m.interaction.name)}</span>
   </div>`:''}
   ${author.hide?'<div class="avatar" aria-hidden="true"></div>':`<div class="avatar" aria-hidden="true" onclick="showMinifiedProfile(this, '${author.id}')">
-    <img src="${getUserAvatar(author.id, author.avatar)}" width="40" height="40" loading="lazy" aria-hidden="true">
-    ${window.data.extra_settings.avatar_deco?`<img src="${getUserDeco(author?.avatar_decoration_data?.asset)}" class="decoration" width="50" height="50" loading="lazy" aria-hidden="true" onerror="this.remove()">`:''}
+    <img src="${getUserAvatar(author.id, author.avatar)}" width="40" height="40" draggable="false" loading="lazy" aria-hidden="true">
+    ${window.data.extra_settings.avatar_deco?`<img src="${getUserDeco(author?.avatar_decoration_data?.asset)}" class="decoration" width="50" height="50" draggable="false" loading="lazy" aria-hidden="true" onerror="this.remove()">`:''}
   </div>`}
   <span>
     ${author.hide?'':`<span><span class="name" onclick="showMinifiedProfile(this, '${author.id}')"${window.data.currentServer!=='0'?` style="--rc:${getUserColor(window.data.currentServer, data.servers.find(e=>e.id===window.data.currentServer).members?.find(mem=>mem.user.id===author.id))}"`:''}>${getUserDisplay(author)}</span>${[author.system,m.webhook_id,author.bot].filter(e=>!!e).length?`<span class="tag">${author.system?'SYSTEM':(m.webhook_id?'WEBHOOK':(author.bot?`BOT${getUserFlags(author.flags??author.public_flags).VERIFIED_BOT?' ✔':''}`:''))}</span>`:''}${window.data.extra_settings.tags&&author.clan?getUserClan(author.clan):''}<span class="timestamp">${formatDate(m.timestamp, 'r')}</span>${!m.webhook_id&&getUserFlags(author.flags??author.public_flags).SPAMMER?'<span>· Possible spammer</span>':''}</span>`}
@@ -512,9 +512,9 @@ function renderMessage(content, author, m) {
     ${m.poll?renderPoll(m.poll):''}
     ${m.sticker_items?.length?m.sticker_items.map(sticker=>{
       if (sticker.format_type===3) return `<lottie-sticker class="message-attach" data-id="${sticker.id}"></lottie-sticker>`;
-      return `<img src="https://media.discordapp.net/stickers/${sticker.id}.${['webp','png','png','webp','gif'][sticker.format_type]}?size=160&quality=lossless" width="160" height="160" loading="lazy" class="message-attach">`;
+      return `<img src="https://media.discordapp.net/stickers/${sticker.id}.${['webp','png','png','webp','gif'][sticker.format_type]}?size=160&quality=lossless" width="160" height="160" draggable="false" loading="lazy" class="message-attach">`;
     }).join(''):''}
-    ${m.reactions?.length?`<div class="reactions">${m.reactions.map(reaction=>`<button${reaction.me?' class="me"':''}>${reaction.emoji.id?`<img src="https://cdn.discordapp.com/emojis/${reaction.emoji.id}.${reaction.emoji.animated?'gif':'webp'}?size=96" width="16" height="16" loading="lazy">`:twemoji.parse(reaction.emoji.name, twemojiConfig)}${reaction.count}</button>`).join('')}</div>`:''}
+    ${m.reactions?.length?`<div class="reactions">${m.reactions.map(reaction=>`<button${reaction.me?' class="me"':''}>${reaction.emoji.id?`<img src="https://cdn.discordapp.com/emojis/${reaction.emoji.id}.${reaction.emoji.animated?'gif':'webp'}?size=96" width="16" height="16" draggable="false" loading="lazy">`:twemoji.parse(reaction.emoji.name, twemojiConfig)}${reaction.count}</button>`).join('')}</div>`:''}
     ${m.thread?`<div class="thread">
       <span>${sanitizeHTML(m.thread.name)} · ${m.thread.message_count} messages</span>
     </div>`:''}
@@ -700,8 +700,8 @@ function showMembers(members) {
     return `<details open><summary style="--rc:${colorToRGB(cat.color===0?10070709:cat.color)}">${sanitizeHTML(cat.name)} — ${sections[sec].length}</summary>` + sections[sec].toSorted((a,b)=>getUserDisplay(a).localeCompare(getUserDisplay(b), undefined, { sensitivity: 'accent' })).map(mem=>`<button class="user" onclick="showMinifiedProfile(this, '${mem.user.id}')">
   ${window.data.extra_settings.nameplates&&mem.user.collectibles?.nameplate?`<video class="nameplate" src="https://cdn.discordapp.com/assets/collectibles/${mem.user.collectibles.nameplate.asset}asset.webm" muted loop aria-hidden="true"></video>`:''}
   <div class="avatar" aria-hidden="true" style="height:40px">
-    <img src="${getUserAvatar(mem.user.id, mem.user.avatar)}" width="40" height="40" loading="lazy" aria-hidden="true">
-    ${window.data.extra_settings.avatar_deco?`<img src="${getUserDeco(mem.user?.avatar_decoration_data?.asset)}" class="decoration" width="50" height="50" loading="lazy" aria-hidden="true" onerror="this.remove()">`:''}
+    <img src="${getUserAvatar(mem.user.id, mem.user.avatar)}" width="40" height="40" draggable="false" loading="lazy" aria-hidden="true">
+    ${window.data.extra_settings.avatar_deco?`<img src="${getUserDeco(mem.user?.avatar_decoration_data?.asset)}" class="decoration" width="50" height="50" draggable="false" loading="lazy" aria-hidden="true" onerror="this.remove()">`:''}
   </div>
   <span style="--rc:${getUserColor(window.data.currentServer, mem)}">${getUserDisplay(mem)}</span>
 </button>`).join('') + '</details>'
@@ -774,8 +774,8 @@ function renderChannel(ch) {
   if (ch.type===4) return `<button class="cat"><span title="${sanitizeHTML(name)}">${sanitizeHTML(name)}</span> <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 256 256"><path d="M222.048 60.6656C229.965 52.9629 242.627 53.1361 250.33 61.0523C258.032 68.9688 257.859 81.6306 249.943 89.3336L142.031 194.334C138.121 198.138 133.053 200.02 127.998 199.998C122.942 200.02 117.874 198.138 113.964 194.334L6.05228 89.3336C-1.86377 81.6306 -2.03716 68.9687 5.66556 61.0523C13.3684 53.136 26.0302 52.9631 33.9468 60.6656L127.998 152.177L222.048 60.6656Z"></path></svg></button>`;
   return `<button data-id="${ch.id}" data-type="${ch.type}" data-name="${sanitizeHTML(name)}">
   ${ch.type===1&&window.data.extra_settings.nameplates&&getUser(ch.recipient_ids[0]).collectibles?.nameplate?`<video class="nameplate" src="https://cdn.discordapp.com/assets/collectibles/${getUser(ch.recipient_ids[0]).collectibles.nameplate.asset}asset.webm" muted loop aria-hidden="true"></video>`:''}
-  ${ch.type===1?`<div class="avatar" aria-hidden="true"><img src="${getUserAvatar(ch.recipient_ids[0], getUser(ch.recipient_ids[0]).avatar, 32)}" width="20" height="20" loading="lazy" aria-hidden="true">${ch.type===1&&window.data.extra_settings.avatar_deco?`<img src="${getUserDeco(getUser(ch.recipient_ids[0])?.avatar_decoration_data?.asset)}" class="decoration" width="25" height="25" loading="lazy" aria-hidden="true" onerror="this.remove()">`:''}</div>`:''}
-  ${ch.type!==1?(ch.type===3&&ch.icon?`<div class="avatar" aria-hidden="true"><img src="https://cdn.discordapp.com/channel-icons/${ch.id}/${ch.icon}.png?size=32" width="20" height="20" loading="lazy" aria-hidden="true"></div>`:getIcon(ch.rules?'rules':ch.type, 20)):''}
+  ${ch.type===1?`<div class="avatar" aria-hidden="true"><img src="${getUserAvatar(ch.recipient_ids[0], getUser(ch.recipient_ids[0]).avatar, 32)}" width="20" height="20" draggable="false" loading="lazy" aria-hidden="true">${ch.type===1&&window.data.extra_settings.avatar_deco?`<img src="${getUserDeco(getUser(ch.recipient_ids[0])?.avatar_decoration_data?.asset)}" class="decoration" width="25" height="25" loading="lazy" aria-hidden="true" onerror="this.remove()">`:''}</div>`:''}
+  ${ch.type!==1?(ch.type===3&&ch.icon?`<div class="avatar" aria-hidden="true"><img src="https://cdn.discordapp.com/channel-icons/${ch.id}/${ch.icon}.png?size=32" width="20" height="20" draggable="false" loading="lazy" aria-hidden="true"></div>`:getIcon(ch.rules?'rules':ch.type, 20)):''}
   ${ch.nsfw?getIcon('nsfw', 20).replace('>',' class="channel-notice">'):''}
   ${getFlags(ch.flags, channelFlags).IS_SPOILER_CHANNEL?getIcon('spoiler', 20).replace('>',' class="channel-notice">'):''}
   <span class="name">${sanitizeHTML(name)}</span>
@@ -834,7 +834,7 @@ function showChannels(list, changechannel=true, channelid) {
   if (server) {
     // Server banner
     document.getElementById('channels-server-header').innerHTML = `<span class="name">${sanitizeHTML(server.properties.name??server.name)}</span>
-${(server.properties.banner??server.banner)?`<div><img src="https://cdn.discordapp.com/banners/${server.id}/${server.properties.banner??server.banner}.webp?size=240"></div>`:''}`;
+${(server.properties.banner??server.banner)?`<div><img src="https://cdn.discordapp.com/banners/${server.id}/${server.properties.banner??server.banner}.webp?size=240" draggable="false" loading="lazy" aria-hidden="true"></div>`:''}`;
   }
   if (changechannel) {
     let first = Object.entries(cat).filter(ct=>ct[0]===''?ct[1].length>0:ct[1].length>1)[0][1][1];
@@ -857,8 +857,8 @@ function showUserChannel(id) {
   <div>
     ${getUserBanner(window.data.user.id, window.data.user.banner, window.data.user.banner_color??colorToRGB(window.data.user.accent_color??0))}
     <div class="avatar">
-      <img src="${getUserAvatar(window.data.user.id, window.data.user.avatar, 80)}" width="80" height="80" loading="lazy" aria-hidden="true" style="border-radius:5rem">
-      ${window.data.extra_settings.avatar_deco?`<img src="${getUserDeco(window.data.user?.avatar_decoration_data?.asset)}" class="decoration" width="100" height="100" loading="lazy" aria-hidden="true" onerror="this.remove()">`:''}
+      <img src="${getUserAvatar(window.data.user.id, window.data.user.avatar, 80)}" width="80" height="80" draggable="false" loading="lazy" aria-hidden="true" style="border-radius:5rem">
+      ${window.data.extra_settings.avatar_deco?`<img src="${getUserDeco(window.data.user?.avatar_decoration_data?.asset)}" class="decoration" width="100" height="100" draggable="false" loading="lazy" aria-hidden="true" onerror="this.remove()">`:''}
     </div>
   </div>
   <span class="name">${getUserDisplay(window.data.user)}</span>
@@ -916,10 +916,10 @@ function showServers(list) {
     if (s?.type==='folder') {
       return `<div aria-label="${sanitizeHTML(s.name??'Folder')}" aria-role="button" class="server-folder" style="--folder-color:${colorToRGB(s.color??1579032)}">
   <svg onclick="let op=(this.getAttribute('open')==='true');this.setAttribute('open', !op);this.parentElement.style.height=(!op?'${60+s.guilds.length*55}px':'50px')" open="false"${getIcon('folder', 50).replace('<svg','').replace('viewBox="0 0 256 256"','viewBox="-64 -64 384 384"')}
-  ${s.guilds.map(g=>`<button aria-label="${sanitizeHTML(g.properties?.name??g.name)}" data-id="${g.id}" class="server-clicky">${(g.properties?.icon??g.icon) == null ? (g.properties?.name??g.name).trim().split(/\s+/).map(word=>word[0]??'').join('') : `<img src="https://cdn.discordapp.com/icons/${g.id}/${g.properties?.icon??g.icon}.png?size=64" width="45" height="45" alt="${g.properties?.name??g.name}" loading="lazy">`}</button>`).join('')}
+  ${s.guilds.map(g=>`<button aria-label="${sanitizeHTML(g.properties?.name??g.name)}" data-id="${g.id}" class="server-clicky">${(g.properties?.icon??g.icon) == null ? (g.properties?.name??g.name).trim().split(/\s+/).map(word=>word[0]??'').join('') : `<img src="https://cdn.discordapp.com/icons/${g.id}/${g.properties?.icon??g.icon}.png?size=64" width="45" height="45" alt="${g.properties?.name??g.name}" draggable="false" loading="lazy">`}</button>`).join('')}
 </div>`;
     }
-    return `<button aria-label="${sanitizeHTML(s.properties?.name??s.name??'Server')}" data-id="${s.id}" class="server-clicky">${(s.properties?.icon??s.icon??null) == null ? sanitizeHTML((s.properties?.name??s.name??'Server').trim().split(/\s+/).map(word=>word[0]??'').join('')) : `<img src="https://cdn.discordapp.com/icons/${s.id}/${s.properties?.icon??s.icon}.png?size=64" width="45" height="45" alt="${sanitizeHTML(s.properties?.name??s.name??'Server')}" loading="lazy">`}${(new Date(s.incidents_data?.dms_disabled_until)>new Date())||(new Date(s.incidents_data?.invites_disabled_until)>new Date())?'<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 256 256" class="paused-invites" title="Server has security actions enabled."><rect x="19" width="64" height="256" rx="15"/><rect x="173" width="64" height="256" rx="15"/></svg>':''}</button>`;
+    return `<button aria-label="${sanitizeHTML(s.properties?.name??s.name??'Server')}" data-id="${s.id}" class="server-clicky">${(s.properties?.icon??s.icon??null) == null ? sanitizeHTML((s.properties?.name??s.name??'Server').trim().split(/\s+/).map(word=>word[0]??'').join('')) : `<img src="https://cdn.discordapp.com/icons/${s.id}/${s.properties?.icon??s.icon}.png?size=64" width="45" height="45" alt="${sanitizeHTML(s.properties?.name??s.name??'Server')}" draggable="false" loading="lazy">`}${(new Date(s.incidents_data?.dms_disabled_until)>new Date())||(new Date(s.incidents_data?.invites_disabled_until)>new Date())?'<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 256 256" class="paused-invites" title="Server has security actions enabled."><rect x="19" width="64" height="256" rx="15"/><rect x="173" width="64" height="256" rx="15"/></svg>':''}</button>`;
   }).join('');
   Array.from(document.querySelectorAll('#server button'))
     .forEach(b=>{

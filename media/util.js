@@ -267,8 +267,8 @@ class SmartMedia extends HTMLElement {
     let present = attr=>this.dataset[attr]?` ${attr}="${this.dataset[attr]}"`:'';
     if (this.dataset.width) this.style.width = this.dataset.width+'px';
     if (this.dataset.height) this.style.height = this.dataset.height+'px';
-    this.innerHTML = `<img class="placeholder"${present('width')}${present('height')} style="opacity:1" aria-hidden="true" decoding="async" src="${thumbHashToDataURL(Uint8Array.from(atob(this.dataset.placeholder),c=>c.charCodeAt(0)))}">
-<${this.dataset.type.replace('image','img')} class="full${this.dataset.spoiler==='true'?' spoiler" onclick="this.classList.remove(`spoiler`)':''}"${present('width')}${present('height')}${present('alt')} style="opacity:0" decoding="async" controls>${this.dataset.type!=='image'?`</${this.dataset.type}>`:''}`;
+    this.innerHTML = `<img class="placeholder"${present('width')}${present('height')} style="opacity:1" draggable="false" aria-hidden="true" decoding="async" src="${thumbHashToDataURL(Uint8Array.from(atob(this.dataset.placeholder),c=>c.charCodeAt(0)))}">
+<${this.dataset.type.replace('image','img')} class="full${this.dataset.spoiler==='true'?' spoiler" onclick="this.classList.remove(`spoiler`)':''}"${present('width')}${present('height')}${present('alt')} style="opacity:0" draggable="false" decoding="async" controls>${this.dataset.type!=='image'?`</${this.dataset.type}>`:''}`;
     this.observer.observe(this);
   }
   disconnectedCallback() {
@@ -363,7 +363,7 @@ function parseMD(text, extended=2) {
   text = text
     .replaceAll(/&lt;a?:.+?:[0-9]+?>/g, (match)=>{
       let parts = match.replace('>','').split(':');
-      return reservemd(`<img src="https://cdn.discordapp.com/emojis/${parts[2]}.${parts[0]==='&lt;a'?'gif':'webp'}?size=96" width="18" height="18" loading="lazy" onerror="this.outerText='${match}'" class="emoji">`);
+      return reservemd(`<img src="https://cdn.discordapp.com/emojis/${parts[2]}.${parts[0]==='&lt;a'?'gif':'webp'}?size=96" width="18" height="18" draggable="false" loading="lazy" onerror="this.outerText='${match}'" class="emoji">`);
     });
   // General
   text = text
@@ -450,13 +450,10 @@ function fetchIcon(type) {
   })
 }
 function getIcon(type, size) {
-  if (iconCache[type]) {
-    return iconCache[type]
-      .replace(/width="[0-9]+?"/, `width="${size}"`)
-      .replace(/height="[0-9]+?"/, `height="${size}"`);
-  } else {
-    return '<img>';
-  }
+  if (iconCache[type]) return iconCache[type]
+    .replace(/width="[0-9]+?"/, `width="${size}"`)
+    .replace(/height="[0-9]+?"/, `height="${size}"`);
+  return '<img>';
 }
 
 // Users
@@ -475,7 +472,7 @@ function getUserAvatar(id, hash, size = 64) {
   return `https://cdn.discordapp.com/avatars/${id}/${hash}.${hash.startsWith('a_')?'gif':'webp'}?size=${size}`;
 }
 function getUserBanner(id, hash, color, size = 480) {
-  return `<div class="banner" style="--color:${color}">${hash?`<img src="https://cdn.discordapp.com/banners/${id}/${hash}.${hash.startsWith('a_')?'gif':'webp'}?size=${size}" aria-hidden="true">`:''}</div>`
+  return `<div class="banner" style="--color:${color}">${hash?`<img src="https://cdn.discordapp.com/banners/${id}/${hash}.${hash.startsWith('a_')?'gif':'webp'}?size=${size}" draggable="false" loading="lazy" aria-hidden="true">`:''}</div>`
 }
 function getUserDeco(hash) {
   if (!hash) return '';
@@ -492,7 +489,7 @@ function getUserFlags(bitfield) {
 function getUserClan(clan, omit=false) {
   if (!clan) return '';
   if (!clan.tag) return '';
-  return `<span class="tag"${omit?'':' style="background-color:var(--bg-3)"'}><img src="https://cdn.discordapp.com/clan-badges/${clan.identity_guild_id}/${clan.badge}.png?size=16" width="12" height="12" inert aria-hidden="true">${sanitizeHTML(clan.tag)}</span>`;
+  return `<span class="tag"${omit?'':' style="background-color:var(--bg-3)"'}><img src="https://cdn.discordapp.com/clan-badges/${clan.identity_guild_id}/${clan.badge}.png?size=16" width="12" height="12" draggable="false" loading="lazy" aria-hidden="true">${sanitizeHTML(clan.tag)}</span>`;
 }
 let UserColorCache = {};
 function getUserColor(server, mem) {
