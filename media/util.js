@@ -515,6 +515,18 @@ function getUserColor(server, mem) {
   }
 }
 
+// Protobuf
+function cleanProto(value) {
+  if (typeof value==='bigint') return value.toString();
+  if (Array.isArray(value)) return value.map(cleanProto);
+  if (value!==null&&typeof value==='object') {
+    let keys = Object.keys(value);
+    if (keys.length===1&&keys[0]==='value') return cleanProto(value.value);
+    return Object.fromEntries(Object.entries(value).map(entry=>[entry[0], cleanProto(entry[1])]));
+  }
+  return value;
+}
+
 // Flags
 function getFlags(bitfield, object) {
   let flags = {};

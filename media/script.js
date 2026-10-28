@@ -913,12 +913,10 @@ function switchChannel(id, changechannel=true) {
 
 function showServers(list) {
   document.getElementById('server-list').innerHTML = list.map(s=>{
-    if (s?.type==='folder') {
-      return `<div aria-label="${sanitizeHTML(s.name??'Folder')}" aria-role="button" class="server-folder" style="--folder-color:${colorToRGB(s.color??1579032)}">
+    if (s?.type==='folder') return `<div aria-label="${sanitizeHTML(s.name??'Folder')}" aria-role="button" class="server-folder" style="--folder-color:${colorToRGB(s.color??1579032)}">
   <svg onclick="let op=(this.getAttribute('open')==='true');this.setAttribute('open', !op);this.parentElement.style.height=(!op?'${60+s.guilds.length*55}px':'50px')" open="false"${getIcon('folder', 50).replace('<svg','').replace('viewBox="0 0 256 256"','viewBox="-64 -64 384 384"')}
   ${s.guilds.map(g=>`<button aria-label="${sanitizeHTML(g.properties?.name??g.name)}" data-id="${g.id}" class="server-clicky">${(g.properties?.icon??g.icon) == null ? (g.properties?.name??g.name).trim().split(/\s+/).map(word=>word[0]??'').join('') : `<img src="https://cdn.discordapp.com/icons/${g.id}/${g.properties?.icon??g.icon}.png?size=64" width="45" height="45" alt="${g.properties?.name??g.name}" draggable="false" loading="lazy">`}</button>`).join('')}
 </div>`;
-    }
     return `<button aria-label="${sanitizeHTML(s.properties?.name??s.name??'Server')}" data-id="${s.id}" class="server-clicky">${(s.properties?.icon??s.icon??null) == null ? sanitizeHTML((s.properties?.name??s.name??'Server').trim().split(/\s+/).map(word=>word[0]??'').join('')) : `<img src="https://cdn.discordapp.com/icons/${s.id}/${s.properties?.icon??s.icon}.png?size=64" width="45" height="45" alt="${sanitizeHTML(s.properties?.name??s.name??'Server')}" draggable="false" loading="lazy">`}${(new Date(s.incidents_data?.dms_disabled_until)>new Date())||(new Date(s.incidents_data?.invites_disabled_until)>new Date())?'<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 256 256" class="paused-invites" title="Server has security actions enabled."><rect x="19" width="64" height="256" rx="15"/><rect x="173" width="64" height="256" rx="15"/></svg>':''}</button>`;
   }).join('');
   Array.from(document.querySelectorAll('#server button'))
@@ -965,19 +963,19 @@ function showServers(list) {
 }
 function switchServers() {
   let ordered = [];
-  window.data.settings.guild_folders.forEach(f => {
-    if (f.guild_ids.length<2) {
-      let g = window.data.servers.find(s=>s.id===f.guild_ids[0]);
+  window.data.settings.guildFolders.folders.forEach(fold=>{
+    if (!fold.id) {
+      let g = window.data.servers.find(s=>s.id===fold.guildIds[0]);
       if (g) ordered.push(g);
     } else {
-      let gs = f.guild_ids.map(g=>window.data.servers.find(s=>s.id===g)).filter(e=>!!e);
+      let gs = fold.guildIds.map(gid=>window.data.servers.find(s=>s.id===gid)).filter(e=>!!e);
       ordered.push({
         type: 'folder',
-        id: f.id,
-        name: f.name,
-        color: f.color,
+        id: fold.id,
+        name: fold.name,
+        color: fold.color,
         guilds: gs
-      })
+      });
     }
   });
   showServers(ordered);

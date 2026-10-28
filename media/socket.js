@@ -50,6 +50,7 @@ function GenerateLaunchSignature() {
 }
 
 // Data
+let discordProto;
 window.data.ws = { default: 'wss://gateway.discord.gg/?v=10&encoding=json', log: false, logUnhandled: false, socket: undefined, d: undefined, sessionId: undefined, resumeUrl: undefined, failedResumes: 0, maxFailedResumes: 50 };
 
 loading('gateway');
@@ -111,12 +112,7 @@ function wsmessage(wsd) {
           .then(res=>{
             let con = JSON.parse(res.content);
             window.data.servers.push(con);
-            window.data.settings.guild_folders.unshift({
-              id: null,
-              name: null,
-              color: null,
-              guild_ids: [con.id]
-            });
+            window.data.settings.guildFolders.folders.unshift({ guildIds: [con.id] });
             switchServers();
           })
       } else if (wsd.t === 'GUILD_UPDATE') {
@@ -125,9 +121,9 @@ function wsmessage(wsd) {
         switchServers();
       } else if (wsd.t === 'GUILD_DELETE') {
         window.data.servers = window.data.servers.filter(e=>e.id!==wsd.d.id);
-        window.data.settings.guild_folders = window.data.settings.guild_folders
+        window.data.settings.guildFolders.folders = window.data.settings.guildFolders.folders
           .map(g=>{
-            g.guild_ids = g.guild_ids.filter(id=>id!==wsd.d.id);
+            g.guildIds = g.guildIds.filter(id=>id!==wsd.d.id);
             return g;
           })
           .filter(g=>g.guild_ids.length>0);
@@ -288,12 +284,13 @@ function wsmessage(wsd) {
       } else if (wsd.t === 'USER_UPDATE') { // User
         Object.merge(window.data.user, wsd.d);
       } else if (wsd.t === 'USER_SETTINGS_UPDATE') {
-        Object.merge(window.data.settings, wsd.d);
-        if (wsd.d.guild_folders) switchServers();
+        // Shouldn't fire and conflicts with proto settings
       } else if (wsd.t === 'USER_SETTINGS_PROTO_UPDATE') {
-        // TODO: For future use
+        let bf = JSON.stringify(window.data.settings.guildFolders);
+        Object.merge(window.data.settings, cleanProto(discordProto.PreloadedUserSettings.fromBase64(wsd.d.settings.proto)));
+        if (bg!==JSON.stringify(window.data.settings.guildFolders)) switchServers();
       } else if (wsd.t === 'PRESENCE_UPDATE') {// Presences
-        window.data.presences[wsd.d.user.id] = wsd.d
+        window.data.presences[wsd.d.user.id] = wsd.d;
       } else {
         if (window.data.ws.logUnhandled) console.log(wsd);
       }
@@ -347,8 +344,8 @@ function wsmessage(wsd) {
               launch_signature: GenerateLaunchSignature()
             },
             compress: false,
-            capabilities: (1<<0)+(1<<4)+(1<<5)+(1<<10)+(1<<13) // Lazy notes, dedupe user objects, prioritizied ready payload, client state v2, debounce message reactions
-            // ^ Consideration: 1 << 9  USER_SETTINGS_PROTO
+            // Lazy notes, Dedupe user objects, Prioritizied ready payload, Settings proto, Client state v2, Debounce reactions
+            capabilities: 1<<0|1<<4|1<<5|1<<9|1<<10|1<<13
           }
         }));
       }
@@ -365,10 +362,11 @@ function wsmessage(wsd) {
 wsstart(window.data.ws.default);
 
 async function init(d) {
+  discordProto ??= await import('https://cdn.jsdelivr.net/npm/discord-protos@1/dist/discord_protos/discord_users/v1/PreloadedUserSettings.js/+esm');
   // User
   window.data.user = d.user;
   document.querySelector('#account img').src = getUserAvatar(d.user.id, d.user.avatar, 80);
-  window.data.settings = d.user_settings; // TODO: Switch to new settings system
+  window.data.settings = cleanProto(discordProto.PreloadedUserSettings.fromBase64(d.user_settings_proto));
 
   // User relationships
   window.data.relationships = {};
@@ -429,8 +427,5 @@ async function init(d) {
     ]);
   }
 
-  if (window.data.currentChannel==='0') {
-    loading('DMs');
-    switchChannel(0);
-  }
+  if (window.data.currentChannel==='0') switchChannel('0');
 }
