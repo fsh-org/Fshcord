@@ -130,6 +130,7 @@ function wsmessage(wsd) {
         switchServers();
       } else if (wsd.t === 'GUILD_MEMBERS_CHUNK') {
         let temp = window.data.servers[window.data.servers.findIndex(e=>e.id===wsd.d.guild_id)];
+        if (!temp) return;
         if (!temp.members?.length) temp.members = [];
         temp.members.push(...wsd.d.members);
         temp.members = Array.from(new Map(temp.members.map(obj => [obj.user.id, obj])).values());
@@ -288,7 +289,7 @@ function wsmessage(wsd) {
       } else if (wsd.t === 'USER_SETTINGS_PROTO_UPDATE') {
         let bf = JSON.stringify(window.data.settings.guildFolders);
         Object.merge(window.data.settings, cleanProto(discordProto.PreloadedUserSettings.fromBase64(wsd.d.settings.proto)));
-        if (bg!==JSON.stringify(window.data.settings.guildFolders)) switchServers();
+        if (bf!==JSON.stringify(window.data.settings.guildFolders)) switchServers();
       } else if (wsd.t === 'PRESENCE_UPDATE') {// Presences
         window.data.presences[wsd.d.user.id] = wsd.d;
       } else {
@@ -363,6 +364,12 @@ wsstart(window.data.ws.default);
 
 async function init(d) {
   discordProto ??= await import('https://cdn.jsdelivr.net/npm/discord-protos@1/dist/discord_protos/discord_users/v1/PreloadedUserSettings.js/+esm');
+  discordProto.PreloadedUserSettings.fromBase64 ??= (base64)=>{
+    let encodedBytes = atob(base64);
+    let bytes = new Uint8Array(encodedBytes.length);
+    for (let i = 0; i < encodedBytes.length; i++) bytes[i] = encodedBytes.charCodeAt(i);
+    return discordProto.PreloadedUserSettings.fromBinary(bytes);
+  };
   // User
   window.data.user = d.user;
   document.querySelector('#account img').src = getUserAvatar(d.user.id, d.user.avatar, 80);

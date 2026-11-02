@@ -426,7 +426,7 @@ function renderComponents(comp, data) {
       return `<div class="component c1">${renderComponents(comp.components, data)}</div>`;
     case 2:
       return `${comp.style===5?`<a href="${comp.url}" target="_blank">`:''}
-<button class="component c2 style-${comp.style}" ${comp.disabled?'disabled':(comp.style!==5?`onclick="componentInteraction(2, '${comp.custom_id}', \`${JSON.stringify(data).replaceAll('"',"'")}\`)"`:'')}>${comp.emoji?(comp.emoji.id?`<img src="https://cdn.discordapp.com/emojis/${comp.emoji.id}.webp?size=96" width="16" height="16" draggable="false" loading="lazy" onerror="this.remove()">`:twemoji.parse(comp.emoji.name, twemojiConfig)):''}${sanitizeHTML(comp.label??'')}${comp.style===5?'<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 256 256"><path d="M109.25 0C119.605 0 128 8.39466 128 18.75V18.75C128 29.1053 119.605 37.5 109.25 37.5H57.5C46.4543 37.5 37.5 46.4543 37.5 57.5V198.5C37.5 209.546 46.4543 218.5 57.5 218.5H198.5C209.546 218.5 218.5 209.546 218.5 198.5V146.75C218.5 136.395 226.895 128 237.25 128V128C247.605 128 256 136.395 256 146.75V226C256 242.569 242.569 256 226 256H30C13.4315 256 0 242.569 0 226V30C0 13.4315 13.4315 0 30 0H109.25Z"></path><path d="M156 18.75C156 8.39466 164.395 0 174.75 0H236C247.046 0 256 8.95431 256 20V81.25C256 91.6053 247.605 100 237.25 100V100C226.895 100 218.5 91.6053 218.5 81.25V57.5C218.5 46.4543 209.546 37.5 198.5 37.5H174.75C164.395 37.5 156 29.1053 156 18.75V18.75Z"></path><path d="M114.742 114.742C107.419 122.064 107.419 133.936 114.742 141.258C122.064 148.581 133.936 148.581 141.258 141.258L114.742 114.742ZM235 21L221.742 7.74175L114.742 114.742L128 128L141.258 141.258L248.258 34.2583L235 21Z"></path></svg>':''}</button>
+<button class="component c2 style-${comp.style}" ${comp.disabled?'disabled':(comp.style!==5?`onclick="componentInteraction(2, '${comp.custom_id}', \`${JSON.stringify(data).replaceAll('"',"'")}\`)"`:'')}>${comp.emoji?(comp.emoji.id?`<emoji-loader data-id="${comp.emoji.id}" data-width="16" data-height="16"></emoji-loader>`:twemoji.parse(comp.emoji.name, twemojiConfig)):''}${sanitizeHTML(comp.label??'')}${comp.style===5?'<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 256 256"><path d="M109.25 0C119.605 0 128 8.39466 128 18.75V18.75C128 29.1053 119.605 37.5 109.25 37.5H57.5C46.4543 37.5 37.5 46.4543 37.5 57.5V198.5C37.5 209.546 46.4543 218.5 57.5 218.5H198.5C209.546 218.5 218.5 209.546 218.5 198.5V146.75C218.5 136.395 226.895 128 237.25 128V128C247.605 128 256 136.395 256 146.75V226C256 242.569 242.569 256 226 256H30C13.4315 256 0 242.569 0 226V30C0 13.4315 13.4315 0 30 0H109.25Z"></path><path d="M156 18.75C156 8.39466 164.395 0 174.75 0H236C247.046 0 256 8.95431 256 20V81.25C256 91.6053 247.605 100 237.25 100V100C226.895 100 218.5 91.6053 218.5 81.25V57.5C218.5 46.4543 209.546 37.5 198.5 37.5H174.75C164.395 37.5 156 29.1053 156 18.75V18.75Z"></path><path d="M114.742 114.742C107.419 122.064 107.419 133.936 114.742 141.258C122.064 148.581 133.936 148.581 141.258 141.258L114.742 114.742ZM235 21L221.742 7.74175L114.742 114.742L128 128L141.258 141.258L248.258 34.2583L235 21Z"></path></svg>':''}</button>
 ${comp.style===5?'</a>':''}`;
     case 3:
       return `<div class="component c3">
@@ -439,7 +439,7 @@ ${comp.style===5?'</a>':''}`;
   </button>
   <div class="menu hidden" id="c3o-${comp.id}">
     ${comp.options.map(opt=>`<div class="opt" onclick="componentInteraction(3, '${comp.custom_id}', \`${JSON.stringify(data).replaceAll('"',"'")}\`, ['${opt.value}'])">
-  ${opt.emoji?.name?(opt.emoji.id?`<img src="https://cdn.discordapp.com/emojis/${opt.emoji.id}.webp?size=44" draggable="false" loading="lazy">`:opt.emoji.name):''}
+  ${opt.emoji?.name?(opt.emoji.id?`<emoji-loader data-id="${opt.emoji.id}" data-width="44" data-height="44"></emoji-loader>`:opt.emoji.name):''}
   <span>
     <b>${sanitizeHTML(opt.label)}</b>
     <span style="color:var(--text-2)">${sanitizeHTML(opt.description)}</span>
@@ -470,7 +470,7 @@ function renderPoll(poll) {
   ${poll.results.is_finalized?'':`<span class="small">Select one${poll.allow_multiselect?' or more':''} answers</span>`}
   <div>
     ${poll.answers.map(ans=>`<div>
-  ${ans.poll_media.emoji?(ans.poll_media.emoji.id?`<img src="https://cdn.discordapp.com/emojis/${ans.poll_media.emoji.id}.webp?size=96" width="16" height="16" draggable="false" loading="lazy" onerror="this.remove()">`:twemoji.parse(ans.poll_media.emoji.name, twemojiConfig)):''}
+  ${ans.poll_media.emoji?(ans.poll_media.emoji.id?`<emoji-loader data-id="${ans.poll_media.emoji.id}" data-width="16" data-height="16"></emoji-loader>`:twemoji.parse(ans.poll_media.emoji.name, twemojiConfig)):''}
   <span>${sanitizeHTML(ans.poll_media.text)}</span>
 </div>`).join('')}
   </div>
@@ -514,7 +514,7 @@ function renderMessage(content, author, m) {
       if (sticker.format_type===3) return `<lottie-sticker class="message-attach" data-id="${sticker.id}"></lottie-sticker>`;
       return `<img src="https://media.discordapp.net/stickers/${sticker.id}.${['webp','png','png','webp','gif'][sticker.format_type]}?size=160&quality=lossless" width="160" height="160" draggable="false" loading="lazy" class="message-attach">`;
     }).join(''):''}
-    ${m.reactions?.length?`<div class="reactions">${m.reactions.map(reaction=>`<button${reaction.me?' class="me"':''}>${reaction.emoji.id?`<img src="https://cdn.discordapp.com/emojis/${reaction.emoji.id}.${reaction.emoji.animated?'gif':'webp'}?size=96" width="16" height="16" draggable="false" loading="lazy">`:twemoji.parse(reaction.emoji.name, twemojiConfig)}${reaction.count}</button>`).join('')}</div>`:''}
+    ${m.reactions?.length?`<div class="reactions">${m.reactions.map(reaction=>`<button${reaction.me?' class="me"':''}>${reaction.emoji.id?`<emoji-loader data-id="${reaction.emoji.id}" data-format="${reaction.emoji.animated?'gif':'webp'}" data-width="16" data-height="16"></emoji-loader>`:twemoji.parse(reaction.emoji.name, twemojiConfig)}${reaction.count}</button>`).join('')}</div>`:''}
     ${m.thread?`<div class="thread">
       <span>${sanitizeHTML(m.thread.name)} · ${m.thread.message_count} messages</span>
     </div>`:''}

@@ -338,6 +338,67 @@ function sanitizeHTML(text) {
     .replaceAll("'", '&apos;');
 }
 
+// Custom elements
+class EmojiLoader extends HTMLElement {
+  connectedCallback() {
+    let img = document.createElement('img');
+    if (this.getAttribute('data-emoji')==='true') img.classList.add('emoji');
+    img.width = this.getAttribute('data-width');
+    img.height = this.getAttribute('data-height');
+    img.draggable = 'false';
+    img.loading = 'lazy';
+    img.src = `https://cdn.discordapp.com/emojis/${this.getAttribute('data-id')}.${this.getAttribute('data-format')||'webp'}?size=96`;
+    img.onerror = ()=>{
+      img.outerText = this.getAttribute('data-fallback')||'';
+    };
+    this.replaceWith(img);
+  }
+}
+class MentionChip extends HTMLElement {
+  connectedCallback() {
+    let type = this.getAttribute('data-type');
+    let id = this.getAttribute('data-id');
+    let span = document.createElement('span');
+    span.classList.add(type);
+    let content = '';
+    let inter;
+    switch(type) {
+      case 'user':
+        content = `@${id}`;
+        if (data.users[id]) content = `@${getUserDisplay(data.users[match])}`;
+        break;
+      case 'role':
+        inter = window.data.servers.find(s=>s.id===window.data.currentServer).roles.find(r=>r.id===id);
+        if (inter.color!==0) span.setProperty('--mcol', colorToRGB(inter.color));
+        content = inter?`@${inter.name}`:'@Unknown Role';
+        break;
+      case 'channel':
+        inter = window.data.servers.find(s=>s.id===window.data.currentServer).channels.find(c=>c.id===id);
+        content = inter?`#${inter.name}`:'#Unknown Channel';
+        break;
+    }
+    span.innerText = content;
+    span.onclick = ()=>{
+      switch(type) {
+        case 'user':
+          showMinifiedProfile(span, id);
+          break;
+        case 'role':
+          // TODO: Show members with role
+          break;
+        case 'channel':
+          loading(inter.name);
+          setTop(inter.name, inter.type);
+          switchMessage(inter.id, inter.type);
+          break;
+      }
+    };
+    this.replaceWith(span);
+  }
+}
+customElements.define('emoji-loader', EmojiLoader);
+customElements.define('mention-chip', MentionChip);
+
 // MD Parse
 function parseMD(text, extended=2) {
   let reserve = {};
@@ -363,7 +424,7 @@ function parseMD(text, extended=2) {
   text = text
     .replaceAll(/&lt;a?:.+?:[0-9]+?>/g, (match)=>{
       let parts = match.replace('>','').split(':');
-      return reservemd(`<img src="https://cdn.discordapp.com/emojis/${parts[2]}.${parts[0]==='&lt;a'?'gif':'webp'}?size=96" width="18" height="18" draggable="false" loading="lazy" onerror="this.outerText='${match}'" class="emoji">`);
+      return reservemd(`<emoji-loader data-id="${parts[2]}" data-format="${parts[0]==='&lt;a'?'gif':'webp'}" data-fallback="${match}" data-emoji="true" data-width="18" data-height="18"></emoji-loader>`);
     });
   // General
   text = text
@@ -386,21 +447,9 @@ function parseMD(text, extended=2) {
       .replaceAll(/&lt;t:[0-9]+?(:[tTdDfFsSR])?>/gm, (match)=>{match=match.split(':');match[1]=Number(match[1].replace('>',''))*1000;return `<code title="${formatDate(match[1], 'F')}" style="display:unset"${((match[2]??'f')[0])==='R'?` class="timestamp-relative" data-time="${match[1]}"`:''}>${formatDate(match[1], (match[2]??'f')[0])}</code>`});
     // Discord
     text = text
-      .replaceAll(/(?:&lt;)@(?:\!?)[0-9]+?>/gm, (match)=>{
-        match = match.replaceAll(/^(?:&lt;)@|>$/gm,'');
-        if (!data.users[match]) return `<span class="user" onclick="showMinifiedProfile(this, '${match}')">@${match}</span>`;
-        return `<span class="user" onclick="showMinifiedProfile(this, '${match}')">@${getUserDisplay(data.users[match])}</span>`;
-      })
-      .replaceAll(/(?:&lt;)@(?:&amp;)[0-9]+?>/gm, (match)=>{
-        let role = window.data.servers.find(s=>s.id===window.data.currentServer).roles.find(r=>r.id===match.replaceAll(/^(?:&lt;)@(?:&amp;)|>$/gm,''));
-        if (!role) return reservemd(`<span class="role">@Unknown Role</span>`);
-        return reservemd(`<span class="role"${role.color===0?'':` style="--mcol:${colorToRGB(role.color)}"`}>@${sanitizeHTML(role.name)}</span>`);
-      })
-      .replaceAll(/(?:&lt;)#[0-9]+?>/gm, (match)=>{
-        let channel = window.data.servers.find(s=>s.id===window.data.currentServer).channels.find(c=>c.id===match.replaceAll(/^(?:&lt;)#|>$/gm,''));
-        if (!channel) return reservemd(`<span class="channel">#Unknown Channel</span>`);
-        return reservemd(`<span class="channel" onclick="loading('${sanitizeHTML(channel.name)}');setTop('${sanitizeHTML(channel.name)}',${channel.type});switchMessage('${channel.id}',${channel.type})">#${sanitizeHTML(channel.name)}</span>`);
-      });
+      .replaceAll(/(?:&lt;)@(?:\!?)[0-9]+?>/gm, (match)=>reservemd(`<mention-chip data-type="user" data-id="${match.replaceAll(/&lt;@|>/gm,'')}"></mention-chip>`))
+      .replaceAll(/(?:&lt;)@(?:&amp;)[0-9]+?>/gm, (match)=>reservemd(`<mention-chip data-type="role" data-id="${match.replaceAll(/&lt;@&amp;|>/gm,'')}"></mention-chip>`))
+      .replaceAll(/(?:&lt;)#[0-9]+?>/gm, (match)=>reservemd(`<mention-chip data-type="channel" data-id="${match.replaceAll(/&lt;#|>/gm,'')}"></mention-chip>`));
   }
   if (extended>1) {
     text = text
@@ -431,7 +480,7 @@ setInterval(()=>{
   Array.from(document.querySelectorAll('.timestamp-relative'))
     .forEach(relative => {
       relative.innerText = formatDate(Number(relative.getAttribute('data-time')), 'R');
-    })
+    });
 }, 1000);
 
 // Icons
