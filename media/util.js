@@ -311,8 +311,8 @@ function proxyFetch(url, o) {
   if (o?.method) opts.method=o.method;
   if (o?.headers) {
     Object.keys(o.headers).forEach(h=>{
-      opts.headers[h] = o.headers[h]
-    })
+      opts.headers[h] = o.headers[h];
+    });
   }
   if (o?.body) {
     opts.body = o.body;
@@ -325,7 +325,7 @@ function proxyFetch(url, o) {
     },
     body: JSON.stringify(opts),
     signal: AbortSignal.timeout(10000) // 10s max
-  })
+  });
 }
 
 // Sanitize
@@ -360,24 +360,44 @@ class MentionChip extends HTMLElement {
     let id = this.getAttribute('data-id');
     let span = document.createElement('span');
     span.classList.add(type);
+    let icon = '';
     let content = '';
     let inter;
     switch(type) {
       case 'user':
-        content = `@${id}`;
-        if (data.users[id]) content = `@${getUserDisplay(data.users[match])}`;
+        icon = '@';
+        content = id;
+        if (data.users[id]) content = `@${getUserDisplay(data.users[id])}`;
         break;
       case 'role':
         inter = window.data.servers.find(s=>s.id===window.data.currentServer).roles.find(r=>r.id===id);
         if (inter.color!==0) span.setProperty('--mcol', colorToRGB(inter.color));
-        content = inter?`@${inter.name}`:'@Unknown Role';
+        icon = '@';
+        content = inter?inter.name:'Unknown Role';
+        break;
+      case 'game':
+        if (window.data.games[id]!==undefined) {
+          content = window.data.games[id]===null?'unknown game':window.data.games[id].name;
+          if (window.data.games[id]!==null) icon = `<img src="https://cdn.discordapp.com/app-icons/${id}/${window.data.games[id].icon_hash}.png?size=32&keep_aspect_ratio=false" width="16" height="16" draggable="false" loading="lazy" aria-hidden="true">`
+        } else {
+          proxyFetch(`https://discord.com/api/v9/games?game_ids=${id}`)
+            .then(game=>game.json())
+            .then(game=>{
+              game = JSON.parse(game.content)[0];
+              window.data.games[id] = game===undefined?null:game;
+              this.connectedCallback();
+            });
+          return;
+        }
         break;
       case 'channel':
         inter = window.data.servers.find(s=>s.id===window.data.currentServer).channels.find(c=>c.id===id);
-        content = inter?`#${inter.name}`:'#Unknown Channel';
+        icon = '#';
+        content = inter?inter.name:'Unknown Channel';
         break;
     }
-    span.innerText = content;
+    span.innerHTML = icon;
+    span.appendChild(document.createTextNode(content));
     span.onclick = ()=>{
       switch(type) {
         case 'user':
@@ -385,6 +405,9 @@ class MentionChip extends HTMLElement {
           break;
         case 'role':
           // TODO: Show members with role
+          break;
+        case 'game':
+          // TODO: Show game profile, do we want this?
           break;
         case 'channel':
           loading(inter.name);
@@ -445,10 +468,11 @@ function parseMD(text, extended=2) {
   if (extended>0) {
     text = text
       .replaceAll(/&lt;t:[0-9]+?(:[tTdDfFsSR])?>/gm, (match)=>{match=match.split(':');match[1]=Number(match[1].replace('>',''))*1000;return `<code title="${formatDate(match[1], 'F')}" style="display:unset"${((match[2]??'f')[0])==='R'?` class="timestamp-relative" data-time="${match[1]}"`:''}>${formatDate(match[1], (match[2]??'f')[0])}</code>`});
-    // Discord
+    // Mentions
     text = text
-      .replaceAll(/(?:&lt;)@(?:\!?)[0-9]+?>/gm, (match)=>reservemd(`<mention-chip data-type="user" data-id="${match.replaceAll(/&lt;@|>/gm,'')}"></mention-chip>`))
+      .replaceAll(/(?:&lt;)@(?:\!?)[0-9]+?>/gm, (match)=>reservemd(`<mention-chip data-type="user" data-id="${match.replaceAll(/&lt;@|\!|>/gm,'')}"></mention-chip>`))
       .replaceAll(/(?:&lt;)@(?:&amp;)[0-9]+?>/gm, (match)=>reservemd(`<mention-chip data-type="role" data-id="${match.replaceAll(/&lt;@&amp;|>/gm,'')}"></mention-chip>`))
+      .replaceAll(/(?:&lt;)@$[0-9]+?>/gm, (match)=>reservemd(`<mention-chip data-type="game" data-id="${match.replaceAll(/&lt;@$|>/gm,'')}"></mention-chip>`))
       .replaceAll(/(?:&lt;)#[0-9]+?>/gm, (match)=>reservemd(`<mention-chip data-type="channel" data-id="${match.replaceAll(/&lt;#|>/gm,'')}"></mention-chip>`));
   }
   if (extended>1) {

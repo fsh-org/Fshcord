@@ -25,6 +25,7 @@ window.data.presences = {};
 window.data.servers = [];
 window.data.dms = [];
 window.data.slash = {};
+window.data.games = {};
 
 window.data.messageCache = {};
 window.data.fullChannel = {};
