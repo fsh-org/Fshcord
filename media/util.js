@@ -359,7 +359,7 @@ class MentionChip extends HTMLElement {
     let type = this.getAttribute('data-type');
     let id = this.getAttribute('data-id');
     let span = document.createElement('span');
-    span.classList.add(type);
+    span.classList.add('mention-chip');
     let icon = '';
     let content = '';
     let inter;
@@ -371,7 +371,7 @@ class MentionChip extends HTMLElement {
         break;
       case 'role':
         inter = window.data.servers.find(s=>s.id===window.data.currentServer).roles.find(r=>r.id===id);
-        if (inter.color!==0) span.setProperty('--mcol', colorToRGB(inter.color));
+        if (inter.color!==0) span.style.setProperty('--mcol', colorToRGB(inter.color));
         icon = '@';
         content = inter?inter.name:'Unknown Role';
         break;
@@ -472,7 +472,7 @@ function parseMD(text, extended=2) {
     text = text
       .replaceAll(/(?:&lt;)@(?:\!?)[0-9]+?>/gm, (match)=>reservemd(`<mention-chip data-type="user" data-id="${match.replaceAll(/&lt;@|\!|>/gm,'')}"></mention-chip>`))
       .replaceAll(/(?:&lt;)@(?:&amp;)[0-9]+?>/gm, (match)=>reservemd(`<mention-chip data-type="role" data-id="${match.replaceAll(/&lt;@&amp;|>/gm,'')}"></mention-chip>`))
-      .replaceAll(/(?:&lt;)@$[0-9]+?>/gm, (match)=>reservemd(`<mention-chip data-type="game" data-id="${match.replaceAll(/&lt;@$|>/gm,'')}"></mention-chip>`))
+      .replaceAll(/(?:&lt;)@\$[0-9]+?>/gm, (match)=>reservemd(`<mention-chip data-type="game" data-id="${match.replaceAll(/&lt;@\$|>/gm,'')}"></mention-chip>`))
       .replaceAll(/(?:&lt;)#[0-9]+?>/gm, (match)=>reservemd(`<mention-chip data-type="channel" data-id="${match.replaceAll(/&lt;#|>/gm,'')}"></mention-chip>`));
   }
   if (extended>1) {

@@ -429,16 +429,20 @@ main {
   color: var(--text-2);
   font-size: 60%;
 }
-.message > *:not(:nth-child(1)) .user, .message > *:not(:nth-child(1)) .role, .message > *:not(:nth-child(1)) .channel {
+.message .mention-chip {
+  --mtrans: 33.33%;
+  display: inline-flex;
+  gap: 5px;
+  align-items: center;
   cursor: pointer;
   color: var(--mcol);
   padding: 0px 2px;
   margin: 0px;
   border-radius: 0.25rem;
-  background-color: color-mix(in srgb, var(--mcol, var(--blue-1)) 33%, transparent);
+  background-color: color-mix(in srgb, var(--mcol, var(--blue-1)) var(--mtrans), transparent);
 }
-.message .inner .role {
-  cursor: auto;
+.message .mention-chip:hover {
+  --mtrans: 50%;
 }
 .message.mention::before, .message.ephemeral::before {
   display: block;
