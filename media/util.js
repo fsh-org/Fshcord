@@ -202,7 +202,8 @@ const systemMessages = {
   '38': `{getUserDisplay(m.author)} reported a raid in {window.data.servers.find(s=>s.id===window.data.currentServer).name}.`,
   '46': `{getUserDisplay(m.author)}'s poll {m.embeds[0].fields[0].value} has closed.`,
   '55': `{getUserDisplay(m.author)} activated HD Splash Potion`,
-  '63': `{getUserDisplay(m.author)} added a new emoji, {m.content} :{m.content.split(':')[1]}:`
+  '63': `{getUserDisplay(m.author)} added a new emoji, {m.content} :{m.content.split(':')[1]}:`,
+  '69': `{getUserDisplay(window.data.users[m.guild_space_data.leaderboard.user_id]??window.data.users['1'])} has won this week's competition with {Math.floor(m.guild_space_data.leaderboard.value/3600000)} h {Math.floor(m.guild_space_data.leaderboard.value/60000%60)} min game time`
 };
 const dateFormats = {
   t: { timeStyle: 'short' },
