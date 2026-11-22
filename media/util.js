@@ -1,4 +1,29 @@
 // Configurations
+const SuperProperties = {
+  os: 'Windows',
+  os_version: '10',
+  device: '',
+  device_model_name: '',
+  system_locale: 'en-US',
+  browser: 'Chrome',
+  browser_user_agent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.0.0 Safari/537.36',
+  browser_version: '157.0.0.0',
+  referrer: '',
+  referring_domain: '',
+  referrer_current: '',
+  referring_domain_current: '',
+  client_launch_id: crypto.randomUUID(),
+  launch_signature: GenerateLaunchSignature(),
+  release_channel: 'stable',
+  has_client_mods: false,
+  client_app_state: 'active',
+  client_build_number: 678976,
+  client_event_source: null
+};
+const SuperExtract = {
+  brand: '"Not-A.Brand";v="99", "Google Chrome";v="157", "Chromium";v="157"', 
+  ua: SuperProperties.browser_user_agent
+};
 const twemojiConfig = {
   size: 'svg',
   ext: '.svg',
@@ -219,6 +244,20 @@ const autoModText = {
   blocked: 'Blocked a message',
   flagged: 'Flagged a user'
 };
+function GenerateLaunchSignature() {
+  const bits = BigInt('0b00000000100000000001000000010000000010000001000000001000000000000010000010000001000000000100000000000001000000000000100000000000');
+  let value = BigInt('0x'+crypto.randomUUID().replaceAll('-',''));
+  let fullMask = (1n << 128n) - 1n;
+  value = value & (~bits & fullMask);
+  let hex = value.toString(16).padStart(32, '0');
+  return [
+    hex.slice(0, 8),
+    hex.slice(8, 12),
+    hex.slice(12, 16),
+    hex.slice(16, 20),
+    hex.slice(20)
+  ].join('-');
+}
 function toBinaryString(numString) {
   if (!numString || isNaN(numString)) return '0';
   if (numString === '0') return '0';
@@ -300,13 +339,14 @@ function proxyFetch(url, o) {
       'authorization': localStorage.getItem('token'),
       'pragma': 'no-cache',
       'priority': 'u=1, i',
-      'sec-ch-ua': '"Not=A?Brand";v="99", "Google Chrome";v="151", "Chromium";v="151"',
+      'sec-ch-ua': SuperExtract.brand,
       'sec-ch-ua-mobile': '?0',
       'sec-ch-ua-platform': '"Windows"',
       'sec-fetch-dest': 'empty',
       'sec-fetch-mode': 'cors',
       'sec-fetch-site': 'same-origin',
-      'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36'
+      'user-agent': SuperExtract.ua,
+      'x-super-properties': btoa(JSON.stringify(SuperProperties))
     }
   };
   if (o?.method) opts.method=o.method;
