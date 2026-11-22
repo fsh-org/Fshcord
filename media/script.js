@@ -328,7 +328,6 @@ function renderEmbed(embed, data) {
     case 'link':
     case 'rich':
     case 'video':
-      // TODO: Add very strange thing where if the embed has url it will allow other embeds with only images to join up to 4
       c=[embed.title, embed.description, embed?.author?.name, embed?.provider?.name].filter(e=>!!e).length;
       return `<div class="message-rich-embed" style="--embed-color:${colorToRGB(embed.color??0)}">
   ${embed.thumbnail&&embed.type!=='video'?`<img src="${embed.thumbnail.proxy_url}" class="message-attach thumbnail" width="60" height="60" draggable="false" loading="lazy">`:''}
@@ -341,7 +340,9 @@ function renderEmbed(embed, data) {
   <span class="desc">${parseMD(f.value, 1)}</span>
 </div>`).join('')}</div>`:''}
   ${embed.video?(embed.video.proxy_url?`<video src="${embed.video.proxy_url}" class="message-attach" style="max-width:100%" controls></video>`:`<iframe src="${embed.video.url}" class="message-attach" allow="autoplay" frameborder="0" scrolling="no" sandbox="allow-forms allow-modals allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts allow-presentation" allowfullscreen></iframe>`):''}
-  ${embed.image&&embed.type!=='video'?`<img src="${embed.image.proxy_url}" draggable="false" loading="lazy" class="message-attach big" style="max-width:100%;margin-top:${embed.thumbnail?(c>2?'0':(c>1?'15':'40')):'0'}px">`:''}
+  ${embed.image&&embed.type!=='video'?
+    Array.isArray(embed.image)?`<div class="gallery">${embed.image.map(item=>`<smart-media data-type="${(item.content_type??'image/png').split('/')[0]}" data-width="${item.width}" data-height="${item.height}" data-placeholder="${item.placeholder}" data-full="${item.proxy_url}"></smart-media>`).join('')}</div>`:
+    `<img src="${embed.image.proxy_url}" draggable="false" loading="lazy" class="message-attach big" style="max-width:100%;margin-top:${embed.thumbnail?(c>2?'0':(c>1?'15':'40')):'0'}px">`:''}
   ${embed?.footer?.text||embed.timestamp?`<span class="footer">${embed?.footer?.text?`<span class="text">${embed.footer.proxy_icon_url?`<img src="${embed.footer.proxy_icon_url}" draggable="false" loading="lazy">`:''}${sanitizeHTML(embed.footer.text)}</span>`:''}${embed?.footer?.text&&embed.timestamp?'<span class="dot"></span>':''}${embed.timestamp?`<span>${formatDate(embed.timestamp)}</span>`:''}</span>`:''}
 </div>`;
     // Custom Internal
@@ -480,6 +481,10 @@ function renderPoll(poll) {
 }
 function renderMessage(content, author, m) {
   let compdata = { id: m.id, app: author.id, flags: m.flags };
+  if (m.embeds?.length&&m.embeds.every(obj=>obj.type==='rich'&&obj.url===m.embeds[0].url)) {
+    m.embeds[0].image = m.embeds.map(obj=>obj.image);
+    m.embeds.splice(1);
+  }
   return `<div class="message${m.deleted?' deleted':''}${(m.mentions??[]).map(e=>e.id).includes(window.data.user.id)?' mention':''}${getFlags(m.flags, messageFlags).EPHEMERAL?' ephemeral':''}">
   ${m.type===19&&m.message_reference?`<div class="reply-preview">
     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 256 256" style="margin-left:20px;flex-shrink:0;"><path d="M0 164H32V240C32 248.837 24.8366 256 16 256V256C7.16344 256 0 248.837 0 240V164Z" fill="#ACACAC"></path><path d="M52 112H240C248.837 112 256 119.163 256 128V128C256 136.837 248.837 144 240 144H52V112Z" fill="#ACACAC"></path><path d="M52 112C45.1713 112 38.4094 113.345 32.1005 115.958C25.7915 118.572 20.0591 122.402 15.2304 127.23C10.4018 132.059 6.57151 137.792 3.95826 144.1C1.34502 150.409 -1.03111e-06 157.171 0 164L31.9854 164C31.9854 161.372 32.5031 158.769 33.5089 156.341C34.5148 153.912 35.989 151.706 37.8476 149.848C39.7061 147.989 41.9125 146.515 44.3408 145.509C46.769 144.503 49.3716 143.985 52 143.985V112Z" fill="#ACACAC"></path></svg>
