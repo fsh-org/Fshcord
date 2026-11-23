@@ -481,7 +481,7 @@ function renderPoll(poll) {
 }
 function renderMessage(content, author, m) {
   let compdata = { id: m.id, app: author.id, flags: m.flags };
-  if (m.embeds?.length&&m.embeds.every(obj=>obj.type==='rich'&&obj.url===m.embeds[0].url)) {
+  if (m.embeds?.length&&m.embeds.length>1&&m.embeds.every(obj=>obj.type==='rich'&&obj.url===m.embeds[0].url)) {
     m.embeds[0].image = m.embeds.map(obj=>obj.image);
     m.embeds.splice(1);
   }

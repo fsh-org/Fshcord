@@ -930,21 +930,20 @@ blockquote::before {
 .gallery:has(> :nth-child(1):last-child) { grid-template-columns: 1fr; }
 .gallery:has(> :nth-child(1):last-child) > * { aspect-ratio: calc(attr(data-width px) / attr(data-height px)); }
 
-.gallery:has(> :nth-child(6):last-child), .gallery:has(> :nth-child(7):last-child), .gallery:has(> :nth-child(9):last-child), .gallery:has(> :nth-child(10):last-child) { grid-template-columns: repeat(3, 1fr); }
 .gallery:has(> :nth-child(2):last-child), .gallery:has(> :nth-child(4):last-child) { grid-template-columns: repeat(2, 1fr); }
-
 .gallery:has(> :nth-child(3):last-child) { grid-template-columns: 2fr 1fr; grid-template-rows: 1fr 1fr; }
 .gallery:has(> :nth-child(3):last-child) > :first-child { grid-row: span 2; }
 
-.gallery:has(> :nth-child(5):last-child) { grid-template-columns: repeat(6, 1fr); }
-.gallery:has(> :nth-child(5):last-child) > * { grid-column: span 2; }
-.gallery:has(> :nth-child(5):last-child) > :nth-child(-n + 2) { grid-column: span 3; }
+/* 3+ */
+.gallery:has(> :nth-child(6):last-child), .gallery:has(> :nth-child(7):last-child), .gallery:has(> :nth-child(9):last-child), .gallery:has(> :nth-child(10):last-child), .gallery:has(> :nth-child(12):last-child), .gallery:has(> :nth-child(13):last-child), .gallery:has(> :nth-child(15):last-child), .gallery:has(> :nth-child(16):last-child) { grid-template-columns: repeat(3, 1fr); }
 
-.gallery:has(> :nth-child(7):last-child) > :first-child, .gallery:has(> :nth-child(10):last-child) > :first-child { aspect-ratio: 3 / 1; grid-column: 1 / -1; }
+/* 1 */
+.gallery:has(> :nth-child(7):last-child) > :first-child, .gallery:has(> :nth-child(10):last-child) > :first-child, .gallery:has(> :nth-child(13):last-child) > :first-child, .gallery:has(> :nth-child(16):last-child) > :first-child { aspect-ratio: 3 / 1; grid-column: 1 / -1; }
 
-.gallery:has(> :nth-child(8):last-child) { grid-template-columns: repeat(6, 1fr); }
-.gallery:has(> :nth-child(8):last-child) > * { grid-column: span 2; }
-.gallery:has(> :nth-child(8):last-child) > :nth-child(-n + 2) { grid-column: span 3; }
+/* 2 3+ */
+.gallery:has(> :nth-child(5):last-child), .gallery:has(> :nth-child(8):last-child), .gallery:has(> :nth-child(11):last-child), .gallery:has(> :nth-child(14):last-child) { grid-template-columns: repeat(6, 1fr); }
+.gallery:has(> :nth-child(5):last-child) > *, .gallery:has(> :nth-child(8):last-child) > *, .gallery:has(> :nth-child(11):last-child) > *, .gallery:has(> :nth-child(14):last-child) > * { grid-column: span 2; }
+.gallery:has(> :nth-child(5):last-child) > :nth-child(-n + 2), .gallery:has(> :nth-child(8):last-child) > :nth-child(-n + 2), .gallery:has(> :nth-child(11):last-child) > :nth-child(-n + 2), .gallery:has(> :nth-child(14):last-child) > :nth-child(-n + 2) { grid-column: span 3; }
 
 #slash-bar {
   display: flex;
