@@ -480,12 +480,13 @@ function renderPoll(poll) {
 </div>`;
 }
 function renderMessage(content, author, m) {
-  let compdata = { id: m.id, app: author.id, flags: m.flags };
+  let compdata = author.guild_id?{}:{ id: m.id, app: author.id, flags: m.flags };
   if (m.embeds?.length&&m.embeds.length>1&&m.embeds.every(obj=>obj.type==='rich'&&obj.url===m.embeds[0].url)) {
     m.embeds[0].image = m.embeds.map(obj=>obj.image);
     m.embeds.splice(1);
   }
-  return `<div class="message${m.deleted?' deleted':''}${(m.mentions??[]).map(e=>e.id).includes(window.data.user.id)?' mention':''}${getFlags(m.flags, messageFlags).EPHEMERAL?' ephemeral':''}">
+  return `<div class="message${m.deleted?' deleted':''}${(m.mentions??[]).map(e=>e.id).includes(window.data.user.id)?' mention':''}${getFlags(m.flags, messageFlags).EPHEMERAL?' ephemeral':''}${author.guild_id?' forward':''}">
+  ${author.guild_id?`<div class="reply-preview"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 256 256" style="margin-left:20px;flex-shrink:0;"><path d="M0 164H32V240C32 248.837 24.8366 256 16 256V256C7.16344 256 0 248.837 0 240V164Z" fill="#ACACAC"></path><path d="M52 112H240C248.837 112 256 119.163 256 128V128C256 136.837 248.837 144 240 144H52V112Z" fill="#ACACAC"></path><path d="M52 112C45.1713 112 38.4094 113.345 32.1005 115.958C25.7915 118.572 20.0591 122.402 15.2304 127.23C10.4018 132.059 6.57151 137.792 3.95826 144.1C1.34502 150.409 -1.03111e-06 157.171 0 164L31.9854 164C31.9854 161.372 32.5031 158.769 33.5089 156.341C34.5148 153.912 35.989 151.706 37.8476 149.848C39.7061 147.989 41.9125 146.515 44.3408 145.509C46.769 144.503 49.3716 143.985 52 143.985V112Z" fill="#ACACAC"></path></svg> Forwarded</div>`:''}
   ${m.type===19&&m.message_reference?`<div class="reply-preview">
     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 256 256" style="margin-left:20px;flex-shrink:0;"><path d="M0 164H32V240C32 248.837 24.8366 256 16 256V256C7.16344 256 0 248.837 0 240V164Z" fill="#ACACAC"></path><path d="M52 112H240C248.837 112 256 119.163 256 128V128C256 136.837 248.837 144 240 144H52V112Z" fill="#ACACAC"></path><path d="M52 112C45.1713 112 38.4094 113.345 32.1005 115.958C25.7915 118.572 20.0591 122.402 15.2304 127.23C10.4018 132.059 6.57151 137.792 3.95826 144.1C1.34502 150.409 -1.03111e-06 157.171 0 164L31.9854 164C31.9854 161.372 32.5031 158.769 33.5089 156.341C34.5148 153.912 35.989 151.706 37.8476 149.848C39.7061 147.989 41.9125 146.515 44.3408 145.509C46.769 144.503 49.3716 143.985 52 143.985V112Z" fill="#ACACAC"></path></svg>
     ${m.referenced_message?`<img src="${getUserAvatar(m.referenced_message.author.id, m.referenced_message.author.avatar)}" width="20" height="20" draggable="false" loading="lazy" aria-hidden="true" onclick="showMinifiedProfile(this, '${m.referenced_message.author.id}')">`:''}
@@ -499,12 +500,12 @@ function renderMessage(content, author, m) {
     <span> used </span>
     <span>${sanitizeHTML(m.interaction.name)}</span>
   </div>`:''}
-  ${author.hide?'<div class="avatar" aria-hidden="true"></div>':`<div class="avatar" aria-hidden="true" onclick="showMinifiedProfile(this, '${author.id}')">
+  ${author.guild_id?'':author.hide?'<div class="avatar" aria-hidden="true"></div>':`<div class="avatar" aria-hidden="true" onclick="showMinifiedProfile(this, '${author.id}')">
     <img src="${getUserAvatar(author.id, author.avatar)}" width="40" height="40" draggable="false" loading="lazy" aria-hidden="true">
     ${window.data.extra_settings.avatar_deco?`<img src="${getUserDeco(author?.avatar_decoration_data?.asset)}" class="decoration" width="50" height="50" draggable="false" loading="lazy" aria-hidden="true" onerror="this.remove()">`:''}
   </div>`}
   <span>
-    ${author.hide?'':`<span><span class="name" onclick="showMinifiedProfile(this, '${author.id}')"${window.data.currentServer!=='0'?` style="--rc:${getUserColor(window.data.currentServer, data.servers.find(e=>e.id===window.data.currentServer).members?.find(mem=>mem.user.id===author.id))}"`:''}>${getUserDisplay(author)}</span>${[author.system,m.webhook_id,author.bot].filter(e=>!!e).length?`<span class="tag">${author.system?'SYSTEM':(m.webhook_id?'WEBHOOK':(author.bot?`BOT${getUserFlags(author.flags??author.public_flags).VERIFIED_BOT?' ✔':''}`:''))}</span>`:''}${window.data.extra_settings.tags&&author.clan?getUserClan(author.clan):''}<span class="timestamp">${formatDate(m.timestamp, 'r')}</span>${!m.webhook_id&&getUserFlags(author.flags??author.public_flags).SPAMMER?'<span>· Possible spammer</span>':''}</span>`}
+    ${author.hide||author.guild_id?'':`<span><span class="name" onclick="showMinifiedProfile(this, '${author.id}')"${window.data.currentServer!=='0'?` style="--rc:${getUserColor(window.data.currentServer, data.servers.find(e=>e.id===window.data.currentServer).members?.find(mem=>mem.user.id===author.id))}"`:''}>${getUserDisplay(author)}</span>${[author.system,m.webhook_id,author.bot].filter(e=>!!e).length?`<span class="tag">${author.system?'SYSTEM':(m.webhook_id?'WEBHOOK':(author.bot?`BOT${getUserFlags(author.flags??author.public_flags).VERIFIED_BOT?' ✔':''}`:''))}</span>`:''}${window.data.extra_settings.tags&&author.clan?getUserClan(author.clan):''}<span class="timestamp">${formatDate(m.timestamp, 'r')}</span>${!m.webhook_id&&getUserFlags(author.flags??author.public_flags).SPAMMER?'<span>· Possible spammer</span>':''}</span>`}
     <span class="inner">${parseMD(content)}${m.edited_timestamp?'<span class="edited"> (edited)</span>':''}</span>
     ${m.attachments?.length?'<div class="gallery">'+m.attachments.map(attach=>{
       if (!attach.content_type) attach.content_type=`image/${attach.url.split('?')[0].split('.').slice(-1)[0]}`;
@@ -520,10 +521,12 @@ function renderMessage(content, author, m) {
       if (sticker.format_type===3) return `<lottie-sticker class="message-attach" data-id="${sticker.id}"></lottie-sticker>`;
       return `<img src="https://media.discordapp.net/stickers/${sticker.id}.${['webp','png','png','webp','gif'][sticker.format_type]}?size=160&quality=lossless" width="160" height="160" draggable="false" loading="lazy" class="message-attach">`;
     }).join(''):''}
+    ${m.message_snapshots?renderMessage(m.message_snapshots[0].message.content, m.message_reference, m.message_snapshots[0].message):''}
     ${m.reactions?.length?`<div class="reactions">${m.reactions.map(reaction=>`<button${reaction.me?' class="me"':''}>${reaction.emoji.id?`<emoji-loader data-id="${reaction.emoji.id}" data-format="${reaction.emoji.animated?'gif':'webp'}" data-width="16" data-height="16"></emoji-loader>`:twemoji.parse(reaction.emoji.name, twemojiConfig)}${reaction.count}</button>`).join('')}</div>`:''}
     ${m.thread?`<div class="thread">
       <span>${sanitizeHTML(m.thread.name)} · ${m.thread.message_count} messages</span>
     </div>`:''}
+    ${author.guild_id?(server = window.data.servers.find(srv=>srv.id===author.guild_id), channel = server.channels.find(ch=>ch.id===author.channel_id), server&&channel?`<button class="forward-footer" onclick="switchChannel('${author.guild_id}',false);switchMessage('${author.channel_id}',${channel.type})">${sanitizeHTML(server.properties.name)} ›</button>`:''):''}
     ${getFlags(m.flags, messageFlags).EPHEMERAL?`<span>Only you can see this · <button style="font-weight:normal;padding:2px;border:none;border-radius:0.25rem;" onclick="window.data.messageCache[window.data.currentChannel]=window.data.messageCache[window.data.currentChannel].filter(msg=>msg.id!=='${m.id}');switchMessage(window.data.currentChannel,window.data.currentChannelType)">Delete this message</button></span>`:''}
   </span>
 </div>`;
@@ -843,7 +846,8 @@ function showChannels(list, changechannel=true, channelid) {
 ${(server.properties.banner??server.banner)?`<div><img src="https://cdn.discordapp.com/banners/${server.id}/${server.properties.banner??server.banner}.webp?size=240" draggable="false" loading="lazy" aria-hidden="true"></div>`:''}`;
   }
   if (changechannel) {
-    let first = Object.entries(cat).filter(ct=>ct[0]===''?ct[1].length>0:ct[1].length>1)[0][1][1];
+    let first = Object.entries(cat).filter(ct=>ct[0]===''?ct[1].length>0:ct[1].length>1)[0];
+    first = first[1][first[0]===''?0:1];
     // Saved poss?
     if (window.data.serverLastChannel[channelid]) {
       let sav = list.find(ch=>ch.id===window.data.serverLastChannel[channelid]);
@@ -883,6 +887,17 @@ function showUserChannel(id) {
   }
 }
 function switchChannel(id, changechannel=true) {
+  // Set selected
+  if (id!==window.data.currentServer) {
+    window.data.currentServer = id;
+    let previous = document.querySelector('#server button[selected]');
+    previous?.classList?.add('leaving');
+    setTimeout(() => {
+      previous?.classList?.remove('leaving');
+      previous?.removeAttribute('selected');
+    }, 250);
+    document.querySelector(`#server button[data-id="${id}"]`).setAttribute('selected', true);
+  }
   if (id == 0) {
     // Show dms
     showChannels(window.data.dms, changechannel, id);
@@ -935,21 +950,8 @@ function showServers(list) {
       });
       // On click
       b.onclick = ()=>{
-        let sid = b.getAttribute('data-id');
-        // Set selected
-        let previous = document.querySelector('#server button[selected]');
-        if (!b.isSameNode(previous)) {
-          previous?.classList?.add('leaving');
-          setTimeout(() => {
-            previous?.classList?.remove('leaving');
-            previous?.removeAttribute('selected');
-          }, 250);
-          b.setAttribute('selected', true);
-        }
-        // Switch the server and show channels
         loading(b.getAttribute('aria-label'));
-        window.data.currentServer = sid;
-        switchChannel(sid);
+        switchChannel(b.getAttribute('data-id'));
       }
       b.oncontextmenu = (event)=>{showContextMenu(event, 'server', {
         id: b.getAttribute('data-id'),

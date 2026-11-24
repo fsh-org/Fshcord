@@ -904,11 +904,29 @@ blockquote::before {
   color: var(--red-1);
   text-decoration: none;
 }
-.message.deleted .message-attach {
+.message.deleted .message-attach, .message.deleted img, .message.deleted video, .message.deleted audio, .message.deleted lottie-sticker {
   filter: grayscale(1);
 }
-.message.deleted:hover .message-attach {
+.message.deleted:hover .message-attach, .message.deleted:hover img, .message.deleted:hover video, .message.deleted:hover audio, .message.deleted:hover lottie-sticker {
   filter: grayscale(0);
+}
+.message.forward {
+  padding-left: 10px;
+}
+.message.forward::before {
+  content: "";
+  position: absolute;
+  top: 0px;
+  bottom: 0px;
+  left: 0px;
+  width: 4px;
+  border-radius: 1rem;
+  background-color: var(--text-3);
+}
+.forward-footer {
+  width: fit-content;
+  padding: 2px;
+  border: none;
 }
 
 .gallery {
